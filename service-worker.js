@@ -4,12 +4,12 @@ const CACHE_FILES = [
   './',
   './index.html',
   './manifest.json',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
-  './icons/icon-180.png',
-  './icons/icon-167.png',
-  './icons/icon-152.png',
-  './icons/icon-120.png'
+  './icon-192.png',
+  './icon-512.png',
+  './icon-180.png',
+  './icon-167.png',
+  './icon-152.png',
+  './icon-120.png'
 ];
 
 // 安装：预缓存核心文件
