@@ -1,0 +1,19 @@
+{
+  "name": "男孩养育管家",
+  "short_name": "养育管家",
+  "description": "6岁半男孩的专属养育管理PWA：饮食、生长、运动、心理、幼小衔接一站式管理",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FFFBF5",
+  "theme_color": "#7EC8E3",
+  "lang": "zh-CN",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/icon-180.png", "sizes": "180x180", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-167.png", "sizes": "167x167", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-152.png", "sizes": "152x152", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-120.png", "sizes": "120x120", "type": "image/png", "purpose": "any" }
+  ]
+}

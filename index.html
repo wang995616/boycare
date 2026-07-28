@@ -1,0 +1,3376 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="养育管家">
+<meta name="theme-color" content="#7EC8E3">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon-192.png">
+<title>男孩养育管家</title>
+<style>
+/* ========== 全局变量与重置（可爱童趣版） ========== */
+:root{
+  --blue:#7EC8E3;          /* 奶蓝色 */
+  --blue-dark:#5BB3D9;
+  --blue-light:#E8F6FC;
+  --blue-soft:#D4EEF7;
+  --orange:#FFB74D;        /* 暖橙色 */
+  --orange-light:#FFF3E0;
+  --orange-dark:#F09A2E;
+  --pink:#FFDDE1;          /* 浅粉色 */
+  --pink-light:#FFF0F3;
+  --pink-deep:#FF8FA3;
+  --red:#FF7B7B;
+  --green:#7DD87D;
+  --green-light:#E8F8E8;
+  --yellow:#FFD93D;
+  --yellow-light:#FFF8E1;
+  --purple:#B39DDB;
+  --purple-light:#F3E5F5;
+  --cream:#FFFBF5;         /* 奶油白背景 */
+  --card:#FFFFFF;
+  --text:#4A4A4A;
+  --text-light:#8A8A8A;
+  --text-lighter:#C0C0C0;
+  --border:#FFF0E5;
+  --shadow:0 4px 16px rgba(255,183,77,0.12);
+  --shadow-soft:0 3px 12px rgba(126,200,227,0.15);
+  --shadow-lg:0 6px 24px rgba(255,183,77,0.18);
+  --shadow-pop:0 4px 0 rgba(240,154,46,0.2);
+  --radius:20px;
+  --radius-sm:14px;
+  --radius-xs:10px;
+  --tab-height:62px;
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+  --safe-top:env(safe-area-inset-top,0px);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei",sans-serif;
+  background:var(--cream);
+  background-image:radial-gradient(circle at 20% 10%, rgba(255,221,225,0.25) 0%, transparent 40%),radial-gradient(circle at 80% 80%, rgba(126,200,227,0.2) 0%, transparent 40%);
+  background-attachment:fixed;
+  color:var(--text);
+  font-size:15px;
+  line-height:1.7;
+  letter-spacing:0.3px;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+input,textarea,select,button{font-family:inherit;font-size:inherit;}
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
+input[type=date]::-webkit-inner-spin-button{display:none;}
+
+/* ========== App 容器 ========== */
+#app{
+  max-width:480px;
+  margin:0 auto;
+  min-height:100vh;
+  padding-bottom:calc(var(--tab-height) + var(--safe-bottom) + 16px);
+  position:relative;
+}
+
+/* ========== 顶部状态栏占位 ========== */
+.safe-top-spacer{height:var(--safe-top);}
+
+/* ========== 页面 ========== */
+.page{display:none;animation:fadeIn .3s cubic-bezier(0.34,1.56,0.64,1);}
+.page.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px) scale(0.99);}to{opacity:1;transform:translateY(0) scale(1);}}
+
+.page-header{
+  background:linear-gradient(135deg,var(--blue) 0%,var(--blue-dark) 100%);
+  color:#fff;
+  padding:calc(var(--safe-top) + 18px) 18px 18px;
+  position:sticky;top:0;z-index:50;
+  border-radius:0 0 28px 28px;
+  box-shadow:0 4px 20px rgba(126,200,227,0.3);
+}
+.page-header h1{font-size:20px;font-weight:900;display:flex;align-items:center;gap:8px;letter-spacing:1px;text-shadow:0 1px 3px rgba(0,0,0,0.1);}
+.page-header .sub{font-size:12px;opacity:.9;margin-top:3px;display:flex;align-items:center;gap:4px;}
+.page-header .right-btn{position:absolute;right:16px;top:calc(var(--safe-top) + 16px);background:rgba(255,255,255,.25);border:none;color:#fff;padding:6px 14px;border-radius:18px;font-size:13px;font-weight:600;}
+
+.section{padding:0 16px;margin-top:20px;}
+.section-title{font-size:17px;font-weight:900;margin-bottom:14px;display:flex;align-items:center;gap:6px;justify-content:space-between;letter-spacing:0.5px;}
+.section-title .left{display:flex;align-items:center;gap:6px;}
+.section-title .more{font-size:12px;color:var(--orange-dark);font-weight:600;}
+
+/* ========== 卡片（圆角大、软萌阴影） ========== */
+.card{
+  background:var(--card);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow-soft);
+  padding:16px;
+  margin-bottom:14px;
+  border:2px solid rgba(255,255,255,0.8);
+  transition:transform .2s,box-shadow .2s;
+}
+.card:active{transform:scale(0.98);}
+
+/* ========== 首页仪表盘 ========== */
+.dashboard-header{
+  background:linear-gradient(135deg,var(--blue) 0%,#A5DBEF 60%,var(--pink) 120%);
+  color:#fff;
+  padding:calc(var(--safe-top) + 22px) 20px 26px;
+  border-radius:0 0 32px 32px;
+  position:relative;
+  overflow:hidden;
+  box-shadow:0 6px 24px rgba(126,200,227,0.35);
+}
+.dashboard-header::before{
+  content:'⭐';position:absolute;top:calc(var(--safe-top) + 12px);right:24px;font-size:18px;opacity:.7;
+  animation:twinkle 2s ease-in-out infinite;
+}
+.dashboard-header::after{
+  content:'✨';position:absolute;top:calc(var(--safe-top) + 40px);right:60px;font-size:14px;opacity:.6;
+  animation:twinkle 2.5s ease-in-out infinite .5s;
+}
+@keyframes twinkle{0%,100%{opacity:.4;transform:scale(0.9);}50%{opacity:.9;transform:scale(1.1);}}
+
+/* 吉祥物 */
+.mascot-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.mascot{
+  font-size:42px;
+  animation:bounce 2s ease-in-out infinite;
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+@keyframes bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+.daily-encourage{
+  flex:1;background:rgba(255,255,255,0.25);
+  border-radius:16px;padding:8px 14px;
+  font-size:13px;font-weight:600;
+  backdrop-filter:blur(4px);
+  border:1.5px solid rgba(255,255,255,0.3);
+}
+
+.child-info{display:flex;align-items:center;gap:14px;}
+.child-avatar{
+  width:62px;height:62px;border-radius:50%;
+  background:rgba(255,255,255,0.3);
+  display:flex;align-items:center;justify-content:center;
+  font-size:36px;
+  border:3px solid rgba(255,255,255,0.5);
+  box-shadow:0 2px 8px rgba(0,0,0,0.1);
+}
+.child-meta{flex:1;}
+.child-name{font-size:21px;font-weight:800;display:flex;align-items:center;gap:8px;text-shadow:0 1px 2px rgba(0,0,0,0.1);}
+.child-age{font-size:13px;opacity:.95;margin-top:2px;}
+.stage-tag{
+  display:inline-flex;align-items:center;gap:3px;
+  background:var(--orange);color:#fff;
+  font-size:11px;padding:3px 10px;border-radius:12px;font-weight:700;
+  margin-top:5px;box-shadow:0 2px 6px rgba(255,183,77,0.4);
+}
+
+/* 彩色气泡倒计时 */
+.countdown-box{
+  background:linear-gradient(135deg,rgba(255,255,255,0.3),rgba(255,221,225,0.4));
+  border-radius:22px;
+  padding:14px 18px;
+  margin-top:16px;
+  display:flex;align-items:center;justify-content:space-between;
+  backdrop-filter:blur(6px);
+  border:2px solid rgba(255,255,255,0.35);
+  box-shadow:0 4px 12px rgba(255,143,163,0.2);
+}
+.countdown-bubble{
+  background:var(--orange);
+  border-radius:50%;
+  width:64px;height:64px;
+  display:flex;align-items:center;justify-content:center;flex-direction:column;
+  box-shadow:0 4px 12px rgba(255,183,77,0.5),inset 0 2px 4px rgba(255,255,255,0.4);
+  animation:pulse 2s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.06);}}
+.countdown-bubble .num{font-size:26px;font-weight:900;color:#fff;line-height:1;}
+.countdown-bubble .unit{font-size:10px;color:#fff;opacity:.9;}
+.countdown-label{font-size:14px;font-weight:700;}
+.countdown-sub{font-size:11px;opacity:.85;margin-top:2px;}
+
+/* 待办清单 */
+.todo-item{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 0;
+  border-bottom:2px dashed var(--border);
+  transition:transform .15s;
+}
+.todo-item:active{transform:scale(0.97);}
+.todo-item:last-child{border-bottom:none;}
+.todo-check{
+  width:26px;height:26px;border-radius:50%;
+  border:2.5px solid var(--blue-soft);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;cursor:pointer;font-size:14px;color:#fff;
+  transition:all .25s cubic-bezier(0.34,1.56,0.64,1);
+  background:#fff;
+}
+.todo-check.done{background:var(--green);border-color:var(--green);transform:rotate(360deg);}
+.todo-text{flex:1;font-size:14px;font-weight:500;}
+.todo-text.done{color:var(--text-light);text-decoration:line-through;}
+.todo-icon{
+  font-size:22px;width:34px;height:34px;border-radius:50%;
+  background:var(--yellow-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+
+/* 补充剂打卡 */
+.supplement-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.supplement-card{
+  background:linear-gradient(135deg,var(--blue-light),#fff);
+  border-radius:var(--radius-sm);
+  padding:14px 8px;
+  text-align:center;
+  cursor:pointer;
+  transition:all .25s cubic-bezier(0.34,1.56,0.64,1);
+  border:2.5px solid transparent;
+  position:relative;
+}
+.supplement-card:active{transform:scale(0.93);}
+.supplement-card.done{
+  background:linear-gradient(135deg,var(--green),#6BCB6B);
+  color:#fff;border-color:var(--green);
+  box-shadow:0 4px 12px rgba(125,216,125,0.4);
+}
+.supplement-card .icon{font-size:28px;display:block;}
+.supplement-card .name{font-size:12px;margin-top:6px;font-weight:700;}
+.supplement-card .status{font-size:10px;margin-top:2px;opacity:.85;}
+
+/* 身高体重概览 */
+.growth-overview{display:flex;gap:12px;}
+.growth-overview .item{flex:1;text-align:center;}
+.growth-overview .label{font-size:12px;color:var(--text-light);}
+.growth-overview .value{font-size:24px;font-weight:900;margin:3px 0;background:linear-gradient(135deg,var(--blue-dark),var(--blue));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+.growth-overview .warn{font-size:11px;color:var(--orange-dark);font-weight:700;background:var(--orange-light);padding:2px 8px;border-radius:8px;display:inline-block;}
+
+/* ========== 底部导航（彩色圆底） ========== */
+.bottom-nav{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:480px;
+  background:rgba(255,251,245,0.97);
+  backdrop-filter:blur(12px);
+  border-top:2px solid var(--border);
+  display:flex;
+  padding-bottom:var(--safe-bottom);
+  z-index:100;
+  box-shadow:0 -4px 20px rgba(255,183,77,0.1);
+}
+.nav-item{
+  flex:1;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:4px 0;
+  height:var(--tab-height);
+  color:var(--text-light);
+  font-size:9px;font-weight:700;
+  cursor:pointer;
+  position:relative;
+  transition:all .2s;
+  min-width:0;
+}
+.nav-item .nav-icon-wrap{
+  width:34px;height:28px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .25s cubic-bezier(0.34,1.56,0.64,1);
+  margin-bottom:1px;
+}
+.nav-item .icon{font-size:17px;line-height:1;}
+.nav-item.active{color:var(--orange-dark);}
+.nav-item.active .nav-icon-wrap{
+  background:linear-gradient(135deg,var(--orange),var(--orange-dark));
+  box-shadow:0 3px 10px rgba(255,183,77,0.45);
+  transform:translateY(-2px) scale(1.05);
+}
+.nav-item.active .icon{filter:brightness(1.1);}
+.nav-item .badge{
+  position:absolute;top:4px;right:50%;margin-right:-16px;
+  width:8px;height:8px;border-radius:50%;background:var(--red);
+  display:none;
+}
+.nav-item .badge.show{display:block;animation:pulse 1.5s infinite;}
+
+/* ========== 通用按钮（可爱语气、圆角大） ========== */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:12px 20px;border-radius:var(--radius-sm);border:none;
+  font-size:14px;font-weight:700;cursor:pointer;transition:all .2s cubic-bezier(0.34,1.56,0.64,1);
+  letter-spacing:0.3px;
+}
+.btn:active{transform:scale(0.95);}
+.btn-primary{background:linear-gradient(135deg,var(--blue),var(--blue-dark));color:#fff;box-shadow:0 4px 0 var(--blue-dark);}
+.btn-primary:active{box-shadow:0 1px 0 var(--blue-dark);transform:translateY(3px) scale(0.97);}
+.btn-orange{background:linear-gradient(135deg,var(--orange),var(--orange-dark));color:#fff;box-shadow:0 4px 0 var(--orange-dark);}
+.btn-orange:active{box-shadow:0 1px 0 var(--orange-dark);transform:translateY(3px) scale(0.97);}
+.btn-outline{background:var(--cream);border:2px solid var(--blue);color:var(--blue-dark);}
+.btn-danger{background:linear-gradient(135deg,var(--red),#E85A5A);color:#fff;box-shadow:0 4px 0 #C75050;}
+.btn-block{display:flex;width:100%;}
+.btn-sm{padding:8px 14px;font-size:13px;border-radius:12px;}
+
+/* ========== 表单 ========== */
+.form-group{margin-bottom:14px;}
+.form-label{font-size:13px;color:var(--text-light);margin-bottom:6px;display:block;font-weight:600;}
+.form-input,.form-select,.form-textarea{
+  width:100%;padding:12px 14px;
+  border:2px solid var(--border);border-radius:var(--radius-sm);
+  font-size:14px;background:#fff;color:var(--text);
+  transition:all .2s;
+}
+.form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(126,200,227,0.2);}
+.form-textarea{resize:vertical;min-height:70px;}
+.form-row{display:flex;gap:10px;}
+.form-row .form-group{flex:1;}
+
+/* ========== 列表 ========== */
+.list-item{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 0;border-bottom:2px dashed var(--border);
+  transition:transform .15s;
+}
+.list-item:active{transform:scale(0.98);}
+.list-item:last-child{border-bottom:none;}
+.list-item .icon{font-size:20px;flex-shrink:0;}
+.list-item .content{flex:1;}
+.list-item .title{font-size:14px;font-weight:600;}
+.list-item .desc{font-size:12px;color:var(--text-light);margin-top:1px;}
+.list-item .arrow{color:var(--text-lighter);}
+
+/* ========== 模态框 ========== */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(126,200,227,0.35);
+  backdrop-filter:blur(4px);
+  z-index:200;display:none;align-items:flex-end;justify-content:center;
+}
+.modal-overlay.show{display:flex;animation:fadeIn .2s;}
+.modal{
+  background:var(--cream);width:100%;max-width:480px;
+  border-radius:28px 28px 0 0;
+  max-height:85vh;overflow-y:auto;
+  padding:22px 18px calc(22px + var(--safe-bottom));
+  animation:slideUp .35s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.modal-title{font-size:18px;font-weight:800;display:flex;align-items:center;gap:6px;}
+.modal-close{
+  font-size:26px;color:var(--text-light);cursor:pointer;background:var(--card);
+  border:none;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--shadow-soft);
+}
+
+/* ========== 标签 ========== */
+.tag{
+  display:inline-block;font-size:11px;padding:3px 10px;
+  border-radius:12px;font-weight:700;
+}
+.tag-red{background:#FFE8E8;color:var(--red);}
+.tag-blue{background:var(--blue-light);color:var(--blue-dark);}
+.tag-orange{background:var(--orange-light);color:var(--orange-dark);}
+.tag-green{background:var(--green-light);color:#5BAE5B;}
+.tag-yellow{background:var(--yellow-light);color:#C4A000;}
+.tag-purple{background:var(--purple-light);color:#8E6BCE;}
+
+/* 营养标签 */
+.nutri-tag{display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:3px 9px;border-radius:10px;margin:2px;font-weight:600;}
+.nutri-calcium{background:#FFE8E8;color:var(--red);}
+.nutri-protein{background:var(--blue-light);color:var(--blue-dark);}
+.nutri-vd{background:var(--yellow-light);color:#C4A000;}
+.nutri-iron{background:var(--green-light);color:#5BAE5B;}
+
+/* ========== 饮食模块 ========== */
+.meal-card{margin-bottom:14px;border-left:5px solid var(--blue);background:linear-gradient(135deg,#fff,var(--blue-light) 200%);}
+.meal-card .meal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.meal-card .meal-title{font-size:15px;font-weight:800;display:flex;align-items:center;gap:6px;}
+.meal-card .meal-time{font-size:12px;color:var(--text-light);background:var(--orange-light);padding:2px 8px;border-radius:10px;}
+.dish-item{padding:8px 0;border-bottom:2px dashed var(--border);font-size:13px;transition:transform .15s;}
+.dish-item:active{transform:translateX(4px);}
+.dish-item:last-child{border-bottom:none;}
+.dish-name{font-weight:600;}
+.dish-sub{color:var(--text-light);font-size:12px;margin-top:2px;}
+.dish-sub .alt{color:var(--orange-dark);font-weight:600;}
+
+.week-tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;-webkit-overflow-scrolling:touch;}
+.week-tab{
+  flex-shrink:0;padding:9px 16px;border-radius:18px;
+  background:#fff;border:2px solid var(--border);
+  font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .2s;
+}
+.week-tab:active{transform:scale(0.95);}
+.week-tab.active{background:linear-gradient(135deg,var(--blue),var(--blue-dark));color:#fff;border-color:var(--blue);box-shadow:0 3px 10px rgba(126,200,227,0.4);}
+
+.allergen-alert{
+  background:linear-gradient(135deg,#FFE8E8,var(--pink));
+  border-radius:var(--radius);padding:16px;margin-bottom:14px;
+  border:2px solid var(--pink-deep);
+}
+.allergen-alert .title{color:var(--red);font-weight:800;font-size:14px;display:flex;align-items:center;gap:6px;}
+.allergen-alert .list{font-size:12px;color:#C0392B;margin-top:8px;line-height:1.8;}
+
+/* 日历 */
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;text-align:center;}
+.calendar .cal-head{font-size:11px;color:var(--text-light);padding:4px 0;font-weight:600;}
+.calendar .cal-day{
+  aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-size:13px;border-radius:12px;position:relative;transition:transform .15s;font-weight:500;
+}
+.calendar .cal-day:active{transform:scale(0.9);}
+.calendar .cal-day.other{color:var(--text-lighter);}
+.calendar .cal-day.today{background:linear-gradient(135deg,var(--blue),var(--blue-dark));color:#fff;font-weight:800;box-shadow:0 3px 8px rgba(126,200,227,0.4);}
+.calendar .cal-day .dot{width:5px;height:5px;border-radius:50%;background:var(--orange);position:absolute;bottom:4px;}
+
+/* ========== 生长曲线 ========== */
+.growth-chart-container{width:100%;overflow-x:auto;}
+canvas{max-width:100%;}
+
+.record-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:2px dashed var(--border);transition:transform .15s;}
+.record-row:active{transform:scale(0.98);}
+.record-row:last-child{border-bottom:none;}
+.record-row .date{font-size:13px;color:var(--text-light);width:90px;font-weight:600;}
+.record-row .vals{flex:1;font-size:14px;font-weight:600;}
+.record-row .actions{display:flex;gap:6px;}
+
+/* ========== 运动模块 ========== */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+.stat-card{background:linear-gradient(135deg,#fff,var(--cream));border-radius:var(--radius-sm);padding:12px 6px;text-align:center;box-shadow:var(--shadow-soft);border:2px solid var(--border);}
+.stat-card .num{font-size:20px;font-weight:900;color:var(--orange-dark);}
+.stat-card .label{font-size:11px;color:var(--text-light);margin-top:2px;font-weight:600;}
+
+.arch-exercise{display:flex;gap:12px;padding:12px 0;border-bottom:2px dashed var(--border);transition:transform .15s;}
+.arch-exercise:active{transform:scale(0.98);}
+.arch-exercise:last-child{border-bottom:none;}
+.arch-exercise .num{
+  width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--orange),var(--orange-dark));
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:800;flex-shrink:0;box-shadow:0 3px 8px rgba(255,183,77,0.35);
+}
+.arch-exercise .info{flex:1;}
+.arch-exercise .name{font-size:14px;font-weight:700;}
+.arch-exercise .desc{font-size:12px;color:var(--text-light);margin-top:2px;}
+
+/* ========== 心理模块 ========== */
+.mood-picker{display:flex;justify-content:space-around;margin:16px 0;}
+.mood-btn{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  background:none;border:none;cursor:pointer;padding:10px;border-radius:18px;
+  transition:all .25s cubic-bezier(0.34,1.56,0.64,1);
+}
+.mood-btn:active{transform:scale(0.9);}
+.mood-btn.selected{background:linear-gradient(135deg,var(--yellow-light),var(--pink-light));transform:scale(1.1);box-shadow:0 3px 12px rgba(255,217,61,0.3);}
+.mood-btn.selected .emoji{animation:moodBounce .6s ease;}
+@keyframes moodBounce{0%{transform:scale(0.8) rotate(-10deg);}50%{transform:scale(1.3) rotate(10deg);}100%{transform:scale(1) rotate(0);}}
+.mood-btn .emoji{font-size:38px;transition:transform .2s;}
+.mood-btn .label{font-size:11px;color:var(--text-light);font-weight:600;}
+
+.scenario-card{background:linear-gradient(135deg,var(--blue-light),#fff);border-radius:var(--radius);padding:16px;margin-bottom:12px;border:2px solid var(--blue-soft);}
+.scenario-card .q{font-weight:800;font-size:14px;margin-bottom:8px;color:var(--blue-dark);display:flex;align-items:center;gap:4px;}
+.scenario-card .a{font-size:13px;color:var(--text);line-height:1.7;background:#fff;padding:11px;border-radius:12px;margin-top:6px;border-left:4px solid var(--orange);}
+
+.points-display{
+  background:linear-gradient(135deg,var(--orange),var(--orange-dark));
+  border-radius:var(--radius);padding:24px;text-align:center;color:#fff;
+  box-shadow:0 6px 20px rgba(255,183,77,0.4);
+  position:relative;overflow:hidden;
+}
+.points-display::after{content:'⭐';position:absolute;top:8px;right:12px;font-size:24px;opacity:.5;animation:twinkle 2s infinite;}
+.points-display .num{font-size:46px;font-weight:900;text-shadow:0 2px 4px rgba(0,0,0,0.15);}
+.points-display .label{font-size:13px;opacity:.95;font-weight:600;}
+
+.point-item{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:2px dashed var(--border);transition:transform .15s;}
+.point-item:active{transform:scale(0.98);}
+.point-item:last-child{border-bottom:none;}
+.point-item .left{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;}
+.point-item .pts{font-size:14px;font-weight:900;color:var(--orange-dark);}
+
+/* ========== 提醒模块 ========== */
+.reminder-item{
+  display:flex;align-items:center;gap:12px;
+  background:linear-gradient(135deg,#fff,var(--cream));border-radius:var(--radius);padding:13px 15px;
+  margin-bottom:10px;box-shadow:var(--shadow-soft);border:2px solid var(--border);
+  transition:transform .15s;
+}
+.reminder-item:active{transform:scale(0.98);}
+.reminder-item .time{font-size:15px;font-weight:900;color:var(--blue-dark);width:56px;flex-shrink:0;}
+.reminder-item .icon{font-size:24px;flex-shrink:0;}
+.reminder-item .content{flex:1;}
+.reminder-item .title{font-size:14px;font-weight:700;}
+.reminder-item .desc{font-size:12px;color:var(--text-light);}
+.reminder-item .switch{
+  width:46px;height:28px;border-radius:14px;background:var(--text-lighter);
+  position:relative;cursor:pointer;flex-shrink:0;transition:background .25s;
+}
+.reminder-item .switch.on{background:var(--green);}
+.reminder-item .switch::after{
+  content:'';position:absolute;width:24px;height:24px;border-radius:50%;
+  background:#fff;top:2px;left:2px;transition:transform .25s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 2px 4px rgba(0,0,0,.2);
+}
+.reminder-item .switch.on::after{transform:translateX(18px);}
+
+.water-progress{text-align:center;padding:16px;}
+.water-cups{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:14px 0;}
+.water-cup{
+  width:40px;height:48px;font-size:26px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;border-radius:12px;transition:all .25s cubic-bezier(0.34,1.56,0.64,1);
+  background:var(--cream);
+}
+.water-cup:active{transform:scale(0.85);}
+.water-cup.filled{background:var(--blue-light);transform:scale(1);animation:popIn .3s ease;}
+@keyframes popIn{0%{transform:scale(0.7);}80%{transform:scale(1.15);}100%{transform:scale(1);}}
+
+/* ========== 幼小衔接 ========== */
+.checklist-item{display:flex;align-items:center;gap:10px;padding:9px 0;transition:transform .15s;}
+.checklist-item:active{transform:scale(0.98);}
+.checklist-item .ck{
+  width:24px;height:24px;border-radius:8px;border:2.5px solid var(--blue-soft);
+  display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;cursor:pointer;flex-shrink:0;
+  transition:all .25s cubic-bezier(0.34,1.56,0.64,1);background:#fff;
+}
+.checklist-item .ck.done{background:var(--green);border-color:var(--green);transform:rotate(360deg);}
+.checklist-item .tx{font-size:14px;font-weight:500;}
+.checklist-item .tx.done{color:var(--text-light);text-decoration:line-through;}
+
+/* ========== 积分兑换 ========== */
+.reward-card{background:linear-gradient(135deg,#fff,var(--cream));border-radius:var(--radius);padding:15px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow-soft);border:2px solid var(--border);transition:transform .15s;}
+.reward-card:active{transform:scale(0.98);}
+.reward-card .info .name{font-size:14px;font-weight:700;}
+.reward-card .info .cost{font-size:12px;color:var(--orange-dark);margin-top:2px;font-weight:600;}
+.reward-card.locked{opacity:.5;}
+
+/* ========== 庆祝动画（增强烟花/星星） ========== */
+.celebrate{
+  position:fixed;inset:0;z-index:300;display:none;
+  align-items:center;justify-content:center;
+  background:rgba(126,200,227,0.4);backdrop-filter:blur(6px);
+}
+.celebrate.show{display:flex;}
+.celebrate-box{
+  background:linear-gradient(135deg,#fff,var(--cream));border-radius:28px;padding:32px 26px;text-align:center;
+  animation:pop .5s cubic-bezier(0.34,1.56,0.64,1);max-width:320px;
+  box-shadow:0 10px 40px rgba(255,183,77,0.3);border:3px solid var(--orange-light);
+  position:relative;
+}
+@keyframes pop{0%{transform:scale(0.3) rotate(-10deg);opacity:0;}70%{transform:scale(1.08) rotate(2deg);}100%{transform:scale(1) rotate(0);opacity:1;}}
+.celebrate-box .emoji{font-size:64px;animation:bounce 1s ease infinite;}
+.celebrate-box .title{font-size:22px;font-weight:900;margin:12px 0;color:var(--orange-dark);}
+.celebrate-box .text{font-size:14px;color:var(--text);margin-bottom:18px;}
+/* 烟花粒子 */
+.firework{position:absolute;width:6px;height:6px;border-radius:50%;animation:firework 1s ease-out forwards;}
+@keyframes firework{0%{transform:translate(0,0) scale(1);opacity:1;}100%{transform:translate(var(--fx),var(--fy)) scale(0);opacity:0;}}
+
+/* Toast 提示（可爱化） */
+.toast{
+  position:fixed;top:calc(var(--safe-top) + 20px);left:50%;transform:translateX(-50%) translateY(-100px);
+  background:linear-gradient(135deg,var(--blue-dark),var(--blue));color:#fff;padding:12px 22px;border-radius:22px;
+  font-size:13px;font-weight:600;z-index:400;transition:transform .35s cubic-bezier(0.34,1.56,0.64,1);white-space:nowrap;max-width:90%;
+  box-shadow:0 4px 16px rgba(126,200,227,0.4);
+}
+.toast.show{transform:translateX(-50%) translateY(0);}
+
+/* 空状态（可爱插画） */
+.empty{text-align:center;padding:36px 14px;color:var(--text-light);}
+.empty .emoji{font-size:48px;opacity:.7;animation:bounce 2s ease infinite;}
+.empty .text{font-size:13px;margin-top:10px;font-weight:600;}
+
+/* 设置列表 */
+.setting-group{background:#fff;border-radius:var(--radius);overflow:hidden;margin-bottom:14px;box-shadow:var(--shadow-soft);border:2px solid var(--border);}
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:15px;border-bottom:2px dashed var(--border);cursor:pointer;transition:transform .15s;}
+.setting-row:active{transform:scale(0.98);}
+.setting-row:last-child{border-bottom:none;}
+.setting-row .label{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;}
+.setting-row .value{font-size:13px;color:var(--text-light);display:flex;align-items:center;gap:4px;}
+
+/* 浮动按钮（软萌） */
+.fab{
+  position:fixed;right:18px;bottom:calc(var(--tab-height) + var(--safe-bottom) + 18px);
+  width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--orange),var(--orange-dark));color:#fff;
+  border:none;font-size:28px;box-shadow:0 6px 16px rgba(255,183,77,0.5);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:90;
+  transition:transform .2s cubic-bezier(0.34,1.56,0.64,1);
+}
+.fab:active{transform:scale(0.88) rotate(90deg);}
+
+/* 侧边抽屉 */
+.drawer-overlay{position:fixed;inset:0;background:rgba(126,200,227,0.3);backdrop-filter:blur(3px);z-index:150;display:none;}
+.drawer-overlay.show{display:block;}
+.drawer{
+  position:fixed;top:0;right:-280px;width:260px;height:100%;
+  background:var(--cream);z-index:160;transition:right .3s;
+  padding:calc(var(--safe-top) + 16px) 16px 16px;overflow-y:auto;
+}
+.drawer.show{right:0;}
+.drawer-item{display:flex;align-items:center;gap:10px;padding:14px 0;border-bottom:2px dashed var(--border);cursor:pointer;font-size:14px;font-weight:600;}
+.drawer-item .icon{font-size:20px;}
+
+/* 切换按钮组（可爱化） */
+.tab-bar{display:flex;background:var(--blue-soft);border-radius:14px;padding:4px;margin-bottom:14px;gap:2px;}
+.tab-bar .tb{flex:1;text-align:center;padding:8px;font-size:13px;border-radius:10px;cursor:pointer;color:var(--text-light);font-weight:600;transition:all .2s;}
+.tab-bar .tb.active{background:#fff;color:var(--orange-dark);font-weight:800;box-shadow:0 2px 8px rgba(255,183,77,0.2);}
+
+.hidden{display:none!important;}
+
+/* 知识库卡片 */
+.knowledge-card{background:linear-gradient(135deg,#fff,var(--cream));border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:var(--shadow-soft);border:2px solid var(--border);}
+.knowledge-card h3{font-size:16px;margin-bottom:10px;color:var(--blue-dark);font-weight:800;display:flex;align-items:center;gap:6px;}
+.knowledge-card p{font-size:13px;color:var(--text);line-height:1.8;}
+.knowledge-card ul{font-size:13px;padding-left:18px;line-height:2;}
+
+/* 彩虹进度条 */
+.rainbow-bar{background:var(--border);height:12px;border-radius:6px;overflow:hidden;}
+.rainbow-bar .fill{height:100%;background:linear-gradient(90deg,#FF7B7B 0%,var(--orange) 25%,var(--yellow) 50%,var(--green) 75%,var(--blue) 100%);border-radius:6px;transition:width .5s ease;position:relative;}
+.rainbow-bar .fill::after{content:'⭐';position:absolute;right:-2px;top:-4px;font-size:14px;}
+
+/* 列表项轻弹动画 */
+@keyframes tapPop{0%{transform:scale(1);}50%{transform:scale(0.96);}100%{transform:scale(1);}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<!-- 模态框容器 -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modal"></div>
+</div>
+
+<!-- 庆祝动画 -->
+<div class="celebrate" id="celebrate">
+  <div class="celebrate-box">
+    <div class="emoji" id="celEmoji">🎉</div>
+    <div class="title" id="celTitle">太棒了！</div>
+    <div class="text" id="celText"></div>
+    <button class="btn btn-orange btn-block" onclick="closeCelebrate()">好耶！</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   男孩养育管家 PWA - 核心逻辑
+   ============================================================ */
+
+/* ========== 全局数据层 ========== */
+const Store = {
+  KEY: 'boyCareData',
+  data: null,
+  init(){
+    const saved = localStorage.getItem(this.KEY);
+    if(saved){
+      try{ this.data = JSON.parse(saved); }catch(e){ this.data = this.defaultData(); }
+    }else{
+      this.data = this.defaultData();
+    }
+    // 合并新字段
+    this.data = Object.assign(this.defaultData(), this.data);
+  },
+  save(){
+    localStorage.setItem(this.KEY, JSON.stringify(this.data));
+  },
+  defaultData(){
+    return {
+      profile: {
+        name: '宝贝',
+        gender: '男',
+        birthday: '2019-12-15',
+        heightStatus: '偏矮',
+        weightStatus: '偏瘦',
+        allergens: ['鸡蛋','牛奶'],
+        diseases: ['咳嗽变异性哮喘','过敏性鼻炎'],
+        supplements: ['益生菌','VD','钙镁片'],
+        exercise: '每日跳绳',
+        archIssue: true,
+        moodIssue: '脾气大',
+        stage: '幼小衔接期',
+        avatar: '👦'
+      },
+      growthRecords: [],
+      growthTarget: { height: 0, date: '', achieved: false },
+      supplements: {}, // {dateStr: {益生菌:bool, VD:bool, 钙镁片:bool}}
+      todos: {}, // {dateStr: [{text,icon,done}]}
+      meals: {}, // {dateStr: {早餐:'',午餐:'',加餐:'',晚餐:''}}
+      mealCalendar: {}, // {dateStr: true}
+      jumpRecords: [], // [{date,count,duration}]
+      jumpTarget: 300,
+      archRecords: {}, // {dateStr: true}
+      archExerciseIndex: 0,
+      asthmaRecords: [], // [{date,trigger,severity,duration,meds}]
+      rhinitisRecords: {}, // {dateStr: bool} 有无发作
+      vaccineRecords: [], // [{name,date,location,nextDate}]
+      medicationRecords: [], // [{name,dose,unit,freq,time,note,startDate,stopDate}]
+      visitRecords: [], // [{date,hospital,dept,doctor,diagnosis,plan,nextDate,photos}]
+      moodRecords: {}, // {dateStr: {mood, note}}
+      favoriteScripts: [],
+      pointsRecords: [], // [{date,action,points}]
+      pointActions: [
+        {name:'按时完成跳绳',points:2,icon:'🏃'},
+        {name:'完成足弓训练',points:2,icon:'🦶'},
+        {name:'今天没发脾气',points:3,icon:'😊'},
+        {name:'按时吃药',points:1,icon:'💊'},
+        {name:'喝了8杯水',points:1,icon:'💧'},
+        {name:'完成学习任务',points:2,icon:'📚'}
+      ],
+      rewards: [
+        {name:'去游乐场玩',cost:10,icon:'🎢'},
+        {name:'买一个新玩具',cost:20,icon:'🧸'},
+        {name:'看一部电影',cost:50,icon:'🎬'}
+      ],
+      checklist: {
+        items: [
+          {cat:'物品准备',text:'书包',done:false},
+          {cat:'物品准备',text:'文具盒',done:false},
+          {cat:'物品准备',text:'铅笔✏️',done:false},
+          {cat:'物品准备',text:'橡皮',done:false},
+          {cat:'物品准备',text:'尺子',done:false},
+          {cat:'物品准备',text:'水壶',done:false},
+          {cat:'物品准备',text:'午睡枕',done:false},
+          {cat:'物品准备',text:'姓名贴',done:false},
+          {cat:'作息调整',text:'每天7:00起床',done:false},
+          {cat:'作息调整',text:'21:00睡觉',done:false},
+          {cat:'作息调整',text:'午休30分钟',done:false},
+          {cat:'自理能力',text:'自己穿衣服',done:false},
+          {cat:'自理能力',text:'自己系鞋带',done:false},
+          {cat:'自理能力',text:'自己整理书包',done:false},
+          {cat:'自理能力',text:'自己上厕所',done:false}
+        ]
+      },
+      studyRecords: {}, // {dateStr: {focus,write,pinyin,math}}
+      sleepRecords: {}, // {dateStr: {bedTime,wakeTime}}
+      outdoorRecords: {}, // {dateStr: {hours,weather}}
+      waterRecords: {}, // {dateStr: count}
+      nasalRinse: {}, // {dateStr: {morning:bool, evening:bool}}
+      reminders: {
+        water: {enabled:true, times:['09:00','10:30','12:00','13:30','15:00','16:30','18:00','20:00'], target:8},
+        nasalRinse: {enabled:true, morning:'08:00', evening:'20:00', text:'该洗鼻子啦！早晚各一次，保护小鼻子～'},
+        medication: [], // [{name,dose,time,enabled,freq}]
+        exercise: {enabled:true, time:'17:00', text:'跳绳+足弓训练时间到！今日目标：跳绳300个+足弓动作一组'},
+        study: {enabled:true, time:'19:30', text:'幼小衔接学习时间到！写字/拼音/专注力三选一，15分钟就好'},
+        supplement: {enabled:true, time:'09:00', text:'该吃补充剂啦：益生菌+VD+钙镁片'},
+        measure: {enabled:true, day:1, time:'10:00', text:'该量身高体重啦！记得记录到App里'}
+      },
+      medHistory: [], // 用药历史 [{name,time,dateStr}]
+      // 可编辑数据（用户可自行增删改）
+      myAdditives: [], // 自定义添加剂 [{name,icon,cat,harm,foods,avoid}]
+      myRecommendations: {snack:[],toy:[],book:[]} // 自定义好物推荐
+    };
+  },
+  // 获取避坑清单（默认+自定义）
+  getAdditives(){
+    const builtin=BUILTIN_ADDITIVES;
+    const custom=this.data.myAdditives||[];
+    return [...builtin,...custom];
+  },
+  // 获取好物推荐（默认+自定义）
+  getRecommendations(type){
+    const builtin=BUILTIN_RECOMMENDATIONS[type]||[];
+    const custom=(this.data.myRecommendations&&this.data.myRecommendations[type])||[];
+    return [...builtin,...custom];
+  },
+  reset(){
+    if(confirm('确定要清空所有数据吗？此操作不可恢复！')){
+      localStorage.removeItem(this.KEY);
+      this.data = this.defaultData();
+      this.save();
+      return true;
+    }
+    return false;
+  }
+};
+
+/* ========== 日期工具 ========== */
+const D = {
+  todayStr(){ const d=new Date(); return this.toStr(d); },
+  toStr(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); },
+  parse(str){ const [y,m,d]=str.split('-').map(Number); return new Date(y,m-1,d); },
+  daysUntil(targetStr){
+    const t=this.parse(targetStr); const now=new Date(); now.setHours(0,0,0,0);
+    return Math.ceil((t-now)/(1000*60*60*24));
+  },
+  // 计算年龄（精确到0.5岁）
+  ageStr(birthday){
+    if(!birthday) return '6.5岁';
+    const b=this.parse(birthday); const now=new Date();
+    let years=(now-b)/(1000*60*60*24*365.25);
+    const half=Math.round(years*2)/2;
+    return half+'岁';
+  },
+  ageMonths(birthday){
+    if(!birthday) return 78;
+    const b=this.parse(birthday); const now=new Date();
+    return (now.getFullYear()-b.getFullYear())*12 + (now.getMonth()-b.getMonth());
+  },
+  weekDay(date){ return ['日','一','二','三','四','五','六'][date.getDay()]; },
+  monthDays(year,month){ return new Date(year,month+1,0).getDate(); }
+};
+
+/* ========== 全局UI工具 ========== */
+const UI = {
+  toast(msg, duration=2000){
+    const t=document.getElementById('toast');
+    t.textContent=msg; t.classList.add('show');
+    clearTimeout(this._toastTimer);
+    this._toastTimer=setTimeout(()=>t.classList.remove('show'),duration);
+  },
+  modal(html){
+    const m=document.getElementById('modal');
+    m.innerHTML=`<div class="modal-header"><div class="modal-title"></div><button class="modal-close" onclick="UI.closeModal()">×</button></div>`+html;
+    document.getElementById('modalOverlay').classList.add('show');
+  },
+  modalWithTitle(title, html){
+    const m=document.getElementById('modal');
+    m.innerHTML=`<div class="modal-header"><div class="modal-title">${title}</div><button class="modal-close" onclick="UI.closeModal()">×</button></div>`+html;
+    document.getElementById('modalOverlay').classList.add('show');
+  },
+  closeModal(){ document.getElementById('modalOverlay').classList.remove('show'); },
+  confirm(msg, cb){
+    if(confirm(msg)) cb();
+  },
+  celebrate(emoji,title,text){
+    document.getElementById('celEmoji').textContent=emoji;
+    document.getElementById('celTitle').textContent=title;
+    document.getElementById('celText').textContent=text;
+    const cel=document.getElementById('celebrate');
+    cel.classList.add('show');
+    // 生成烟花粒子
+    const box=cel.querySelector('.celebrate-box');
+    const colors=['#FF7B7B','#FFB74D','#FFD93D','#7DD87D','#7EC8E3','#B39DDB','#FF8FA3'];
+    // 清除旧粒子
+    box.querySelectorAll('.firework').forEach(f=>f.remove());
+    for(let i=0;i<16;i++){
+      const p=document.createElement('div');
+      p.className='firework';
+      const angle=(Math.PI*2*i)/16;
+      const dist=80+Math.random()*60;
+      p.style.setProperty('--fx',Math.cos(angle)*dist+'px');
+      p.style.setProperty('--fy',Math.sin(angle)*dist+'px');
+      p.style.background=colors[i%colors.length];
+      p.style.left='50%';p.style.top='40%';
+      p.style.animationDelay=(Math.random()*0.2)+'s';
+      box.appendChild(p);
+    }
+  }
+};
+function closeCelebrate(){ document.getElementById('celebrate').classList.remove('show'); }
+
+/* ========== 预置数据初始化 ========== */
+function ensurePresetData(){
+  const d=Store.data;
+  // 预置几条身高体重记录（示例数据，用户可删除）
+  if(d.growthRecords.length===0){
+    d.growthRecords=[
+      {date:'2025-01-15',height:112.5,weight:19.2,note:'体检'},
+      {date:'2025-04-20',height:114.0,weight:19.8,note:'常规测量'},
+      {date:'2025-07-10',height:115.3,weight:20.1,note:'早上空腹'}
+    ];
+  }
+  // 预置跳绳记录
+  if(d.jumpRecords.length===0){
+    const today=new Date();
+    for(let i=7;i>=1;i--){
+      const dt=new Date(today); dt.setDate(dt.getDate()-i);
+      d.jumpRecords.push({date:D.toStr(dt),count:200+Math.floor(Math.random()*120),duration:5+Math.floor(Math.random()*5)});
+    }
+  }
+  // 预置疫苗
+  if(d.vaccineRecords.length===0){
+    d.vaccineRecords=[
+      {name:'白破疫苗',date:'2025-06-10',location:'社区卫生服务中心',nextDate:'2026-06-10'},
+      {name:'流脑疫苗（A+C群）',date:'2025-06-10',location:'社区卫生服务中心',nextDate:'2026-06-10'}
+    ];
+  }
+  // 预置用药
+  if(d.medicationRecords.length===0){
+    d.medicationRecords=[
+      {name:'孟鲁司特钠',dose:'4',unit:'mg',freq:'每日一次',time:'20:00',note:'哮喘预防用药',startDate:'2025-06-01',stopDate:''},
+      {name:'西替利嗪',dose:'5',unit:'ml',freq:'按需',time:'21:00',note:'鼻炎发作时服用',startDate:'2025-06-01',stopDate:''}
+    ];
+  }
+  Store.save();
+}
+
+/* ========== 页面路由 ========== */
+const Pages = {
+  current: 'home',
+  go(page){
+    this.current=page;
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    const el=document.getElementById('page-'+page);
+    if(el){ el.classList.add('active'); }
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+    const nav=document.querySelector(`.nav-item[data-page="${page}"]`);
+    if(nav) nav.classList.add('active');
+    window.scrollTo(0,0);
+    // 渲染对应页面
+    if(page==='home') renderHome();
+    if(page==='diet') renderDiet();
+    if(page==='exercise') renderExercise();
+    if(page==='growth') renderGrowth();
+    if(page==='mind') renderMind();
+    if(page==='reminder') renderReminder();
+    updateFab(page);
+  }
+};
+
+/* 浮动按钮 - 根据页面显示不同功能 */
+function updateFab(page){
+  let fab=document.getElementById('fab');
+  const fabActions={
+    home:{icon:'⚙️',action:'openSettings()'},
+    growth:{icon:'➕',action:'addGrowthRecord()'},
+    reminder:{icon:'💧',action:'drinkWater()'}
+  };
+  const cfg=fabActions[page];
+  if(cfg){
+    if(!fab){
+      fab=document.createElement('button');
+      fab.className='fab';fab.id='fab';
+      document.body.appendChild(fab);
+    }
+    fab.textContent=cfg.icon;
+    fab.onclick=()=>eval(cfg.action);
+    fab.style.display='flex';
+  }else if(fab){
+    fab.style.display='none';
+  }
+}
+
+/* ========== 底部导航 ========== */
+function renderNav(){
+  const nav=document.getElementById('bottomNav') || (function(){
+    const n=document.createElement('nav');
+    n.className='bottom-nav'; n.id='bottomNav';
+    document.body.appendChild(n);
+    return n;
+  })();
+  nav.innerHTML=`
+    <div class="nav-item active" data-page="home" onclick="Pages.go('home')"><div class="nav-icon-wrap"><span class="icon">🏠</span></div><span>首页</span></div>
+    <div class="nav-item" data-page="diet" onclick="Pages.go('diet')"><div class="nav-icon-wrap"><span class="icon">🍽️</span></div><span>饮食</span></div>
+    <div class="nav-item" data-page="exercise" onclick="Pages.go('exercise')"><div class="nav-icon-wrap"><span class="icon">💪</span></div><span>运动</span></div>
+    <div class="nav-item" data-page="growth" onclick="Pages.go('growth')"><div class="nav-icon-wrap"><span class="icon">📊</span></div><span>生长</span></div>
+    <div class="nav-item" data-page="mind" onclick="Pages.go('mind')"><div class="nav-icon-wrap"><span class="icon">🧠</span></div><span>心理</span></div>
+    <div class="nav-item" data-page="reminder" onclick="Pages.go('reminder')"><div class="nav-icon-wrap"><span class="icon">⏰</span></div><span>提醒</span></div>
+  `;
+}
+
+/* ============================================================
+   首页仪表盘
+   ============================================================ */
+function renderHome(){
+  const p=Store.data.profile;
+  const days=D.daysUntil('2026-09-01');
+  const today=D.todayStr();
+  
+  // 补充剂打卡
+  if(!Store.data.supplements[today]) Store.data.supplements[today]={益生菌:false,VD:false,钙镁片:false};
+  const sup=Store.data.supplements[today];
+  
+  // 待办清单
+  if(!Store.data.todos[today]){
+    Store.data.todos[today]=[
+      {text:'早饭后吃益生菌+VD+钙镁片',icon:'💊',done:false},
+      {text:'早上洗鼻子（海盐水）🌊',icon:'👃',done:false},
+      {text:'跳绳300个',icon:'🏃',done:false},
+      {text:'足弓训练',icon:'🦶',done:false},
+      {text:'学习15分钟',icon:'📚',done:false},
+      {text:'喝水8次',icon:'💧',done:false},
+      {text:'睡前洗鼻子（海盐水）🌊',icon:'👃',done:false}
+    ];
+    Store.save();
+  }
+  const todos=Store.data.todos[today];
+  const doneCount=todos.filter(t=>t.done).length;
+  
+  // 最新身高体重
+  const gr=Store.data.growthRecords;
+  const latest=gr.length?gr[gr.length-1]:null;
+  
+  // 今日跳绳
+  const jr=Store.data.jumpRecords.find(r=>r.date===today);
+  
+  // 每日鼓励语（按日期轮换）
+  const encourages=[
+    '宝贝，今天也要加油哦！🌈',
+    '小勇士，今天会很棒的！🦁',
+    '又是元气满满的一天！⭐',
+    '加油加油，你是最棒的！🎈',
+    '今天也要开开心心哦！🌟',
+    '努力长大的宝贝最可爱！🧸',
+    '每一天都在变得更厉害！✨'
+  ];
+  const dayIdx=D.daysUntil('2026-09-01');
+  const encourage=encourages[Math.abs(dayIdx)%encourages.length];
+  
+  let html=`
+  <div class="dashboard-header">
+    <div class="mascot-row">
+      <span class="mascot">🦁</span>
+      <div class="daily-encourage">${encourage}</div>
+    </div>
+    <div class="child-info">
+      <div class="child-avatar">${p.avatar}</div>
+      <div class="child-meta">
+        <div class="child-name">${p.name}</div>
+        <div class="child-age">${D.ageStr(p.birthday)} · 男孩</div>
+        <span class="stage-tag">🌈 ${p.stage}</span>
+      </div>
+    </div>
+    <div class="countdown-box">
+      <div>
+        <div class="countdown-label">距离9月1日开学</div>
+        <div class="countdown-sub">幼小衔接冲刺中，加油！💪</div>
+      </div>
+      <div class="countdown-bubble">
+        <div class="num">${days}</div>
+        <div class="unit">天</div>
+      </div>
+    </div>
+  </div>
+  `;
+  
+  // 今日待办
+  html+=`<div class="section">
+    <div class="section-title"><span class="left">🌟 今日小任务</span><span class="more">${doneCount}/${todos.length} 完成</span></div>
+    <div class="card">
+      ${todos.map((t,i)=>`
+        <div class="todo-item" onclick="toggleTodo(${i})">
+          <div class="todo-check ${t.done?'done':''}">${t.done?'✓':''}</div>
+          <span class="todo-icon">${t.icon}</span>
+          <span class="todo-text ${t.done?'done':''}">${t.text}</span>
+        </div>
+      `).join('')}
+    </div>
+  </div>`;
+  
+  // 身高体重概览
+  if(latest){
+    html+=`<div class="section">
+      <div class="section-title"><span class="left">📏 我的身高体重</span><span class="more" onclick="Pages.go('growth')">查看详情 ›</span></div>
+      <div class="card">
+        <div class="growth-overview">
+          <div class="item">
+            <div class="label">身高</div>
+            <div class="value">${latest.height}<span style="font-size:12px">cm</span></div>
+            <div class="warn">⚠️ ${p.heightStatus}</div>
+          </div>
+          <div class="item">
+            <div class="label">体重</div>
+            <div class="value">${latest.weight}<span style="font-size:12px">kg</span></div>
+            <div class="warn">⚠️ ${p.weightStatus}</div>
+          </div>
+          <div class="item">
+            <div class="label">记录日期</div>
+            <div class="value" style="font-size:14px">${latest.date.slice(5)}</div>
+            <div style="font-size:11px;color:var(--text-light)">${latest.note||''}</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
+  
+  // 补充剂打卡
+  html+=`<div class="section">
+    <div class="section-title"><span class="left">💊 该吃补充剂啦小勇士</span></div>
+    <div class="card">
+      <div class="supplement-grid">
+        <div class="supplement-card ${sup.益生菌?'done':''}" onclick="toggleSupplement('益生菌')">
+          <div class="icon">${sup.益生菌?'✓':'🦠'}</div>
+          <div class="name">益生菌</div>
+          <div class="status">${sup.益生菌?'已完成':'待打卡'}</div>
+        </div>
+        <div class="supplement-card ${sup.VD?'done':''}" onclick="toggleSupplement('VD')">
+          <div class="icon">${sup.VD?'✓':'☀️'}</div>
+          <div class="name">VD</div>
+          <div class="status">${sup.VD?'已完成':'待打卡'}</div>
+        </div>
+        <div class="supplement-card ${sup.钙镁片?'done':''}" onclick="toggleSupplement('钙镁片')">
+          <div class="icon">${sup.钙镁片?'✓':'💊'}</div>
+          <div class="name">钙镁片</div>
+          <div class="status">${sup.钙镁片?'已完成':'待打卡'}</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+  
+  // 今日跳绳
+  html+=`<div class="section">
+    <div class="section-title"><span class="left">🏃 运动小达人</span><span class="more" onclick="showJumpModal()">跳绳打卡咯 ›</span></div>
+    <div class="card">
+      <div class="growth-overview">
+        <div class="item">
+          <div class="label">今日跳绳</div>
+          <div class="value" style="color:var(--orange)">${jr?jr.count:0}<span style="font-size:12px">个</span></div>
+          <div style="font-size:11px;color:var(--text-light)">目标${Store.data.jumpTarget}个</div>
+        </div>
+        <div class="item">
+          <div class="label">足弓训练</div>
+          <div class="value">${Store.data.archRecords[today]?'✓':'○'}</div>
+          <div style="font-size:11px;color:var(--text-light)" onclick="Pages.go('growth');setTimeout(showArchModal,300)">查看动作</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+  
+  // 快捷入口
+  html+=`<div class="section">
+    <div class="section-title"><span class="left">⚡ 魔法快捷入口</span></div>
+    <div class="card" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center;">
+      <div onclick="openSettings()" style="cursor:pointer;padding:8px 0"><div style="font-size:28px;pointer-events:none">⚙️</div><div style="font-size:11px;margin-top:3px;font-weight:600;pointer-events:none">设置</div></div>
+      <div onclick="showImmunityModal()" style="cursor:pointer;padding:8px 0"><div style="font-size:28px;pointer-events:none">🛡️</div><div style="font-size:11px;margin-top:3px;font-weight:600;pointer-events:none">免疫力</div></div>
+      <div onclick="showTransitionModal()" style="cursor:pointer;padding:8px 0"><div style="font-size:28px;pointer-events:none">📚</div><div style="font-size:11px;margin-top:3px;font-weight:600;pointer-events:none">幼小衔接</div></div>
+      <div onclick="showDiseaseModal()" style="cursor:pointer;padding:8px 0"><div style="font-size:28px;pointer-events:none">🏥</div><div style="font-size:11px;margin-top:3px;font-weight:600;pointer-events:none">疾病管理</div></div>
+      <div onclick="showAdditiveModal()" style="cursor:pointer;padding:8px 0"><div style="font-size:28px;pointer-events:none">⚠️</div><div style="font-size:11px;margin-top:3px;font-weight:600;pointer-events:none">避坑清单</div></div>
+      <div onclick="showRecommendModal()" style="cursor:pointer;padding:8px 0"><div style="font-size:28px;pointer-events:none">🎁</div><div style="font-size:11px;margin-top:3px;font-weight:600;pointer-events:none">好物推荐</div></div>
+    </div>
+  </div>`;
+  
+  document.getElementById('page-home').innerHTML=html;
+}
+
+function toggleTodo(i){
+  const today=D.todayStr();
+  Store.data.todos[today][i].done=!Store.data.todos[today][i].done;
+  Store.save();
+  renderHome();
+}
+function toggleSupplement(name){
+  const today=D.todayStr();
+  Store.data.supplements[today][name]=!Store.data.supplements[today][name];
+  Store.save();
+  renderHome();
+}
+
+/* ========== 跳绳记录弹窗 ========== */
+function showJumpModal(){
+  UI.modalWithTitle('记录今日跳绳',`
+    <div class="form-group">
+      <label class="form-label">跳绳个数</label>
+      <input type="number" class="form-input" id="jumpCount" placeholder="例如：300" value="${Store.data.jumpTarget}">
+    </div>
+    <div class="form-group">
+      <label class="form-label">时长（分钟）</label>
+      <input type="number" class="form-input" id="jumpDuration" placeholder="例如：10">
+    </div>
+    <button class="btn btn-primary btn-block" onclick="saveJump()">保存记录</button>
+  `);
+}
+function saveJump(){
+  const count=parseInt(document.getElementById('jumpCount').value);
+  const duration=parseInt(document.getElementById('jumpDuration').value)||0;
+  if(!count||count<=0){ UI.toast('请输入有效跳绳个数'); return; }
+  const today=D.todayStr();
+  const idx=Store.data.jumpRecords.findIndex(r=>r.date===today);
+  if(idx>=0) Store.data.jumpRecords[idx]={date:today,count,duration};
+  else Store.data.jumpRecords.push({date:today,count,duration});
+  Store.save();
+  UI.closeModal();
+  UI.toast('跳绳记录已保存！');
+  // 积分提示
+  if(count>=Store.data.jumpTarget){
+    addPoint('按时完成跳绳',2,'🏃');
+    UI.celebrate('🎉','跳绳目标达成！',`太棒了！今天跳了${count}个，达到目标啦！`);
+  }
+  renderHome();
+}
+
+/* ========== 足弓动作弹窗 ========== */
+const ARCH_EXERCISES=[
+  {name:'抓毛巾',desc:'坐姿，用脚趾抓毛巾，每次抓10下',icon:'🦶'},
+  {name:'提踵',desc:'站立，缓慢踮起脚尖再放下，做15次/组×3组',icon:'🦵'},
+  {name:'脚趾抓地',desc:'光脚站立，脚趾用力抓地再放松，做20次',icon:'🦶'},
+  {name:'脚掌滚球',desc:'坐姿，脚掌踩网球/按摩球来回滚动，每只脚2分钟',icon:'⚽'},
+  {name:'脚趾走路',desc:'踮脚尖用脚趾走路，每次走2分钟',icon:'🚶'}
+];
+function showArchModal(){
+  const idx=Store.data.archExerciseIndex%ARCH_EXERCISES.length;
+  const today=D.todayStr();
+  const done=Store.data.archRecords[today];
+  let html=`<div style="text-align:center;margin-bottom:14px">
+    <div style="font-size:50px">${ARCH_EXERCISES[idx].icon}</div>
+    <div style="font-size:18px;font-weight:700;margin-top:6px">${ARCH_EXERCISES[idx].name}</div>
+    <div style="font-size:13px;color:var(--text-light);margin-top:4px">${ARCH_EXERCISES[idx].desc}</div>
+  </div>`;
+  html+=`<div style="background:var(--orange-light);border-radius:8px;padding:10px;font-size:12px;color:var(--orange-dark);margin-bottom:14px">💡 每日自动推荐一组动作，完成后可切换下一组</div>`;
+  html+=`<div style="display:flex;gap:10px">
+    <button class="btn btn-outline" style="flex:1" onclick="nextArch()">换一组</button>
+    <button class="btn ${done?'btn-outline':'btn-orange'}" style="flex:1" onclick="toggleArch()">${done?'已完成 ✓':'标记完成'}</button>
+  </div>`;
+  html+=`<div style="margin-top:16px"><div style="font-size:13px;font-weight:600;margin-bottom:8px">全部动作库</div>`;
+  ARCH_EXERCISES.forEach((e,i)=>{
+    html+=`<div class="arch-exercise"><div class="num">${i+1}</div><div class="info"><div class="name">${e.name}</div><div class="desc">${e.desc}</div></div></div>`;
+  });
+  html+=`</div>`;
+  UI.modalWithTitle('🦶 足弓训练',html);
+}
+function nextArch(){
+  Store.data.archExerciseIndex=(Store.data.archExerciseIndex+1)%ARCH_EXERCISES.length;
+  Store.save(); showArchModal();
+}
+function toggleArch(){
+  const today=D.todayStr();
+  Store.data.archRecords[today]=!Store.data.archRecords[today];
+  Store.save();
+  if(Store.data.archRecords[today]) addPoint('完成足弓训练',2,'🦶');
+  showArchModal();
+  renderHome();
+}
+
+/* ========== 设置 ========== */
+function openSettings(){
+  const p=Store.data.profile;
+  let html=`<div class="setting-group">
+    <div class="setting-row" onclick="editProfile()"><span class="label">👦 孩子档案</span><span class="value">${p.name} ›</span></div>
+    <div class="setting-row" onclick="editGoals()"><span class="label">🎯 目标设置</span><span class="value">›</span></div>
+  </div>`;
+  html+=`<div class="setting-group">
+    <div class="setting-row" onclick="exportAllData()"><span class="label">📤 导出全部数据</span><span class="value">›</span></div>
+    <div class="setting-row" onclick="resetAllData()"><span class="label" style="color:var(--red)">🗑️ 清空所有数据</span><span class="value">›</span></div>
+  </div>`;
+  html+=`<div class="setting-group">
+    <div class="setting-row" onclick="showAbout()"><span class="label">ℹ️ 关于</span><span class="value">v1.0.0 ›</span></div>
+  </div>`;
+  UI.modalWithTitle('⚙️ 设置',html);
+}
+
+function editProfile(){
+  const p=Store.data.profile;
+  UI.modalWithTitle('编辑孩子档案',`
+    <div class="form-group"><label class="form-label">小名/姓名</label><input type="text" class="form-input" id="pf-name" value="${p.name}"></div>
+    <div class="form-group"><label class="form-label">生日</label><input type="date" class="form-input" id="pf-birthday" value="${p.birthday}"></div>
+    <div class="form-group"><label class="form-label">头像（emoji）</label><input type="text" class="form-input" id="pf-avatar" value="${p.avatar}" maxlength="2"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">身高状况</label><select class="form-select" id="pf-hs"><option ${p.heightStatus==='偏矮'?'selected':''}>偏矮</option><option ${p.heightStatus==='正常'?'selected':''}>正常</option><option ${p.heightStatus==='偏高'?'selected':''}>偏高</option></select></div>
+      <div class="form-group"><label class="form-label">体重状况</label><select class="form-select" id="pf-ws"><option ${p.weightStatus==='偏瘦'?'selected':''}>偏瘦</option><option ${p.weightStatus==='正常'?'selected':''}>正常</option><option ${p.weightStatus==='偏胖'?'selected':''}>偏胖</option></select></div>
+    </div>
+    <div class="form-group"><label class="form-label">过敏原（逗号分隔）</label><input type="text" class="form-input" id="pf-allergens" value="${p.allergens.join(',')}"></div>
+    <div class="form-group"><label class="form-label">疾病（逗号分隔）</label><input type="text" class="form-input" id="pf-diseases" value="${p.diseases.join(',')}"></div>
+    <div class="form-group"><label class="form-label">补充剂（逗号分隔）</label><input type="text" class="form-input" id="pf-supplements" value="${p.supplements.join(',')}"></div>
+    <button class="btn btn-primary btn-block" onclick="saveProfile()">保存</button>
+  `);
+}
+function saveProfile(){
+  const p=Store.data.profile;
+  p.name=document.getElementById('pf-name').value||'宝贝';
+  p.birthday=document.getElementById('pf-birthday').value||'2019-12-15';
+  p.avatar=document.getElementById('pf-avatar').value||'👦';
+  p.heightStatus=document.getElementById('pf-hs').value;
+  p.weightStatus=document.getElementById('pf-ws').value;
+  p.allergens=document.getElementById('pf-allergens').value.split(',').map(s=>s.trim()).filter(Boolean);
+  p.diseases=document.getElementById('pf-diseases').value.split(',').map(s=>s.trim()).filter(Boolean);
+  p.supplements=document.getElementById('pf-supplements').value.split(',').map(s=>s.trim()).filter(Boolean);
+  Store.save();
+  UI.closeModal();
+  UI.toast('档案已保存');
+  renderHome();
+}
+
+function editGoals(){
+  const t=Store.data.growthTarget;
+  const jt=Store.data.jumpTarget;
+  UI.modalWithTitle('目标设置',`
+    <div class="form-group"><label class="form-label">跳绳每日目标（个）</label><input type="number" class="form-input" id="goal-jump" value="${jt}"></div>
+    <div class="form-group"><label class="form-label">身高阶段目标（cm）</label><input type="number" class="form-input" id="goal-height" value="${t.height||''}" placeholder="如：120"></div>
+    <div class="form-group"><label class="form-label">目标达成日期</label><input type="date" class="form-input" id="goal-date" value="${t.date||''}"></div>
+    <button class="btn btn-primary btn-block" onclick="saveGoals()">保存</button>
+  `);
+}
+function saveGoals(){
+  Store.data.jumpTarget=parseInt(document.getElementById('goal-jump').value)||300;
+  Store.data.growthTarget.height=parseFloat(document.getElementById('goal-height').value)||0;
+  Store.data.growthTarget.date=document.getElementById('goal-date').value;
+  Store.save();
+  UI.closeModal();
+  UI.toast('目标已保存');
+}
+
+function exportAllData(){
+  const data=JSON.stringify(Store.data,null,2);
+  const blob=new Blob([data],{type:'text/plain'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`男孩养育管家_数据_${D.todayStr()}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+  UI.toast('数据已导出');
+}
+
+function resetAllData(){
+  if(Store.reset()){
+    ensurePresetData();
+    UI.closeModal();
+    UI.toast('数据已清空');
+    renderHome();
+  }
+}
+
+function showAbout(){
+  UI.modalWithTitle('关于',`
+    <div style="text-align:center;padding:10px 0">
+      <div style="font-size:60px">👦</div>
+      <div style="font-size:20px;font-weight:700;margin-top:8px">男孩养育管家</div>
+      <div style="font-size:13px;color:var(--text-light);margin-top:4px">版本 1.0.0</div>
+    </div>
+    <div style="font-size:13px;line-height:1.8;color:var(--text);margin-top:14px">
+      <p>专为6岁半男孩设计的养育管理工具，涵盖饮食、生长、运动、心理、疾病、幼小衔接等全方位管理。</p>
+      <p style="margin-top:8px">🎯 <b>核心功能：</b></p>
+      <ul style="padding-left:18px;margin-top:4px">
+        <li>无蛋无奶过敏饮食方案</li>
+        <li>身高体重生长曲线追踪</li>
+        <li>跳绳打卡与足弓训练</li>
+        <li>情绪管理与亲子沟通</li>
+        <li>疾病用药全程记录</li>
+        <li>幼小衔接入学准备</li>
+        <li>智能提醒通知系统</li>
+      </ul>
+      <p style="margin-top:8px">📱 <b>PWA应用</b>：可添加到iPhone主屏幕，全屏离线使用。</p>
+      <p style="margin-top:8px">🔒 所有数据本地存储，不上传服务器，保护隐私。</p>
+    </div>
+  `);
+}
+
+/* ========== 积分系统 ========== */
+function getTotalPoints(){
+  return Store.data.pointsRecords.reduce((s,r)=>s+r.points,0);
+}
+function addPoint(action,pts,icon){
+  Store.data.pointsRecords.push({date:D.todayStr(),action,points:pts,icon});
+  Store.save();
+}
+
+/* ============================================================
+   饮食计划模块
+   ============================================================ */
+// 无蛋无奶周食谱 v2 - 侧重补铁/增重/长高 + 可爱插图
+const WEEKLY_MEALS=[
+  {
+    breakfast:{name:'牛肉蔬菜粥',emoji:'🥩',color:'#FFE8E8',dishes:['牛肉末小米粥（高蛋白高锌）','蒸胡萝卜条','核桃碎'],nutri:['protein','iron','height','weight'],tip:'牛肉含锌+蛋白，助力生长激素分泌，小米养胃好吸收'},
+    lunch:{name:'三文鱼菠菜饭',emoji:'🐟',color:'#FFE0B2',dishes:['煎三文鱼块（Omega-3）','蒜蓉菠菜（补铁冠军）','紫米饭'],nutri:['protein','iron','height','vd'],tip:'三文鱼Omega-3抗炎+菠菜高铁，双重助力成长'},
+    snack:{name:'高能坚果碗',emoji:'🥜',color:'#FFF3E0',dishes:['核桃仁','腰果','南瓜籽','黑芝麻糊（豆奶冲）'],nutri:['calcium','weight','iron'],tip:'坚果高热量+黑芝麻高钙，下午加餐增重不增负担'},
+    dinner:{name:'排骨莲藕汤',emoji:'🍖',color:'#FFCCBC',dishes:['猪小排炖莲藕（骨髓营养）','炒西兰花','米饭'],nutri:['calcium','protein','height','weight'],tip:'排骨骨髓含生长因子，莲藕健脾，睡前3小时吃完'}
+  },
+  {
+    breakfast:{name:'黑芝麻豆奶糊',emoji:'🥣',color:'#EFEBE9',dishes:['黑芝麻粉+豆奶+核桃打糊','全麦小馒头','蒸红薯'],nutri:['calcium','iron','height','weight'],tip:'黑芝麻钙含量是牛奶8倍！豆奶强化钙版更佳'},
+    lunch:{name:'鸡肝炒彩椒',emoji:'🍳',color:'#FFE082',dishes:['鸡肝切片炒红黄彩椒（补铁之王）','嫩豆腐','杂粮饭'],nutri:['protein','iron','height'],tip:'鸡肝是补铁冠军（比菠菜高10倍），彩椒VC促进铁吸收'},
+    snack:{name:'能量水果碗',emoji:'🥝',color:'#C8E6C9',dishes:['猕猴桃（VC之王）','牛油果泥','燕麦脆'],nutri:['vd','weight','iron'],tip:'猕猴桃VC促铁吸收，牛油果高能健康脂肪，助增重'},
+    dinner:{name:'鲫鱼豆腐汤',emoji:'🐠',color:'#BBDEFB',dishes:['鲫鱼熬浓汤','嫩豆腐','小白菜','米饭'],nutri:['calcium','protein','height'],tip:'鱼汤+豆腐=钙蛋白黄金组合，刺激骨骼生长板'}
+  },
+  {
+    breakfast:{name:'紫薯山药粥',emoji:'🍠',color:'#E1BEE7',dishes:['紫薯山药粥（健脾养胃）','水煮鹌鹑蛋替代（嫩豆腐丁）','蒸南瓜'],nutri:['calcium','iron','height'],tip:'山药健脾促吸收，吃得好不如吸收好！脾胃是后天之本'},
+    lunch:{name:'番茄牛腩煲',emoji:'🍅',color:'#FFCDD2',dishes:['牛腩炖番茄土豆（高铁高蛋白）','炒油麦菜','藜麦饭'],nutri:['protein','iron','height','weight'],tip:'牛肉+番茄VC=铁吸收率翻倍，藜麦是全营养谷物'},
+    snack:{name:'香蕉燕麦能量棒',emoji:'🍌',color:'#FFF9C4',dishes:['自制无蛋奶燕麦能量棒','香蕉','杏仁奶'],nutri:['weight','iron'],tip:'香蕉高钾防抽筋，燕麦膳食纤维+能量，运动后补充'},
+    dinner:{name:'虾仁蒸蛋替代',emoji:'🦐',color:'#FFCCBC',dishes:['虾仁蒸嫩豆腐（蛋替代版）','炒上海青','米饭'],nutri:['protein','calcium','height'],tip:'虾仁低脂高蛋白，豆腐植物蛋白+钙，睡前不积食'}
+  },
+  {
+    breakfast:{name:'全麦牛油果泥',emoji:'🥑',color:'#C8E6C9',dishes:['全麦吐司抹牛油果泥','豆奶','圣女果'],nutri:['weight','calcium','vd'],tip:'牛油果健康脂肪+全麦复合碳水，持续供能一上午'},
+    lunch:{name:'猪肝瘦肉粥',emoji:'🍲',color:'#FFE0B2',dishes:['猪肝瘦肉粥（双倍补铁）','凉拌木耳','蒸玉米'],nutri:['protein','iron','height','weight'],tip:'猪肝+瘦肉双铁源，木耳清肺，适合过敏体质宝宝'},
+    snack:{name:'坚果水果杯',emoji:'🍓',color:'#F8BBD0',dishes:['草莓','蓝莓','腰果','椰子片'],nutri:['vd','iron'],tip:'莓果花青素抗氧化，腰果锌含量高，免疫力UP'},
+    dinner:{name:'红烧鲈鱼',emoji:'🐟',color:'#BBDEFB',dishes:['红烧鲈鱼块','炒菠菜','山药米饭'],nutri:['protein','iron','height','vd'],tip:'鲈鱼DHA+菠菜铁+山药健脾，营养铁三角'}
+  },
+  {
+    breakfast:{name:'南瓜小米糊',emoji:'🎃',color:'#FFE082',dishes:['南瓜小米糊（加豆奶）','全麦饼干','蒸苹果'],nutri:['calcium','height','iron'],tip:'南瓜β-胡萝卜素→VA，护眼+增强呼吸道免疫力'},
+    lunch:{name:'羊肉胡萝卜饭',emoji:'🐑',color:'#FFCCBC',dishes:['羊肉末炖胡萝卜（温补增重）','炒西兰花','紫米饭'],nutri:['protein','iron','weight','height'],tip:'羊肉温补适合偏瘦宝宝，胡萝卜VA+铁吸收'},
+    snack:{name:'黑芝麻糊',emoji:'🖤',color:'#EFEBE9',dishes:['自制黑芝麻糊（豆奶版）','核桃','葡萄干'],nutri:['calcium','iron','weight'],tip:'黑芝麻钙+铁+VE三合一，每天一小碗长高高'},
+    dinner:{name:'鸡肉菌菇汤',emoji:'🍄',color:'#F5F5DC',dishes:['鸡腿肉炖菌菇（免疫增强）','炒豆苗','米饭'],nutri:['protein','height','weight'],tip:'菌菇多糖提升免疫，鸡肉优质蛋白，睡前3小时吃完'}
+  },
+  {
+    breakfast:{name:'红豆薏米粥',emoji:'🫘',color:'#FFCDD2',dishes:['红豆薏米粥（健脾祛湿）','蒸紫薯','核桃'],nutri:['iron','calcium','height'],tip:'红豆补血+薏米祛湿，适合过敏体质调理脾胃'},
+    lunch:{name:'芹菜牛肉饺',emoji:'🥟',color:'#FFE0B2',dishes:['牛肉芹菜水饺（无蛋皮）','紫菜虾皮汤','凉拌黄瓜'],nutri:['protein','iron','height','weight'],tip:'牛肉+芹菜VC=铁吸收增强，虾皮天然钙源'},
+    snack:{name:'能量水果拼',emoji:'🍊',color:'#FFF9C4',dishes:['橙子','猕猴桃','杏仁','椰枣'],nutri:['vd','iron','weight'],tip:'橙子+猕猴桃双VC促铁吸收，椰枣天然甜味+能量'},
+    dinner:{name:'豆腐肉末煲',emoji:'🫕',color:'#E8EAF6',dishes:['嫩豆腐肉末煲','炒空心菜','米饭'],nutri:['protein','calcium','height','iron'],tip:'豆腐钙+肉末铁=骨骼肌肉双补，空心菜高钙'}
+  },
+  {
+    breakfast:{name:'山药红枣糊',emoji:'🥜',color:'#EFEBE9',dishes:['山药红枣糊（豆奶版）','蒸玉米','腰果'],nutri:['calcium','iron','height'],tip:'红枣补气血，山药健脾胃，早餐吃好比吃多重要'},
+    lunch:{name:'咖喱鸡肉饭',emoji:'🍛',color:'#FFE082',dishes:['鸡胸肉咖喱（椰奶版，非牛奶）','胡萝卜土豆','米饭'],nutri:['protein','height','weight'],tip:'椰奶替代牛奶的完美方案，咖喱姜黄抗炎'},
+    snack:{name:'豆酸奶水果',emoji:'🍑',color:'#F8BBD0',dishes:['豆酸奶','桃子块','燕麦granola'],nutri:['calcium','weight'],tip:'豆酸奶选强化钙版，益生菌护肠道=更好吸收营养'},
+    dinner:{name:'清蒸多宝鱼',emoji:'🐡',color:'#BBDEFB',dishes:['清蒸多宝鱼','蒜蓉西兰花','藜麦饭'],nutri:['protein','vd','height','iron'],tip:'多宝鱼高蛋白低脂，藜麦全营养，睡前清淡不积食'}
+  }
+];
+// 食物可爱SVG插图生成器
+function foodSVG(emoji,color){return `<div style="width:64px;height:64px;border-radius:20px;background:${color||'#FFF8E1'};display:flex;align-items:center;justify-content:center;font-size:36px;box-shadow:0 3px 8px rgba(0,0,0,0.06);flex-shrink:0">${emoji}</div>`;}
+const NUTRI_LABELS={calcium:'🔴高钙',protein:'🔵高蛋白',vd:'🟡维D',iron:'🟢补铁',weight:'🟣增重',height:'🟠长高'};
+const ALLERGEN_LIST=[
+  {name:'鸡蛋',items:['蛋糕','蛋黄派','布丁','蛋挞','含蛋面包'],alt:'亚麻籽蛋（1汤匙亚麻籽粉+3汤匙水=1个蛋）/ 嫩豆腐 / 香蕉泥'},
+  {name:'牛奶',items:['酸奶','奶酪','黄油','含奶面包','奶油'],alt:'豆奶/燕麦奶/米浆（选强化钙版本）'}
+];
+const PICKY_TIPS=[
+  '🍎 食物趣味化：把蔬菜摆成小动物造型，取有趣的名字（如"超人西兰花"）',
+  '👨‍🍳 参与做饭：让孩子帮忙洗菜、搅拌，参与感会让他更愿意尝试',
+  '⏰ 定时定量：固定三餐时间，餐前1小时不吃零食，保持饥饿感',
+  '🎨 色彩搭配：每餐至少3种颜色，视觉吸引能增进食欲',
+  '🌱 循序渐进：新食物搭配熟悉的喜欢的食物一起出现，多次尝试',
+  '🤫 不强迫：拒绝时不勉强，下次换个做法再试，避免产生抵触'
+];
+
+let dietWeekOffset=0;
+function renderDiet(){
+  const today=new Date();
+  const refDate=new Date(today); refDate.setDate(refDate.getDate()+dietWeekOffset*7);
+  const dayOfWeek=refDate.getDay()===0?6:refDate.getDay()-1; // 周一=0
+  const weekStart=new Date(refDate); weekStart.setDate(refDate.getDate()-dayOfWeek);
+  
+  let html=`<div class="page-header"><h1>🌈 饮食计划</h1><div class="sub">✨ 无蛋无奶 · 科学营养搭配</div></div>`;
+  
+  // 过敏红牌
+  html+=`<div class="section"><div class="allergen-alert">
+    <div class="title">🚫 过敏食物红牌</div>
+    <div class="list">
+      ${ALLERGEN_LIST.map(a=>`<b>${a.name}</b>❌ 及其制品：${a.items.join('、')}<br><span style="color:var(--green)">✅ 替代：${a.alt}</span>`).join('<br>')}
+    </div>
+  </div></div>`;
+  
+  // 周次切换
+  html+=`<div class="section">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <button class="btn btn-outline btn-sm" onclick="dietWeekOffset--;renderDiet()">‹ 上周</button>
+      <span style="font-size:14px;font-weight:600">${weekStart.getMonth()+1}月${weekStart.getDate()}日 - ${(()=>{const we=new Date(weekStart);we.setDate(we.getDate()+6);return we.getMonth()+1+'月'+we.getDate()+'日';})()}</span>
+      <button class="btn btn-outline btn-sm" onclick="dietWeekOffset++;renderDiet()">下周 ›</button>
+    </div>
+    <div class="week-tabs">`;
+  for(let i=0;i<7;i++){
+    const d=new Date(weekStart); d.setDate(d.getDate()+i);
+    const isToday=D.toStr(d)===D.todayStr();
+    html+=`<div class="week-tab ${i===dayOfWeek?'active':''}" onclick="dietWeekOffset+=${Math.round((d-refDate)/(7*24*60*60*1000))};renderDiet()">${['一','二','三','四','五','六','日'][i]}${isToday?'·今天':''}</div>`;
+  }
+  html+=`</div></div>`;
+  
+  // 当日食谱（图文版）
+  const meals=WEEKLY_MEALS[dayOfWeek];
+  const mealDefs=[{key:'breakfast',label:'早餐',icon:'🌅',time:'07:00-08:00'},{key:'lunch',label:'午餐',icon:'☀️',time:'12:00'},{key:'snack',label:'加餐',icon:'🍎',time:'15:00-16:00'},{key:'dinner',label:'晚餐',icon:'🌙',time:'18:00-18:30'}];
+  
+  html+=`<div class="section">`;
+  mealDefs.forEach(md=>{
+    const meal=meals[md.key];
+    html+=`<div class="card meal-card" style="padding:0;overflow:hidden">
+      <div style="display:flex;align-items:stretch">
+        <div style="width:80px;background:${meal.color||'#FFF8E1'};display:flex;align-items:center;justify-content:center;font-size:44px;flex-shrink:0;min-height:100px">${meal.emoji||'🍽️'}</div>
+        <div style="flex:1;padding:14px">
+          <div class="meal-header" style="margin-bottom:4px">
+            <div class="meal-title">${md.icon} ${md.label}：<b>${meal.name}</b></div>
+            <div class="meal-time">${md.time}</div>
+          </div>
+          <div style="margin:6px 0">${meal.dishes.map(d=>`<div class="dish-item"><span class="dish-name">🍴 ${d}</span></div>`).join('')}</div>
+          <div style="margin-top:4px">${meal.nutri.map(n=>`<span class="nutri-tag nutri-${n}">${NUTRI_LABELS[n]}</span>`).join('')}</div>
+          ${meal.tip?`<div style="margin-top:6px;background:var(--green-light);border-radius:10px;padding:6px 10px;font-size:11px;color:#5BAE5B;font-weight:600;line-height:1.5">💡 ${meal.tip}</div>`:''}
+        </div>
+      </div>
+    </div>`;
+  });
+  html+=`</div>`;
+  
+  // 替代方案说明
+  html+=`<div class="section">
+    <div class="section-title"><span class="left">🔄 鸡蛋牛奶替代方案</span></div>
+    <div class="card">
+      <div style="font-size:13px;line-height:1.8">
+        <div style="margin-bottom:8px"><b style="color:var(--red)">牛奶 ❌</b> → <b style="color:var(--green)">豆奶/燕麦奶/米浆</b><br><span style="color:var(--text-light);font-size:12px">备注：选择强化钙的版本，每250ml约含钙300mg</span></div>
+        <div><b style="color:var(--red)">鸡蛋 ❌</b> → <b style="color:var(--green)">亚麻籽蛋</b><br><span style="color:var(--text-light);font-size:12px">配方：1汤匙亚麻籽粉+3汤匙水=1个蛋，静置5分钟凝固后使用<br>烘焙替代首选，富含Omega-3</span></div>
+        <div style="margin-top:8px"><b style="color:var(--green)">其他替代</b>：嫩豆腐（蛋白质）、香蕉泥（烘焙湿润剂）、南瓜泥（营养增稠）</div>
+      </div>
+    </div>
+  </div>`;
+  
+  // 挑食贴士
+  html+=`<div class="section">
+    <div class="section-title"><span class="left">💡 挑食应对小贴士</span></div>
+    <div class="card">
+      ${PICKY_TIPS.map(t=>`<div style="padding:6px 0;font-size:13px;border-bottom:1px dashed var(--border)">${t}</div>`).join('')}
+    </div>
+  </div>`;
+  
+  // 饮食日历
+  html+=`<div class="section">
+    <div class="section-title"><span class="left">📅 饮食日历</span><span class="more" onclick="showMealRecordModal()">记录今日饮食 ›</span></div>
+    <div class="card">${renderMealCalendar()}</div>
+  </div>`;
+  
+  document.getElementById('page-diet').innerHTML=html;
+}
+
+function renderMealCalendar(){
+  const now=new Date();
+  const y=now.getFullYear(), m=now.getMonth();
+  const days=D.monthDays(y,m);
+  const firstDay=new Date(y,m,1).getDay()===0?6:new Date(y,m,1).getDay()-1;
+  let html=`<div class="calendar">`;
+  ['一','二','三','四','五','六','日'].forEach(w=>html+=`<div class="cal-head">${w}</div>`);
+  for(let i=0;i<firstDay;i++) html+=`<div class="cal-day other"></div>`;
+  for(let d=1;d<=days;d++){
+    const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday=ds===D.todayStr();
+    const hasRecord=Store.data.mealCalendar[ds];
+    html+=`<div class="cal-day ${isToday?'today':''}" onclick="showMealRecordModal('${ds}')">${d}${hasRecord?'<div class="dot"></div>':''}</div>`;
+  }
+  html+=`</div>`;
+  return html;
+}
+
+function showMealRecordModal(dateStr){
+  const ds=dateStr||D.todayStr();
+  const existing=Store.data.meals[ds]||{早餐:'',午餐:'',加餐:'',晚餐:''};
+  UI.modalWithTitle(`记录饮食 · ${ds}`,`
+    <div class="form-group"><label class="form-label">🌅 早餐</label><textarea class="form-textarea" id="meal-b">${existing.早餐||''}</textarea></div>
+    <div class="form-group"><label class="form-label">☀️ 午餐</label><textarea class="form-textarea" id="meal-l">${existing.午餐||''}</textarea></div>
+    <div class="form-group"><label class="form-label">🍎 加餐</label><textarea class="form-textarea" id="meal-s">${existing.加餐||''}</textarea></div>
+    <div class="form-group"><label class="form-label">🌙 晚餐</label><textarea class="form-textarea" id="meal-d">${existing.晚餐||''}</textarea></div>
+    <button class="btn btn-primary btn-block" onclick="saveMealRecord('${ds}')">保存</button>
+  `);
+}
+function saveMealRecord(ds){
+  Store.data.meals[ds]={
+    早餐:document.getElementById('meal-b').value,
+    午餐:document.getElementById('meal-l').value,
+    加餐:document.getElementById('meal-s').value,
+    晚餐:document.getElementById('meal-d').value
+  };
+  Store.data.mealCalendar[ds]=true;
+  Store.save();
+  UI.closeModal();
+  UI.toast('饮食记录已保存');
+  renderDiet();
+}
+
+/* ============================================================
+   身高体重管理模块
+   ============================================================ */
+
+/* ============================================================
+   运动与长高计划模块
+   ============================================================ */
+// 长高运动计划（每周轮换）
+const HEIGHT_EXERCISES=[
+  {name:'摸高跳',icon:'🤸',emoji:'🧱',color:'#FFCCBC',desc:'面对墙壁站立，双脚起跳尽力摸最高点',sets:'30次/组×2组',tip:'刺激下肢生长板，每天坚持效果最佳',svg:''},
+  {name:'悬垂拉伸',icon:'🧗',emoji:'🪢',color:'#C8E6C9',desc:'双手抓单杠，身体自然下垂放松',sets:'20秒×3组',tip:'拉开脊椎间隙，早晚各一次效果更好',svg:''},
+  {name:'跳绳打卡',icon:'🏃',emoji:'🪢',color:'#BBDEFB',desc:'双脚并拢，前脚掌着地，手腕发力',sets:'300个/天',tip:'全身协调运动，刺激骨骼纵向生长',svg:''},
+  {name:'篮球投球',icon:'🏀',emoji:'⛹️',color:'#FFE082',desc:'双手投篮动作，尽力向上跳起',sets:'20次/组×2组',tip:'跳跃+拉伸组合，篮球运动员平均身高最高',svg:''},
+  {name:'蛙跳前进',icon:'🐸',emoji:'🐸',color:'#C5E1A5',desc:'蹲姿双手背后，向前连续跳',sets:'10次/组×2组',tip:'锻炼腿部爆发力，刺激膝关节生长板',svg:''},
+  {name:'游泳打腿',icon:'🏊',emoji:'🌊',color:'#B3E5FC',desc:'俯卧姿势，双腿上下交替打水',sets:'50次/组×2组',tip:'全身拉伸+脊柱延展，最佳长高运动之一',svg:''},
+  {name:'踢腿拉伸',icon:'🦵',emoji:'🦵',color:'#FFE0B2',desc:'站立单腿向前向上踢，尽量踢高',sets:'左右各15次/组×2组',tip:'拉伸腿部肌肉和韧带，促进血液循环',svg:''},
+  {name:'早安式体前屈',icon:'🙇',emoji:'🙆',color:'#F8BBD0',desc:'双脚与肩同宽，慢慢弯腰手触地',sets:'保持15秒×3次',tip:'拉伸脊柱和腿后侧肌群，改善体态',svg:''}
+];
+// 每日推荐运动（按日期轮换，每天3个动作）
+function getDailyExercises(){
+  const dayOfYear=Math.floor((new Date()-new Date(new Date().getFullYear(),0,0))/(1000*60*60*24));
+  const idx1=dayOfYear%HEIGHT_EXERCISES.length;
+  const idx2=(dayOfYear+3)%HEIGHT_EXERCISES.length;
+  const idx3=(dayOfYear+5)%HEIGHT_EXERCISES.length;
+  return [HEIGHT_EXERCISES[idx1],HEIGHT_EXERCISES[idx2],HEIGHT_EXERCISES[idx3]];
+}
+
+let exerciseTab='daily';
+function renderExercise(){
+  const today=D.todayStr();
+  const dailyEx=getDailyExercises();
+  // 运动打卡记录
+  if(!Store.data.exerciseRecords) Store.data.exerciseRecords={};
+  const er=Store.data.exerciseRecords[today]||{};
+  
+  let html=`<div class="page-header"><h1>💪 长高运动</h1><div class="sub">✨ 科学运动 · 助力长高 · 快乐成长</div></div>`;
+  
+  // 子Tab
+  html+=`<div class="section"><div class="tab-bar">
+    <div class="tb ${exerciseTab==='daily'?'active':''}" onclick="exerciseTab='daily';renderExercise()">今日计划</div>
+    <div class="tb ${exerciseTab==='jump'?'active':''}" onclick="exerciseTab='jump';renderExercise()">跳绳打卡</div>
+    <div class="tb ${exerciseTab==='arch'?'active':''}" onclick="exerciseTab='arch';renderExercise()">足弓训练</div>
+  </div></div>`;
+  
+  if(exerciseTab==='daily'){
+    html+=`<div class="section">
+      <div class="section-title"><span class="left">🌈 今日长高运动计划</span></div>
+      <div style="background:linear-gradient(135deg,var(--orange-light),var(--pink-light));border-radius:16px;padding:12px;margin-bottom:12px;font-size:12px;color:var(--orange-dark);text-align:center;font-weight:600">
+        💡 每天坚持运动30分钟+充足睡眠=长高黄金公式
+      </div>`;
+    
+    dailyEx.forEach((ex,i)=>{
+      const key=`ex${i}`;
+      html+=`<div class="card" style="margin-bottom:12px;padding:0;overflow:hidden">
+        <div style="display:flex;align-items:stretch">
+          <div style="width:72px;background:${ex.color||'#FFF8E1'};display:flex;align-items:center;justify-content:center;font-size:40px;flex-shrink:0">${ex.emoji||ex.icon}</div>
+          <div style="flex:1;padding:12px 14px">
+            <div style="font-weight:800;font-size:15px;display:flex;align-items:center;gap:6px"><span>${ex.icon}</span>${ex.name}</div>
+            <div style="font-size:12px;color:var(--text-light);margin:4px 0">${ex.desc}</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px">
+              <span class="tag tag-orange">${ex.sets}</span>
+              <button class="btn ${er[key]?'btn-outline':'btn-orange'} btn-sm" onclick="toggleExercise('${key}')">${er[key]?'已完成 ✓':'打卡完成'}</button>
+            </div>
+            <div style="font-size:11px;color:var(--green);margin-top:4px;background:var(--green-light);border-radius:8px;padding:4px 8px">💡 ${ex.tip}</div>
+          </div>
+        </div>
+      </div>`;
+    });
+    
+    html+=`<div class="section">
+      <div class="section-title"><span class="left">📊 本周运动完成情况</span></div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-around;text-align:center">
+          ${(()=>{let s='';for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const ds=D.toStr(d);const r=Store.data.exerciseRecords[ds]||{};const done=Object.values(r).filter(v=>v).length;s+=`<div><div style="font-size:22px;font-weight:800;color:${done>=3?'var(--green)':'var(--text-light)'}">${done}</div><div style="font-size:10px;color:var(--text-light)">${['日','一','二','三','四','五','六'][d.getDay()]}</div></div>`;}return s;})()}
+        </div>
+        <div style="font-size:11px;color:var(--text-light);text-align:center;margin-top:6px">每日完成动作数（目标3个）</div>
+      </div>
+    </div>`;
+  }
+  
+  if(exerciseTab==='jump'){
+    const jr=Store.data.jumpRecords;
+    const todayRec=jr.find(r=>r.date===today);
+    html+=`<div class="section">
+      <div class="card" style="text-align:center;background:linear-gradient(135deg,var(--blue-light),#fff)">
+        <div style="font-size:48px;font-weight:900;color:var(--orange-dark)">${todayRec?todayRec.count:0}<span style="font-size:16px;color:var(--text-light)">个</span></div>
+        <div style="font-size:13px;color:var(--text-light)">今日跳绳 · 目标${Store.data.jumpTarget}个</div>
+        <button class="btn btn-orange btn-sm" style="margin-top:10px" onclick="showJumpModal()">跳绳打卡咯 🏃</button>
+      </div>
+    </div>`;
+    html+=`<div class="section">
+      <div class="section-title"><span class="left">📈 跳绳趋势</span></div>
+      <div class="card"><canvas id="jumpChartEx" width="340" height="160"></canvas></div>
+    </div>`;
+    html+=`<div class="section">
+      <div class="section-title"><span class="left">📋 历史记录</span></div>
+      <div class="card">${jr.slice().reverse().slice(0,10).map(r=>`<div class="record-row"><div class="date">${r.date.slice(5)}</div><div class="vals">${r.count}个 · ${r.duration}分钟</div></div>`).join('')}</div>
+    </div>`;
+  }
+  
+  if(exerciseTab==='arch'){
+    const idx=Store.data.archExerciseIndex%ARCH_EXERCISES.length;
+    html+=`<div class="section">
+      <div class="section-title"><span class="left">🦶 足弓训练</span></div>
+      <div class="card" style="text-align:center">
+        <div style="font-size:56px">${ARCH_EXERCISES[idx].icon}</div>
+        <div style="font-size:18px;font-weight:800;margin:6px 0">${ARCH_EXERCISES[idx].name}</div>
+        <div style="font-size:13px;color:var(--text-light)">${ARCH_EXERCISES[idx].desc}</div>
+        <div style="display:flex;gap:10px;margin-top:12px">
+          <button class="btn btn-outline btn-sm" style="flex:1" onclick="nextArch();renderExercise()">换一组</button>
+          <button class="btn ${Store.data.archRecords[today]?'btn-outline':'btn-orange'} btn-sm" style="flex:1" onclick="toggleArch();renderExercise()">${Store.data.archRecords[today]?'已完成 ✓':'标记完成'}</button>
+        </div>
+      </div>
+    </div>`;
+    html+=`<div class="section">
+      <div class="section-title"><span class="left">📖 全部动作库</span></div>
+      ${ARCH_EXERCISES.map((e,i)=>`<div class="card" style="padding:12px;margin-bottom:8px"><div class="arch-exercise" style="border:none;padding:0"><div class="num">${i+1}</div><div class="info"><div class="name">${e.name}</div><div class="desc">${e.desc}</div></div></div></div>`).join('')}
+    </div>`;
+  }
+  
+  document.getElementById('page-exercise').innerHTML=html;
+  if(exerciseTab==='jump') setTimeout(drawJumpChartEx,0);
+}
+
+function toggleExercise(key){
+  const today=D.todayStr();
+  if(!Store.data.exerciseRecords) Store.data.exerciseRecords={};
+  if(!Store.data.exerciseRecords[today]) Store.data.exerciseRecords[today]={};
+  Store.data.exerciseRecords[today][key]=!Store.data.exerciseRecords[today][key];
+  Store.save();
+  if(Store.data.exerciseRecords[today][key]) addPoint('完成长高运动',1,'💪');
+  renderExercise();
+  UI.toast('运动打卡成功！💪');
+}
+
+function drawJumpChartEx(){
+  const canvas=document.getElementById('jumpChartEx');
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+  const padL=35,padR=10,padT=15,padB=25,cw=W-padL-padR,ch=H-padT-padB;
+  const records=Store.data.jumpRecords.slice(-14);
+  if(!records.length){ctx.fillStyle='#BDC3C7';ctx.font='13px sans-serif';ctx.textAlign='center';ctx.fillText('暂无跳绳记录',W/2,H/2);return;}
+  const maxVal=Math.max(Store.data.jumpTarget,...records.map(r=>r.count));
+  const x2px=i=>padL+(records.length===1?cw/2:(i/(records.length-1))*cw);
+  const y2px=v=>padT+ch-(v/maxVal)*ch;
+  ctx.strokeStyle='rgba(255,183,77,0.4)';ctx.setLineDash([4,3]);ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(padL,y2px(Store.data.jumpTarget));ctx.lineTo(W-padR,y2px(Store.data.jumpTarget));ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='rgba(255,183,77,0.8)';ctx.font='10px sans-serif';ctx.textAlign='left';
+  ctx.fillText('目标'+Store.data.jumpTarget,padL+4,y2px(Store.data.jumpTarget)-3);
+  records.forEach((r,i)=>{
+    const barW=Math.max(4,cw/records.length*0.6),x=x2px(i)-barW/2,y=y2px(r.count);
+    const grad=ctx.createLinearGradient(0,y,0,padT+ch);
+    grad.addColorStop(0,'#FFB74D');grad.addColorStop(1,'#FFD93D');
+    ctx.fillStyle=grad;
+    const rh=padT+ch-y,radius=Math.min(barW/2,4);
+    ctx.beginPath();ctx.moveTo(x+radius,y);ctx.arcTo(x+barW,y,x+barW,y+radius,radius);ctx.lineTo(x+barW,padT+ch);ctx.lineTo(x,padT+ch);ctx.lineTo(x,y+radius);ctx.arcTo(x,y,x+radius,y,radius);ctx.fill();
+  });
+  ctx.fillStyle='#BDC3C7';ctx.font='9px sans-serif';ctx.textAlign='center';
+  records.forEach((r,i)=>{if(i%2===0||i===records.length-1) ctx.fillText(r.date.slice(5),x2px(i),H-padB+14);});
+}
+
+/* ============================================================
+   身高体重管理模块
+   ============================================================ */
+function renderGrowth(){
+  let html=`<div class="page-header"><h1>🌟 生长管理</h1><div class="sub">✨ 身高体重追踪 · 运动打卡</div></div>`;
+  
+  const gr=Store.data.growthRecords;
+  const latest=gr.length?gr[gr.length-1]:null;
+  const p=Store.data.profile;
+  
+  // 最新数据
+  if(latest){
+    html+=`<div class="section">
+      <div class="card" style="text-align:center;background:linear-gradient(135deg,var(--blue-light),#fff)">
+        <div style="font-size:12px;color:var(--text-light)">最新记录 ${latest.date}</div>
+        <div style="display:flex;justify-content:center;gap:30px;margin:10px 0">
+          <div><div style="font-size:28px;font-weight:700;color:var(--blue)">${latest.height}</div><div style="font-size:12px">身高cm ⚠️${p.heightStatus}</div></div>
+          <div><div style="font-size:28px;font-weight:700;color:var(--orange)">${latest.weight}</div><div style="font-size:12px">体重kg ⚠️${p.weightStatus}</div></div>
+        </div>
+      </div>
+    </div>`;
+  }
+  
+  // 生长曲线
+  html+=`<div class="section">
+    <div class="section-title"><span class="left">📈 生长曲线</span></div>
+    <div class="card">
+      <div class="tab-bar" id="growthTabBar">
+        <div class="tb active" onclick="switchGrowthChart('height',this)">身高</div>
+        <div class="tb" onclick="switchGrowthChart('weight',this)">体重</div>
+      </div>
+      <div class="growth-chart-container"><canvas id="growthChart" width="340" height="240"></canvas></div>
+    </div>
+  </div>`;
+  
+  // 智能评价
+  if(latest){
+    const ageM=D.ageMonths(p.birthday);
+    // WHO男童P50参考（近似值）
+    const hP50=50+ageM*0.5; const hP3=hP50-7; const hP97=hP50+7;
+    const wP50=3.3+ageM*0.18; const wP3=wP50-2.5; const wP97=wP50+3;
+    let advice='';
+    if(latest.height<hP3) advice='身高低于同龄P3线，建议增加跳跃类运动（跳绳）和优质蛋白质摄入，保证充足睡眠，定期监测';
+    else if(latest.height<hP50) advice='身高低于同龄中位数，建议坚持跳绳运动、补充钙镁片+VD，多吃高蛋白食物，21点前入睡';
+    else advice='身高在同龄正常范围，继续保持良好习惯！';
+    if(latest.weight<wP3) advice+='；体重偏轻，建议增加加餐和高营养密度食物';
+    
+    html+=`<div class="section">
+      <div class="section-title"><span class="left">🤖 智能评价</span></div>
+      <div class="card" style="background:var(--blue-light);border-left:4px solid var(--blue)">
+        <div style="font-size:13px;line-height:1.8">${advice}</div>
+      </div>
+    </div>`;
+  }
+  
+  // 目标
+  const t=Store.data.growthTarget;
+  if(t.height){
+    const progress=latest?Math.min(100,Math.round((latest.height/(t.height))*100)):0;
+    html+=`<div class="section">
+      <div class="section-title"><span class="left">🎯 身高目标</span></div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px"><span>当前：${latest?latest.height:'-'}cm</span><span>目标：${t.height}cm</span></div>
+        <div class="rainbow-bar"><div class="fill" style="width:${progress}%"></div></div>
+        <div style="font-size:12px;color:var(--text-light);margin-top:4px">达成日期：${t.date||'未设置'} · 进度${progress}%</div>
+      </div>
+    </div>`;
+  }
+  
+  // 历史记录
+  html+=`<div class="section">
+    <div class="section-title"><span class="left">📋 历史记录</span><span class="more" onclick="exportGrowth()">导出 ›</span></div>
+    <div class="card">
+      ${gr.length===0?'<div class="empty"><div class="emoji">📏✨</div><div class="text">还没有记录哦，快来添加吧！</div></div>':
+      gr.slice().reverse().map((r,i)=>`
+        <div class="record-row">
+          <div class="date">${r.date}</div>
+          <div class="vals">${r.height}cm / ${r.weight}kg ${r.note?'<span style="color:var(--text-light);font-size:12px">('+r.note+')</span>':''}</div>
+          <div class="actions"><button class="btn btn-danger btn-sm" onclick="deleteGrowth(${gr.length-1-i})">删除</button></div>
+        </div>
+      `).join('')}
+    </div>
+  </div>`;
+  
+  // 运动模块
+  html+=`<div class="section">
+    <div class="section-title"><span class="left">🏃 跳绳打卡</span></div>
+    <div class="card">
+      <div class="stat-grid">
+        ${(()=>{const t=D.todayStr();const today=Store.data.jumpRecords.find(r=>r.date===t);const week=Store.data.jumpRecords.filter(r=>{const diff=D.daysUntil(r.date);return diff<=0&&diff>-7});const month=Store.data.jumpRecords.filter(r=>{const diff=D.daysUntil(r.date);return diff<=0&&diff>-30});return `
+        <div class="stat-card"><div class="num">${today?today.count:0}</div><div class="label">今日</div></div>
+        <div class="stat-card"><div class="num">${week.reduce((s,r)=>s+r.count,0)}</div><div class="label">本周</div></div>
+        <div class="stat-card"><div class="num">${month.reduce((s,r)=>s+r.count,0)}</div><div class="label">本月</div></div>
+        <div class="stat-card"><div class="num">${Store.data.jumpRecords.reduce((s,r)=>s+r.count,0)}</div><div class="label">累计</div></div>
+        `;})()}
+      </div>
+      <canvas id="jumpChart" width="340" height="160"></canvas>
+    </div>
+  </div>`;
+  
+  // 足弓训练
+  html+=`<div class="section">
+    <div class="section-title"><span class="left">🦶 足弓训练</span><span class="more" onclick="showArchModal()">查看动作 ›</span></div>
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:14px;font-weight:600">今日足弓训练</div>
+          <div style="font-size:12px;color:var(--text-light)">每日一组，自动轮换</div>
+        </div>
+        <button class="btn ${Store.data.archRecords[D.todayStr()]?'btn-outline':'btn-orange'} btn-sm" onclick="toggleArch()">${Store.data.archRecords[D.todayStr()]?'已完成 ✓':'标记完成'}</button>
+      </div>
+    </div>
+  </div>`;
+  
+  document.getElementById('page-growth').innerHTML=html;
+  drawGrowthChart('height');
+  drawJumpChart();
+  
+  // 检查目标达成
+  if(latest&&t.height&&!t.achieved&&latest.height>=t.height){
+    Store.data.growthTarget.achieved=true;
+    Store.save();
+    UI.celebrate('🎉','身高目标达成！',`恭喜！身高已达到目标 ${t.height}cm！继续保持！`);
+  }
+}
+
+let currentChartType='height';
+function switchGrowthChart(type,el){
+  currentChartType=type;
+  document.querySelectorAll('#growthTabBar .tb').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  drawGrowthChart(type);
+}
+
+function drawGrowthChart(type){
+  const canvas=document.getElementById('growthChart');
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+  const padL=40,padR=15,padT=15,padB=30;
+  const cw=W-padL-padR, ch=H-padT-padB;
+  
+  const p=Store.data.profile;
+  const ageM=D.ageMonths(p.birthday);
+  // 年龄范围：以记录月份为轴，60-84月
+  const xMin=Math.max(48,ageM-12), xMax=Math.min(96,ageM+12);
+  
+  // WHO男童参考（月龄->cm/kg 近似）
+  const refData={
+    height:{p50:m=>50+m*0.55, p3:m=>50+m*0.55-7, p97:m=>50+m*0.55+7, unit:'cm',min:100,max:130},
+    weight:{p50:m=>3.3+m*0.2, p3:m=>3.3+m*0.2-2.5, p97:m=>3.3+m*0.2+3, unit:'kg',min:14,max:28}
+  };
+  const rd=refData[type];
+  const yMin=rd.min, yMax=rd.max;
+  
+  const x2px=m=>padL+((m-xMin)/(xMax-xMin))*cw;
+  const y2px=v=>padT+ch-((v-yMin)/(yMax-yMin))*ch;
+  
+  // 网格
+  ctx.strokeStyle='#ECF0F1'; ctx.lineWidth=1; ctx.font='10px sans-serif'; ctx.fillStyle='#BDC3C7';
+  for(let v=yMin;v<=yMax;v+=Math.ceil((yMax-yMin)/5)){
+    ctx.beginPath();ctx.moveTo(padL,y2px(v));ctx.lineTo(W-padR,y2px(v));ctx.stroke();
+    ctx.textAlign='right';ctx.fillText(v,padL-4,y2px(v)+3);
+  }
+  ctx.textAlign='center';
+  for(let m=Math.ceil(xMin/6)*6;m<=xMax;m+=6){
+    ctx.fillText(m+'月',x2px(m),H-padB+14);
+  }
+  
+  // P3-P97 范围
+  ctx.fillStyle='rgba(74,144,217,0.08)';
+  ctx.beginPath();
+  for(let m=xMin;m<=xMax;m+=2) ctx.lineTo(x2px(m),y2px(rd.p97(m)));
+  for(let m=xMax;m>=xMin;m-=2) ctx.lineTo(x2px(m),y2px(rd.p3(m)));
+  ctx.closePath();ctx.fill();
+  
+  // P50 虚线
+  ctx.strokeStyle='rgba(74,144,217,0.5)';ctx.setLineDash([5,3]);ctx.lineWidth=1.5;
+  ctx.beginPath();
+  for(let m=xMin;m<=xMax;m+=2){const px=x2px(m),py=y2px(rd.p50(m));m===xMin?ctx.moveTo(px,py):ctx.lineTo(px,py);}
+  ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='rgba(74,144,217,0.7)';ctx.font='10px sans-serif';ctx.textAlign='left';
+  ctx.fillText('P50',x2px(xMax)-20,y2px(rd.p50(xMax))-4);
+  
+  // 实际记录折线
+  const gr=Store.data.growthRecords;
+  if(gr.length){
+    ctx.strokeStyle=type==='height'?'#4A90D9':'#F5A623';ctx.lineWidth=2.5;
+    ctx.beginPath();
+    gr.forEach((r,i)=>{
+      const m=D.ageMonths(p.birthday)-(D.daysUntil(r.date));
+      // 简化：用日期差算月龄
+      const recDate=D.parse(r.date);
+      const birthDate=D.parse(p.birthday);
+      const months=(recDate.getFullYear()-birthDate.getFullYear())*12+(recDate.getMonth()-birthDate.getMonth());
+      const px=x2px(months), py=y2px(type==='height'?r.height:r.weight);
+      i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+    });
+    ctx.stroke();
+    // 数据点
+    gr.forEach(r=>{
+      const recDate=D.parse(r.date);
+      const birthDate=D.parse(p.birthday);
+      const months=(recDate.getFullYear()-birthDate.getFullYear())*12+(recDate.getMonth()-birthDate.getMonth());
+      const px=x2px(months), py=y2px(type==='height'?r.height:r.weight);
+      ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(px,py,5,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle=type==='height'?'#4A90D9':'#F5A623';ctx.lineWidth=2.5;ctx.stroke();
+    });
+  }
+  
+  // 标题
+  ctx.fillStyle='#2C3E50';ctx.font='bold 12px sans-serif';ctx.textAlign='left';
+  ctx.fillText(type==='height'?'身高(cm)':'体重(kg)',padL,padT-2);
+}
+
+function drawJumpChart(){
+  const canvas=document.getElementById('jumpChart');
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+  const padL=35,padR=10,padT=15,padB=25;
+  const cw=W-padL-padR, ch=H-padT-padB;
+  
+  const records=Store.data.jumpRecords.slice(-14);
+  if(records.length===0){ctx.fillStyle='#BDC3C7';ctx.font='13px sans-serif';ctx.textAlign='center';ctx.fillText('暂无跳绳记录',W/2,H/2);return;}
+  
+  const maxVal=Math.max(Store.data.jumpTarget,...records.map(r=>r.count));
+  const x2px=i=>padL+(records.length===1?cw/2:(i/(records.length-1))*cw);
+  const y2px=v=>padT+ch-(v/maxVal)*ch;
+  
+  // 目标线
+  ctx.strokeStyle='rgba(245,166,35,0.4)';ctx.setLineDash([4,3]);ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(padL,y2px(Store.data.jumpTarget));ctx.lineTo(W-padR,y2px(Store.data.jumpTarget));ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='rgba(245,166,35,0.8)';ctx.font='10px sans-serif';ctx.textAlign='left';
+  ctx.fillText('目标'+Store.data.jumpTarget,padL+4,y2px(Store.data.jumpTarget)-3);
+  
+  // 柱状图
+  records.forEach((r,i)=>{
+    const barW=Math.max(4,cw/records.length*0.6);
+    const x=x2px(i)-barW/2;
+    const y=y2px(r.count);
+    const grad=ctx.createLinearGradient(0,y,0,padT+ch);
+    grad.addColorStop(0,'#4A90D9');grad.addColorStop(1,'#7AB8E8');
+    ctx.fillStyle=grad;
+    const rh=padT+ch-y;
+    ctx.beginPath();
+    // 圆角矩形
+    const radius=Math.min(barW/2,4);
+    ctx.moveTo(x+radius,y);
+    ctx.arcTo(x+barW,y,x+barW,y+radius,radius);
+    ctx.lineTo(x+barW,padT+ch);
+    ctx.lineTo(x,padT+ch);
+    ctx.lineTo(x,y+radius);
+    ctx.arcTo(x,y,x+radius,y,radius);
+    ctx.fill();
+  });
+  
+  // X轴标签
+  ctx.fillStyle='#BDC3C7';ctx.font='9px sans-serif';ctx.textAlign='center';
+  records.forEach((r,i)=>{
+    if(i%2===0||i===records.length-1) ctx.fillText(r.date.slice(5),x2px(i),H-padB+14);
+  });
+}
+
+function addGrowthRecord(){
+  UI.modalWithTitle('添加身高体重记录',`
+    <div class="form-group"><label class="form-label">日期</label><input type="date" class="form-input" id="gr-date" value="${D.todayStr()}"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">身高(cm)</label><input type="number" class="form-input" id="gr-height" step="0.1" placeholder="如115.5"></div>
+      <div class="form-group"><label class="form-label">体重(kg)</label><input type="number" class="form-input" id="gr-weight" step="0.1" placeholder="如20.0"></div>
+    </div>
+    <div class="form-group"><label class="form-label">备注</label><input type="text" class="form-input" id="gr-note" placeholder="如：早上空腹"></div>
+    <button class="btn btn-primary btn-block" onclick="saveGrowthRecord()">保存</button>
+  `);
+}
+function saveGrowthRecord(){
+  const date=document.getElementById('gr-date').value;
+  const height=parseFloat(document.getElementById('gr-height').value);
+  const weight=parseFloat(document.getElementById('gr-weight').value);
+  if(!date||!height||!weight){UI.toast('请填写完整信息');return;}
+  Store.data.growthRecords.push({date,height,weight,note:document.getElementById('gr-note').value});
+  Store.data.growthRecords.sort((a,b)=>a.date.localeCompare(b.date));
+  Store.save();
+  UI.closeModal();
+  UI.toast('记录已保存');
+  renderGrowth();
+}
+function deleteGrowth(idx){
+  if(confirm('确定删除这条记录？')){
+    Store.data.growthRecords.splice(idx,1);
+    Store.save();
+    renderGrowth();
+  }
+}
+function exportGrowth(){
+  const data=Store.data.growthRecords.map(r=>`${r.date} | 身高:${r.height}cm | 体重:${r.weight}kg | ${r.note||''}`).join('\n');
+  const blob=new Blob(['身高体重记录\n'+data],{type:'text/plain'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download=`生长记录_${D.todayStr()}.txt`;a.click();
+  UI.toast('已导出');
+}
+
+/* ============================================================
+   心理发展模块
+   ============================================================ */
+const PSYCH_KNOWLEDGE={
+  '6-7岁':{
+    title:'6-7岁男童心理特点',
+    points:[
+      '🧠 幼小衔接焦虑：对未知的小学生活既期待又紧张，可能出现退缩、黏人行为',
+      '🌊 情绪波动大：前额叶发育未完善，情绪控制力弱，易因小事爆发',
+      '🙋 自我意识增强：开始有"我"的强烈意识，渴望独立但又依赖父母',
+      '📋 规则意识建立期：逐渐理解规则的重要性，但偶尔试探边界',
+      '👫 同伴关系萌芽：开始重视朋友关系，但冲突解决能力不足',
+      '🎯 注意力发展：专注力约15-20分钟，需分段引导学习'
+    ]
+  },
+  '8-9岁':{
+    title:'8-9岁男童心理特点',
+    points:[
+      '📖 学业压力初现：开始感受成绩比较，可能出现挫败感',
+      '🤝 友谊深化：同伴评价变得重要，渴望被群体接纳',
+      '💪 独立性增强：想自己做决定，对过度管束反感',
+      '😤 情绪内化：学会隐藏情绪，但可能以身体不适表达',
+      '🎮 兴趣分化：明确喜好，容易沉迷某项活动'
+    ]
+  },
+  '10-12岁':{
+    title:'10-12岁男童心理特点',
+    points:[
+      '青春期前奏：激素变化导致情绪敏感、易怒',
+      '👤 身份探索：开始思考"我是谁"，偶像崇拜明显',
+      '📱 社交需求：同伴影响超过父母，重视社交形象',
+      '🧐 批判思维：开始质疑权威，需要平等对话',
+      '🔒 隐私意识：需要独立空间，反感被翻看物品'
+    ]
+  }
+};
+const SCENARIOS={
+  '生气时怎么办':['停下来深呼吸：用4-7-8呼吸法（吸气4秒、屏息7秒、呼气8秒），重复3次','说出感受："我现在很生气，因为..."','安全发泄：捏减压球、撕废纸、原地跳跃10下','冷静角：去指定角落待3分钟，准备好再出来'],
+  '害怕时怎么办':['承认恐惧："害怕是正常的，妈妈在"','信息安慰：用事实解释（如打雷是云朵碰碰车）','渐进暴露：先远远看，慢慢靠近','赋能想象：想象超能力保护自己'],
+  '不想上学怎么办':['共情倾听："你好像不太想去学校，发生什么了？"','具体化担忧：找出具体担心的事（同学？作业？）','正向引导：聊聊学校开心的事','渐进适应：提前参观、认识同学'],
+  '被批评了怎么办':['接纳情绪："被批评很难受，对吗"','区分行为与人："这件事做得不对，但你还是好孩子"','复盘改进："下次我们可以怎么做"','重建信心：肯定其他优点']
+};
+const SCRIPTS={
+  '发脾气时':['"我看到你很生气，需要我帮你冷静一下吗？"','"生气没关系，但我们不用打人，用嘴巴说出来"','"你现在的感受是什么？能告诉妈妈吗？"','"我们先深呼吸，等你准备好再聊"'],
+  '不听话时':['"我知道你还想玩，但我们约定的时间到了"','"给你两个选择：现在去洗澡，还是5分钟后去？"','"我数到10，我们一起开始收拾好吗？"'],
+  '害怕时':['"害怕的时候可以握住妈妈的手"','"妈妈小时候也怕这个，后来发现..."','"我们一起看看这个不可怕的地方"'],
+  '不想学习时':['"学习确实有点累，我们先休息5分钟"','"今天学15分钟就好，做完玩你喜欢的"','"这个拼音像个小动物，我们找找看"'],
+  '与同伴冲突时':['"发生了什么？你愿意说说吗？"','"你觉得他为什么这么做？"','"下次遇到这种情况，我们可以怎么做？"']
+};
+
+let mindTab='knowledge';
+function renderMind(){
+  let html=`<div class="page-header"><h1>🧸 心理小屋</h1><div class="sub">✨ 情绪管理 · 亲子沟通 · 激励成长</div></div>`;
+  
+  // Tab
+  html+=`<div class="section"><div class="tab-bar" style="flex-wrap:wrap">
+    <div class="tb ${mindTab==='knowledge'?'active':''}" onclick="mindTab='knowledge';renderMind()">知识库</div>
+    <div class="tb ${mindTab==='mood'?'active':''}" onclick="mindTab='mood';renderMind()">情绪打卡</div>
+    <div class="tb ${mindTab==='tools'?'active':''}" onclick="mindTab='tools';renderMind()">管理工具</div>
+    <div class="tb ${mindTab==='scripts'?'active':''}" onclick="mindTab='scripts';renderMind()">话术库</div>
+    <div class="tb ${mindTab==='social'?'active':''}" onclick="mindTab='social';renderMind()">社交安全</div>
+    <div class="tb ${mindTab==='points'?'active':''}" onclick="mindTab='points';renderMind()">积分墙</div>
+  </div></div>`;
+  
+  if(mindTab==='knowledge'){
+    html+=`<div class="section">
+      <div class="tab-bar" id="ageTab">
+        ${Object.keys(PSYCH_KNOWLEDGE).map((k,i)=>`<div class="tb ${i===0?'active':''}" onclick="switchAge('${k}',this)">${k}</div>`).join('')}
+      </div>
+      <div id="ageContent"></div>
+    </div>`;
+    setTimeout(()=>switchAge('6-7岁',document.querySelector('#ageTab .tb')),0);
+  }
+  
+  if(mindTab==='mood'){
+    const today=D.todayStr();
+    const todayMood=Store.data.moodRecords[today];
+    html+=`<div class="section">
+      <div class="section-title"><span class="left">😊 今日心情打卡</span></div>
+      <div class="card">
+        <div style="text-align:center;font-size:13px;color:var(--text-light);margin-bottom:6px">👦 孩子自己操作：今天心情怎么样？</div>
+        <div class="mood-picker">
+          ${[['😊','开心'],['😐','一般'],['😡','生气'],['😢','难过'],['😴','累']].map(([e,l])=>`
+            <button class="mood-btn ${todayMood&&todayMood.mood===l?'selected':''}" onclick="selectMood('${l}','${e}')"><span class="emoji">${e}</span><span class="label">${l}</span></button>
+          `).join('')}
+        </div>
+        ${todayMood?`<div style="text-align:center;font-size:13px;color:var(--text-light)">今天感到<b>${todayMood.mood}</b>${todayMood.note?' · '+todayMood.note:''}</div>`:''}
+      </div>
+    </div>`;
+    
+    // 情绪日历
+    html+=`<div class="section">
+      <div class="section-title"><span class="left">📅 情绪日历</span></div>
+      <div class="card">${renderMoodCalendar()}</div>
+    </div>`;
+    
+    // 情绪统计
+    html+=`<div class="section">
+      <div class="section-title"><span class="left">📊 近30天情绪趋势</span></div>
+      <div class="card"><canvas id="moodChart" width="340" height="160"></canvas></div>
+    </div>`;
+  }
+  
+  if(mindTab==='tools'){
+    html+=`<div class="section">
+      <div class="section-title"><span class="left">🌬️ 冷静三步骤</span></div>
+      <div class="card">
+        <div style="font-size:14px;line-height:2">
+          <div style="margin-bottom:8px"><b style="color:var(--blue)">① 停下来深呼吸</b><br><span style="font-size:13px;color:var(--text-light)">4-7-8呼吸法：吸气4秒 → 屏息7秒 → 呼气8秒，重复3次</span></div>
+          <div style="margin-bottom:8px"><b style="color:var(--orange)">② 说出自己的感受</b><br><span style="font-size:13px;color:var(--text-light)">用语言代替行动："我现在感到..."</span></div>
+          <div><b style="color:var(--green)">③ 想解决办法</b><br><span style="font-size:13px;color:var(--text-light)">一起讨论：接下来可以怎么做？</span></div>
+        </div>
+      </div>
+    </div>`;
+    html+=`<div class="section">
+      <div class="section-title"><span class="left">💬 情绪表达句式</span></div>
+      <div class="card" style="background:var(--orange-light)">
+        <div style="font-size:15px;text-align:center;line-height:2">
+          "我感到 <b style="color:var(--red)">___（生气/难过/委屈）</b>，<br>因为 <b style="color:var(--blue)">___（具体事件）</b>，<br>我希望 <b style="color:var(--green)">___（解决方案）</b>"
+        </div>
+      </div>
+    </div>`;
+    html+=`<div class="section">
+      <div class="section-title"><span class="left">🎯 场景应对</span></div>
+      ${Object.entries(SCENARIOS).map(([q,a])=>`
+        <div class="scenario-card">
+          <div class="q">${q}</div>
+          ${a.map(step=>`<div class="a">${step}</div>`).join('')}
+        </div>
+      `).join('')}
+    </div>`;
+  }
+  
+  if(mindTab==='scripts'){
+    html+=`<div class="section">
+      <div class="section-title"><span class="left">💬 亲子沟通话术库</span></div>
+      ${Object.entries(SCRIPTS).map(([cat,lines])=>`
+        <div class="card">
+          <div style="font-weight:600;font-size:14px;margin-bottom:8px;color:var(--blue)">${cat}</div>
+          ${lines.map(l=>`<div style="padding:6px 0;font-size:13px;border-bottom:1px dashed var(--border);display:flex;justify-content:space-between;align-items:start;gap:8px"><span>${l}</span><span style="color:var(--orange);cursor:pointer;font-size:16px;flex-shrink:0" onclick="favScript(this,'${l.replace(/'/g,"\\'")}')">${Store.data.favoriteScripts.includes(l)?'★':'☆'}</span></div>`).join('')}
+        </div>
+      `).join('')}
+    </div>`;
+    if(Store.data.favoriteScripts.length){
+      html+=`<div class="section">
+        <div class="section-title"><span class="left">⭐ 我的话术本</span></div>
+        <div class="card">
+          ${Store.data.favoriteScripts.map(l=>`<div style="padding:6px 0;font-size:13px;border-bottom:1px dashed var(--border)">${l}</div>`).join('')}
+        </div>
+      </div>`;
+    }
+  }
+  
+  if(mindTab==='social'){
+    html+=renderSocialSafety();
+  }
+  
+  if(mindTab==='points'){
+    const total=getTotalPoints();
+    html+=`<div class="section">
+      <div class="points-display">
+        <div class="num">${total}</div>
+        <div class="label">累计积分</div>
+      </div>
+    </div>`;
+    // 奖励兑换
+    html+=`<div class="section">
+      <div class="section-title"><span class="left">🎁 积分兑换</span><span class="more" onclick="addReward()">+ 自定义</span></div>
+      ${Store.data.rewards.map((r,i)=>{
+        const can=total>=r.cost;
+        return `<div class="reward-card ${can?'':'locked'}">
+          <div class="info"><div class="name">${r.icon} ${r.name}</div><div class="cost">需要 ${r.cost} 积分</div></div>
+          <button class="btn ${can?'btn-orange':'btn-outline'} btn-sm" ${can?'':'disabled'} onclick="redeemReward(${i})">${can?'兑换':'不足'}</button>
+        </div>`;
+      }).join('')}
+    </div>`;
+    // 奖励行为
+    html+=`<div class="section">
+      <div class="section-title"><span class="left">✅ 奖励行为</span><span class="more" onclick="addPointAction()">+ 自定义</span></div>
+      <div class="card">
+        ${Store.data.pointActions.map((a,i)=>`
+          <div class="point-item">
+            <div class="left">${a.icon} ${a.name}</div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="pts">+${a.points}</span>
+              <button class="btn btn-orange btn-sm" onclick="quickAddPoint(${i})">+1</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+    // 积分历史
+    if(Store.data.pointsRecords.length){
+      html+=`<div class="section">
+        <div class="section-title"><span class="left">📋 积分历史</span></div>
+        <div class="card">
+          ${Store.data.pointsRecords.slice(-15).reverse().map(r=>`<div class="record-row"><div class="date">${r.date.slice(5)}</div><div class="vals">${r.icon||''} ${r.action}</div><div class="pts" style="color:var(--green)">+${r.points}</div></div>`).join('')}
+        </div>
+      </div>`;
+    }
+  }
+  
+  document.getElementById('page-mind').innerHTML=html;
+  if(mindTab==='mood') setTimeout(drawMoodChart,0);
+}
+
+/* ============================================================
+   社交安全模块 — 防霸凌动画片风格
+   ============================================================ */
+// 动画场景数据（每页一个场景，左右滑动切换）
+const SOCIAL_SCENES=[
+  {
+    title:'🏫 场景一：被起外号',
+    emoji:'😢',bg:'#FFE0B2',
+    story:`下课了，几个同学围着小明喊"小矮子！小矮子！"小明很难过，低着头不说话……`,
+    question:'小朋友，你觉得小明应该怎么办？',
+    options:[
+      {text:'😡 也给他们起外号骂回去',good:false,feedback:'骂回去只会让事情更糟糕，还可能被老师批评'},
+      {text:'😢 躲在厕所偷偷哭',good:false,feedback:'一个人难过解决不了问题，要勇敢说出来'},
+      {text:'💪 大声说"我不喜欢你们这样叫我，请停止！"然后告诉老师',good:true,feedback:'太棒了！坚定表达+寻求帮助是最勇敢的做法！⭐'}
+    ],
+    tip:'记住：被欺负不是你的错！说出来才是勇敢的孩子！',
+    icon:'🛡️'
+  },
+  {
+    title:'🤼 场景二：被推搡',
+    emoji:'😣',bg:'#FFCCBC',
+    story:`排队时，前面的同学用力推了小明一把，小明差点摔倒。那个同学还瞪着眼睛说"谁让你站那么近"……`,
+    question:'小明应该怎么保护自己？',
+    options:[
+      {text:'👊 推回去，不能吃亏',good:false,feedback:'推回去可能变成打架，两个人都受伤'},
+      {text:'🏃 赶紧跑开躲起来',good:false,feedback:'跑开是暂时的，但没有解决根本问题'},
+      {text:'🗣️ 后退一步，大声说"不要推我！"然后立刻告诉老师',good:true,feedback:'正确！先保护自己安全，再坚定说"不"，然后找大人帮忙！⭐'}
+    ],
+    tip:'身体安全最重要！被推搡时要先稳住自己，然后大声说"不"！',
+    icon:'✋'
+  },
+  {
+    title:'🎒 场景三：被抢东西',
+    emoji:'😰',bg:'#C8E6C9',
+    story:`小明拿出新买的文具盒，旁边的同学一把抢过去说"借我玩两天！"小明想拿回来，同学举得高高的不给他……`,
+    question:'小朋友，遇到这种情况怎么办？',
+    options:[
+      {text:'😭 哭着说"求你还给我"',good:false,feedback:'示弱可能会让对方更想欺负你'},
+      {text:'👮 严肃地说"这是我的东西，请你还给我"如果不还马上去找老师',good:true,feedback:'非常棒！先自己尝试解决，不行立刻求助大人！⭐'},
+      {text:'🤷 算了不要了，回家让妈妈再买一个',good:false,feedback:'这会让对方觉得抢东西没关系，下次还会抢'}
+    ],
+    tip:'自己的东西有权利要回来！如果对方不给，马上找老师或家长！',
+    icon:'📢'
+  },
+  {
+    title:'👥 场景四：被孤立排挤',
+    emoji:'😔',bg:'#E1BEE7',
+    story:`班上有几个同学说"我们不跟小明玩"，还让其他人也不要跟小明玩。体育课分组时，没人愿意和小明一组……`,
+    question:'小明应该怎么面对？',
+    options:[
+      {text:'🏠 不想上学了，躲在家里',good:false,feedback:'逃避不能解决问题，反而会错过更多交朋友的机会'},
+      {text:'🤝 找愿意一起玩的同学做朋友，告诉老师发生了什么事',good:true,feedback:'太棒了！总会有人愿意做你的朋友，同时让老师了解情况！⭐'},
+      {text:'😤 自己一个人玩，不理所有人',good:false,feedback:'封闭自己只会更孤单，要学会主动寻找友善的同学'}
+    ],
+    tip:'不是所有人都值得做朋友，找到那些善良的同学，1个真心朋友胜过10个假朋友！',
+    icon:'❤️'
+  },
+  {
+    title:'🗣️ 场景五：被威胁恐吓',
+    emoji:'😨',bg:'#FFCDD2',
+    story:`放学路上，一个大孩子拦住小明说"明天带10块钱给我，不许告诉别人，不然见你一次打一次！"小明吓得心砰砰跳……`,
+    question:'这是非常严重的情况，小明该怎么做？',
+    options:[
+      {text:'💰 偷偷拿家里的钱给他，希望他别再找我',good:false,feedback:'千万不行！给一次就会有第二次，问题只会越来越大'},
+      {text:'🔇 谁也不告诉，自己忍着',good:false,feedback:'绝对不能忍！威胁恐吓是严重的事，必须告诉大人'},
+      {text:'🏠 立刻告诉爸爸妈妈和老师！这是严重的事，需要大人保护',good:true,feedback:'完全正确！被威胁恐吓一定要第一时间告诉家长和老师，他们会保护你！⭐'}
+    ],
+    tip:'如果有人威胁你——不管他说什么——第一时间告诉爸爸妈妈！这是最重要的安全法则！',
+    icon:'🚨'
+  }
+];
+
+let socialSceneIdx=0;
+let socialAnswered={}; // 记录已答对场景
+function renderSocialSafety(){
+  const scene=SOCIAL_SCENES[socialSceneIdx];
+  const answered=socialAnswered[socialSceneIdx];
+  const today=D.todayStr();
+  if(!Store.data.socialRecords) Store.data.socialRecords={};
+  const completed=Store.data.socialRecords[today]||{};
+  const totalCompleted=Object.values(completed).filter(v=>v).length;
+  
+  let html=`
+  <div style="background:linear-gradient(135deg,#E8F6FC,#FFF3E0);border-radius:16px;padding:12px;margin-bottom:14px;text-align:center">
+    <div style="font-size:13px;font-weight:700;color:var(--blue-dark)">
+      🎬 防霸凌小剧场 — 跟小明一起学习保护自己！
+    </div>
+    <div style="font-size:11px;color:var(--text-light);margin-top:2px">
+      已完成 ${totalCompleted}/${SOCIAL_SCENES.length} 个场景 
+      ${totalCompleted===SOCIAL_SCENES.length?'🎉 全部完成！你是安全小达人！':''}
+    </div>
+  </div>`;
+  
+  // 场景导航
+  html+=`<div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:10px">
+    ${SOCIAL_SCENES.map((s,i)=>`
+      <div onclick="socialSceneIdx=${i};renderMind()" style="flex-shrink:0;padding:7px 12px;border-radius:14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .2s;
+        ${i===socialSceneIdx?'background:var(--blue);color:#fff;box-shadow:0 3px 10px rgba(126,200,227,0.4)':'background:#fff;color:var(--text-light);border:2px solid var(--border)'}">
+        ${s.icon} ${completed[i]?'✅ ':''}场景${i+1}
+      </div>
+    `).join('')}
+  </div>`;
+  
+  // 动画场景卡片
+  html+=`<div class="card" style="background:${scene.bg};border:3px solid rgba(255,255,255,0.8);overflow:hidden;padding:0">
+    <div style="text-align:center;padding:16px 16px 4px">
+      <div style="font-size:56px;animation:bounce 2s ease infinite">${scene.emoji}</div>
+      <div style="font-size:18px;font-weight:900;margin-top:4px;color:var(--text)">${scene.title}</div>
+    </div>
+    <div style="padding:12px 16px">
+      <div style="background:rgba(255,255,255,0.8);border-radius:14px;padding:14px;font-size:14px;line-height:1.8;font-weight:600;text-align:center;margin-bottom:12px;border-left:4px solid var(--orange)">
+        ${scene.story}
+      </div>
+      <div style="font-weight:800;font-size:14px;text-align:center;margin-bottom:10px">${scene.question}</div>
+      ${scene.options.map((opt,i)=>`
+        <div onclick="answerSocial(${socialSceneIdx},${i})" style="
+          background:${answered===i?(opt.good?'#E8F8E8':'#FFE8E8'):'#fff'};
+          border:2px solid ${answered===i?(opt.good?'var(--green)':'var(--red)'):'var(--border)'};
+          border-radius:14px;padding:11px 14px;margin-bottom:8px;cursor:pointer;font-size:13px;font-weight:600;
+          transition:all .2s;display:flex;align-items:center;gap:8px;
+          ${answered===i?'':'box-shadow:var(--shadow-soft)'}
+        ">
+          <span>${opt.text}</span>
+          ${answered===i?(opt.good?'<span style="color:var(--green);font-size:18px;animation:bounce .5s ease">🌟</span>':'<span style="color:var(--red);font-size:16px">❌</span>'):''}
+        </div>
+      `).join('')}
+      ${answered!==undefined?`
+        <div style="background:${SOCIAL_SCENES[socialSceneIdx].options[answered].good?'var(--green-light)':'var(--pink-light)'};border-radius:12px;padding:10px 12px;margin-top:8px;font-size:12px;line-height:1.6;font-weight:600;color:${SOCIAL_SCENES[socialSceneIdx].options[answered].good?'#5BAE5B':'var(--red)'}">
+          💬 ${SOCIAL_SCENES[socialSceneIdx].options[answered].feedback}
+          ${SOCIAL_SCENES[socialSceneIdx].options[answered].good?`
+            <div style="margin-top:6px;background:rgba(255,255,255,0.7);border-radius:8px;padding:6px 8px">
+              🛡️ <b>记住：</b>${scene.tip}
+            </div>
+            <div style="text-align:center;margin-top:8px">
+              ${socialSceneIdx<SOCIAL_SCENES.length-1?`
+                <button class="btn btn-orange btn-sm" onclick="socialSceneIdx=${socialSceneIdx+1};socialAnswered={};renderMind()">下一个场景 ➡️</button>
+              `:`
+                <div style="font-weight:800;color:var(--orange-dark);font-size:14px">🎉 恭喜！所有场景都学会了！你是安全小达人！</div>
+              `}
+            </div>
+          `:`
+            <div style="text-align:center;margin-top:6px">
+              <button class="btn btn-outline btn-sm" onclick="socialAnswered[${socialSceneIdx}]=undefined;renderMind()">再想想 🔄</button>
+            </div>
+          `}
+        </div>
+      `:''}
+    </div>
+  </div>`;
+  
+  // 防霸凌口诀
+  html+=`<div class="card" style="background:linear-gradient(135deg,var(--blue-light),#fff);margin-top:14px;text-align:center">
+    <div style="font-weight:800;font-size:14px;color:var(--blue-dark);margin-bottom:8px">🦸 防霸凌小口诀</div>
+    <div style="font-size:13px;line-height:2;font-weight:600">
+      🛑 被欺负，不害怕<br>
+      🗣️ 大声说"不"告诉他<br>
+      🏃 先走开，保护自己<br>
+      👨‍🏫 找老师，找爸妈<br>
+      🤝 好朋友，在一起<br>
+      💪 勇敢的孩子人人夸！
+    </div>
+  </div>`;
+  
+  // 家长引导
+  html+=`<div class="card" style="background:var(--pink-light);margin-top:12px">
+    <div style="font-weight:800;font-size:13px;color:var(--pink-deep);margin-bottom:6px">👨‍👩‍👦 给家长的话</div>
+    <div style="font-size:12px;line-height:1.8;color:var(--text)">
+      • 每天问问孩子"今天在学校开心吗？"<br>
+      • 教孩子区分"告状"和"求助"——被欺负不是告状<br>
+      • 告诉孩子：无论发生什么，爸爸妈妈永远站在你这边<br>
+      • 发现异常信号：不愿上学、物品丢失、情绪低落<br>
+      • 联系老师时保持冷静，一起寻找解决方案
+    </div>
+  </div>`;
+  
+  return html;
+}
+
+function answerSocial(sceneIdx,optIdx){
+  socialAnswered[sceneIdx]=optIdx;
+  const opt=SOCIAL_SCENES[sceneIdx].options[optIdx];
+  const today=D.todayStr();
+  if(!Store.data.socialRecords) Store.data.socialRecords={};
+  if(!Store.data.socialRecords[today]) Store.data.socialRecords[today]={};
+  if(opt.good){
+    Store.data.socialRecords[today][sceneIdx]=true;
+    Store.save();
+    addPoint('学会防霸凌知识',3,'🛡️');
+    if(Object.values(Store.data.socialRecords[today]||{}).filter(v=>v).length===SOCIAL_SCENES.length){
+      setTimeout(()=>UI.celebrate('🦸','安全小达人！','太棒了！所有防霸凌场景都学会了！你已经知道怎么保护自己啦！'),300);
+    }
+  }
+  renderMind();
+}
+
+function switchAge(age,el){
+  document.querySelectorAll('#ageTab .tb').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  const k=PSYCH_KNOWLEDGE[age];
+  document.getElementById('ageContent').innerHTML=`
+    <div class="knowledge-card">
+      <h3>${k.title}</h3>
+      <ul>${k.points.map(p=>`<li>${p}</li>`).join('')}</ul>
+    </div>
+  `;
+}
+
+function selectMood(mood,emoji){
+  const today=D.todayStr();
+  const existing=Store.data.moodRecords[today]||{};
+  existing.mood=mood;
+  Store.data.moodRecords[today]=existing;
+  Store.save();
+  // 先重新渲染显示选中动画，延迟 400ms 再弹出补充说明
+  renderMind();
+  setTimeout(()=>{
+    UI.modalWithTitle('补充说明',`
+      <div style="text-align:center;margin-bottom:10px"><span style="font-size:48px;display:inline-block;animation:bounce 1s ease infinite">${emoji}</span><div style="font-weight:700;margin-top:4px">今天感到${mood}</div></div>
+      <div class="form-group"><label class="form-label">今天因为___所以___</label><textarea class="form-textarea" id="mood-note" placeholder="如：今天因为和好朋友吵架所以很难过">${existing.note||''}</textarea></div>
+      <button class="btn btn-orange btn-block" onclick="saveMoodNote()">保存心情 🌟</button>
+    `);
+  },450);
+}
+function saveMoodNote(){
+  const today=D.todayStr();
+  Store.data.moodRecords[today].note=document.getElementById('mood-note').value;
+  Store.save();
+  UI.closeModal();
+  UI.toast('心情已记录');
+  renderMind();
+}
+
+function renderMoodCalendar(){
+  const now=new Date(); const y=now.getFullYear(),m=now.getMonth();
+  const days=D.monthDays(y,m);
+  const firstDay=new Date(y,m,1).getDay()===0?6:new Date(y,m,1).getDay()-1;
+  const moodEmoji={'开心':'😊','一般':'😐','生气':'😡','难过':'😢','累':'😴'};
+  let html=`<div class="calendar">`;
+  ['一','二','三','四','五','六','日'].forEach(w=>html+=`<div class="cal-head">${w}</div>`);
+  for(let i=0;i<firstDay;i++) html+=`<div class="cal-day other"></div>`;
+  for(let d=1;d<=days;d++){
+    const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday=ds===D.todayStr();
+    const mr=Store.data.moodRecords[ds];
+    html+=`<div class="cal-day ${isToday?'today':''}">${d}${mr?'<div style="font-size:14px;margin-top:-2px">'+(moodEmoji[mr.mood]||'')+'</div>':''}</div>`;
+  }
+  html+=`</div>`;
+  // 统计
+  const stats={};
+  Object.values(Store.data.moodRecords).forEach(r=>{stats[r.mood]=(stats[r.mood]||0)+1;});
+  html+=`<div style="margin-top:10px;font-size:12px;text-align:center">${Object.entries(stats).map(([m,c])=>`${moodEmoji[m]||''}${m}:${c}天`).join(' · ')}</div>`;
+  return html;
+}
+
+function drawMoodChart(){
+  const canvas=document.getElementById('moodChart');
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+  const padL=30,padR=10,padT=15,padB=25;
+  const cw=W-padL-padR,ch=H-padT-padB;
+  
+  const moods=['开心','一般','生气','难过','累'];
+  const moodVal={'开心':5,'一般':4,'生气':2,'难过':1,'累':3};
+  const moodEmoji={'开心':'😊','一般':'😐','生气':'😡','难过':'😢','累':'😴'};
+  
+  // 最近30天
+  const days=[];
+  for(let i=29;i>=0;i--){
+    const d=new Date(); d.setDate(d.getDate()-i);
+    const ds=D.toStr(d);
+    const mr=Store.data.moodRecords[ds];
+    days.push({date:ds,mood:mr?mr.mood:null});
+  }
+  
+  const x2px=i=>padL+(i/29)*cw;
+  const y2px=v=>padT+ch-((v-1)/4)*ch;
+  
+  // 网格
+  ctx.strokeStyle='#ECF0F1';ctx.lineWidth=1;ctx.font='10px sans-serif';ctx.fillStyle='#BDC3C7';ctx.textAlign='right';
+  moods.forEach(m=>{const v=moodVal[m];ctx.fillText(moodEmoji[m],padL-4,y2px(v)+3);
+    ctx.strokeStyle='rgba(236,240,241,0.6)';ctx.beginPath();ctx.moveTo(padL,y2px(v));ctx.lineTo(W-padR,y2px(v));ctx.stroke();});
+  
+  // 折线
+  ctx.strokeStyle='#9B59B6';ctx.lineWidth=2;
+  ctx.beginPath();
+  let started=false;
+  days.forEach((d,i)=>{
+    if(d.mood){
+      const px=x2px(i),py=y2px(moodVal[d.mood]);
+      if(!started){ctx.moveTo(px,py);started=true;}else ctx.lineTo(px,py);
+    }
+  });
+  ctx.stroke();
+  // 点
+  days.forEach((d,i)=>{
+    if(d.mood){
+      const px=x2px(i),py=y2px(moodVal[d.mood]);
+      ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(px,py,4,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='#9B59B6';ctx.lineWidth=2;ctx.stroke();
+    }
+  });
+}
+
+function favScript(el,text){
+  const idx=Store.data.favoriteScripts.indexOf(text);
+  if(idx>=0){Store.data.favoriteScripts.splice(idx,1);el.textContent='☆';}
+  else{Store.data.favoriteScripts.push(text);el.textContent='★';UI.toast('已收藏');}
+  Store.save();
+}
+
+function quickAddPoint(i){
+  const a=Store.data.pointActions[i];
+  Store.data.pointsRecords.push({date:D.todayStr(),action:a.name,points:a.points,icon:a.icon});
+  Store.save();
+  UI.toast(`+${a.points}分！`);
+  renderMind();
+}
+function addPointAction(){
+  UI.modalWithTitle('添加奖励行为',`
+    <div class="form-group"><label class="form-label">图标（emoji）</label><input type="text" class="form-input" id="pa-icon" value="⭐" maxlength="2"></div>
+    <div class="form-group"><label class="form-label">行为名称</label><input type="text" class="form-input" id="pa-name" placeholder="如：自己整理书包"></div>
+    <div class="form-group"><label class="form-label">积分</label><input type="number" class="form-input" id="pa-pts" value="2"></div>
+    <button class="btn btn-primary btn-block" onclick="savePointAction()">保存</button>
+  `);
+}
+function savePointAction(){
+  Store.data.pointActions.push({icon:document.getElementById('pa-icon').value||'⭐',name:document.getElementById('pa-name').value,points:parseInt(document.getElementById('pa-pts').value)||1});
+  Store.save();UI.closeModal();renderMind();
+}
+function addReward(){
+  UI.modalWithTitle('添加奖励',`
+    <div class="form-group"><label class="form-label">图标</label><input type="text" class="form-input" id="rw-icon" value="🎁" maxlength="2"></div>
+    <div class="form-group"><label class="form-label">奖励名称</label><input type="text" class="form-input" id="rw-name" placeholder="如：周末去公园"></div>
+    <div class="form-group"><label class="form-label">所需积分</label><input type="number" class="form-input" id="rw-cost" value="10"></div>
+    <button class="btn btn-primary btn-block" onclick="saveReward()">保存</button>
+  `);
+}
+function saveReward(){
+  Store.data.rewards.push({icon:document.getElementById('rw-icon').value||'🎁',name:document.getElementById('rw-name').value||'奖励',cost:parseInt(document.getElementById('rw-cost').value)||10});
+  Store.save();UI.closeModal();renderMind();
+}
+function redeemReward(i){
+  const r=Store.data.rewards[i];
+  const total=getTotalPoints();
+  if(total<r.cost){UI.toast('积分不足');return;}
+  if(confirm(`确定用${r.cost}积分兑换「${r.name}」吗？`)){
+    Store.data.pointsRecords.push({date:D.todayStr(),action:`兑换：${r.name}`,points:-r.cost,icon:r.icon});
+    Store.save();
+    UI.celebrate(r.icon,'兑换成功！',`用${r.cost}积分兑换了「${r.name}」，宝贝真棒！`);
+    renderMind();
+  }
+}
+
+/* ============================================================
+   提醒通知模块
+   ============================================================ */
+let reminderSubTab='list';
+function renderReminder(){
+  let html=`<div class="page-header"><h1>⏰ 提醒小助手</h1><div class="sub">✨ 智能提醒 · 喝水 · 用药 · 运动</div></div>`;
+  
+  // 通知授权状态
+  if(!('Notification' in window)){
+    html+=`<div class="section"><div class="card" style="background:var(--orange-light);font-size:13px">⚠️ 当前浏览器不支持通知，将使用App内提醒</div></div>`;
+  }else if(Notification.permission==='default'){
+    html+=`<div class="section"><div class="card" style="background:var(--blue-light);font-size:13px;display:flex;align-items:center;justify-content:space-between"><span>🔔 开启通知授权后可接收推送提醒</span><button class="btn btn-primary btn-sm" onclick="requestNotify()">开启</button></div></div>`;
+  }
+  
+  // 子Tab
+  html+=`<div class="section"><div class="tab-bar">
+    <div class="tb ${reminderSubTab==='list'?'active':''}" onclick="reminderSubTab='list';renderReminder()">今日提醒</div>
+    <div class="tb ${reminderSubTab==='water'?'active':''}" onclick="reminderSubTab='water';renderReminder()">喝水💧</div>
+    <div class="tb ${reminderSubTab==='med'?'active':''}" onclick="reminderSubTab='med';renderReminder()">用药💊</div>
+    <div class="tb ${reminderSubTab==='custom'?'active':''}" onclick="reminderSubTab='custom';renderReminder()">其他</div>
+  </div></div>`;
+  
+  const today=D.todayStr();
+  const now=new Date();
+  const nowStr=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+  
+  if(reminderSubTab==='list'){
+    // 汇总今日所有提醒
+    let items=[];
+    const r=Store.data.reminders;
+    if(r.water.enabled) r.water.times.forEach(t=>items.push({time:t,icon:'💧',title:'喝水时间到',desc:`今天喝水了吗？目标${r.water.target}杯`,enabled:true}));
+    r.medication.filter(m=>m.enabled).forEach(m=>items.push({time:m.time,icon:'💊',title:`吃${m.name}`,desc:`剂量：${m.dose}${m.unit||''}`,enabled:m.enabled}));
+    if(r.exercise.enabled) items.push({time:r.exercise.time,icon:'🏃',title:'运动提醒',desc:r.exercise.text,enabled:true});
+    if(r.study.enabled) items.push({time:r.study.time,icon:'📚',title:'学习提醒',desc:r.study.text,enabled:true});
+    if(r.supplement.enabled) items.push({time:r.supplement.time,icon:'🧪',title:'补充剂提醒',desc:r.supplement.text,enabled:true});
+    if(r.measure.enabled){const d=new Date();if(d.getDate()===r.measure.day) items.push({time:r.measure.time,icon:'📏',title:'测量提醒',desc:r.measure.text,enabled:true});}
+    items.sort((a,b)=>a.time.localeCompare(b.time));
+    
+    html+=`<div class="section">
+      <div class="section-title"><span class="left">📋 今日提醒列表</span><span class="more">${items.length}条</span></div>
+      ${items.length===0?'<div class="card"><div class="empty"><div class="emoji">⏰✨</div><div class="text">还没有提醒哦，快来添加吧！</div></div></div>':
+      items.map(it=>`<div class="reminder-item"><div class="time">${it.time}</div><div class="icon">${it.icon}</div><div class="content"><div class="title">${it.title}</div><div class="desc">${it.desc}</div></div><div class="switch ${it.enabled?'on':''}"></div></div>`).join('')}
+    </div>`;
+  }
+  
+  if(reminderSubTab==='water'){
+    const wr=Store.data.reminders.water;
+    const todayCount=Store.data.waterRecords[today]||0;
+    html+=`<div class="section">
+      <div class="card water-progress">
+        <div style="font-size:15px;font-weight:800">💧 今天喝水了吗？</div>
+        <div style="font-size:36px;font-weight:700;color:var(--blue);margin:6px 0">${todayCount}<span style="font-size:16px;color:var(--text-light)">/${wr.target}杯</span></div>
+        <div class="water-cups">
+          ${Array.from({length:wr.target},(_,i)=>`<div class="water-cup ${i<todayCount?'filled':''}" onclick="drinkWater()">💧</div>`).join('')}
+        </div>
+        <div style="font-size:12px;color:var(--text-light)">点击水杯记录喝水</div>
+        <div style="margin-top:8px">
+          <button class="btn btn-primary btn-sm" onclick="drinkWater()">+1杯</button>
+          <button class="btn btn-outline btn-sm" onclick="undrinkWater()">-1杯</button>
+        </div>
+      </div>
+    </div>`;
+    html+=`<div class="section">
+      <div class="section-title"><span class="left">⏰ 喝水提醒时间</span><span class="more" onclick="editWaterTimes()">编辑</span></div>
+      <div class="card">
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          ${wr.times.map(t=>`<span class="tag tag-blue">${t}</span>`).join('')}
+        </div>
+        <div style="font-size:12px;color:var(--text-light);margin-top:8px">每日${wr.times.length}次提醒，目标${wr.target}杯</div>
+      </div>
+    </div>`;
+  }
+  
+  if(reminderSubTab==='med'){
+    html+=`<div class="section">
+      <div class="section-title"><span class="left">💊 用药提醒</span><span class="more" onclick="addMedReminder()">+ 添加</span></div>
+      ${Store.data.medicationRecords.length===0?'<div class="card"><div class="empty"><div class="emoji">💊✨</div><div class="text">还没有用药提醒哦～</div></div></div>':
+      Store.data.medicationRecords.map((m,i)=>`
+        <div class="reminder-item">
+          <div class="time">${m.time||'--:--'}</div>
+          <div class="icon">💊</div>
+          <div class="content"><div class="title">${m.name} ${m.dose}${m.unit||''}</div><div class="desc">${m.freq||''} ${m.note?'· '+m.note:''}</div></div>
+          <div class="switch ${m.enabled!==false?'on':''}" onclick="toggleMed(${i})"></div>
+        </div>
+      `).join('')}
+    </div>`;
+    // 用药历史
+    if(Store.data.medHistory.length){
+      html+=`<div class="section">
+        <div class="section-title"><span class="left">📋 用药历史</span></div>
+        <div class="card">
+          ${Store.data.medHistory.slice(-10).reverse().map(h=>`<div class="record-row"><div class="date">${h.dateStr.slice(5)} ${h.time}</div><div class="vals">${h.name}</div></div>`).join('')}
+        </div>
+      </div>`;
+    }
+  }
+  
+  if(reminderSubTab==='custom'){
+    const r=Store.data.reminders;
+    html+=`<div class="section">
+      <div class="section-title"><span class="left">🏃 运动提醒</span></div>
+      <div class="reminder-item"><div class="time">${r.exercise.time}</div><div class="icon">🏃</div><div class="content"><div class="title">跳绳+足弓训练</div><div class="desc">${r.exercise.text}</div></div><div class="switch ${r.exercise.enabled?'on':''}" onclick="toggleReminder('exercise')"></div></div>
+    </div>`;
+    html+=`<div class="section">
+      <div class="section-title"><span class="left">📚 学习提醒</span></div>
+      <div class="reminder-item"><div class="time">${r.study.time}</div><div class="icon">📚</div><div class="content"><div class="title">幼小衔接学习</div><div class="desc">${r.study.text}</div></div><div class="switch ${r.study.enabled?'on':''}" onclick="toggleReminder('study')"></div></div>
+    </div>`;
+    html+=`<div class="section">
+      <div class="section-title"><span class="left">🧪 补充剂提醒</span></div>
+      <div class="reminder-item"><div class="time">${r.supplement.time}</div><div class="icon">🧪</div><div class="content"><div class="title">益生菌+VD+钙镁片</div><div class="desc">${r.supplement.text}</div></div><div class="switch ${r.supplement.enabled?'on':''}" onclick="toggleReminder('supplement')"></div></div>
+    </div>`;
+    html+=`<div class="section">
+      <div class="section-title"><span class="left">📏 测量提醒</span></div>
+      <div class="reminder-item"><div class="time">每月${r.measure.day}日 ${r.measure.time}</div><div class="icon">📏</div><div class="content"><div class="title">量身高体重</div><div class="desc">${r.measure.text}</div></div><div class="switch ${r.measure.enabled?'on':''}" onclick="toggleReminder('measure')"></div></div>
+    </div>`;
+  }
+  
+  document.getElementById('page-reminder').innerHTML=html;
+}
+
+function requestNotify(){
+  Notification.requestPermission().then(p=>{
+    if(p==='granted'){UI.toast('通知已开启');renderReminder();}
+    else UI.toast('未授权，仅App内提醒');
+  });
+}
+function toggleReminder(key){
+  Store.data.reminders[key].enabled=!Store.data.reminders[key].enabled;
+  Store.save();renderReminder();
+}
+function toggleMed(i){
+  const m=Store.data.medicationRecords[i];
+  m.enabled=m.enabled===false?true:false;
+  Store.save();renderReminder();
+}
+function drinkWater(){
+  const today=D.todayStr();
+  Store.data.waterRecords[today]=(Store.data.waterRecords[today]||0)+1;
+  if(Store.data.waterRecords[today]>=8) addPoint('喝了8杯水',1,'💧');
+  Store.save();renderReminder();
+}
+function undrinkWater(){
+  const today=D.todayStr();
+  Store.data.waterRecords[today]=Math.max(0,(Store.data.waterRecords[today]||0)-1);
+  Store.save();renderReminder();
+}
+function editWaterTimes(){
+  const wr=Store.data.reminders.water;
+  UI.modalWithTitle('编辑喝水提醒',`
+    <div class="form-group"><label class="form-label">提醒次数</label><input type="number" class="form-input" id="wt-count" value="${wr.times.length}" min="4" max="12"></div>
+    <div class="form-group"><label class="form-label">目标杯数</label><input type="number" class="form-input" id="wt-target" value="${wr.target}" min="4" max="12"></div>
+    <div class="form-group"><label class="form-label">提醒时间（逗号分隔）</label><textarea class="form-textarea" id="wt-times">${wr.times.join(',')}</textarea></div>
+    <button class="btn btn-primary btn-block" onclick="saveWaterTimes()">保存</button>
+  `);
+}
+function saveWaterTimes(){
+  const wr=Store.data.reminders.water;
+  wr.target=parseInt(document.getElementById('wt-target').value)||8;
+  wr.times=document.getElementById('wt-times').value.split(',').map(s=>s.trim()).filter(Boolean);
+  Store.save();UI.closeModal();renderReminder();
+}
+function addMedReminder(){
+  UI.modalWithTitle('添加用药提醒',`
+    <div class="form-group"><label class="form-label">药品名称</label><input type="text" class="form-input" id="md-name" placeholder="如：孟鲁司特钠"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">剂量</label><input type="text" class="form-input" id="md-dose" placeholder="4"></div>
+      <div class="form-group"><label class="form-label">单位</label><input type="text" class="form-input" id="md-unit" placeholder="mg/ml"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">频次</label><select class="form-select" id="md-freq"><option>每日一次</option><option>每日两次</option><option>每日三次</option><option>按需</option></select></div>
+      <div class="form-group"><label class="form-label">时间</label><input type="time" class="form-input" id="md-time" value="08:00"></div>
+    </div>
+    <div class="form-group"><label class="form-label">备注</label><input type="text" class="form-input" id="md-note" placeholder="如：饭后服用"></div>
+    <button class="btn btn-primary btn-block" onclick="saveMedReminder()">保存</button>
+  `);
+}
+function saveMedReminder(){
+  Store.data.medicationRecords.push({
+    name:document.getElementById('md-name').value,dose:document.getElementById('md-dose').value,unit:document.getElementById('md-unit').value,
+    freq:document.getElementById('md-freq').value,time:document.getElementById('md-time').value,note:document.getElementById('md-note').value,
+    startDate:D.todayStr(),stopDate:'',enabled:true
+  });
+  Store.save();UI.closeModal();UI.toast('已添加');renderReminder();
+}
+
+/* ========== 提醒检查（每分钟） ========== */
+let lastNotifyKey='';
+function checkReminders(){
+  const now=new Date();
+  const hh=String(now.getHours()).padStart(2,'0');
+  const mm=String(now.getMinutes()).padStart(2,'0');
+  const timeStr=hh+':'+mm;
+  const today=D.todayStr();
+  const key=today+timeStr;
+  if(key===lastNotifyKey) return;
+  
+  const r=Store.data.reminders;
+  let msg=null;
+  if(r.water.enabled&&r.water.times.includes(timeStr)){
+    const c=Store.data.waterRecords[today]||0;
+    msg=`💧 该喝水啦！今天已喝${c}杯，目标${r.water.target}杯`;
+  }
+  if(r.exercise.enabled&&r.exercise.time===timeStr) msg='🏃 '+r.exercise.text;
+  if(r.study.enabled&&r.study.time===timeStr) msg='📚 '+r.study.text;
+  if(r.supplement.enabled&&r.supplement.time===timeStr) msg='🧪 '+r.supplement.text;
+  if(r.measure.enabled&&r.measure.time===timeStr&&now.getDate()===r.measure.day) msg='📏 '+r.measure.text;
+  if(r.nasalRinse&&r.nasalRinse.enabled&&(r.nasalRinse.morning===timeStr||r.nasalRinse.evening===timeStr)) msg='🌊 '+r.nasalRinse.text;
+  const med=r.medication.find(m=>m.enabled!==false&&m.time===timeStr);
+  if(med) msg=`💊 吃药啦小勇士！该吃【${med.name}】了，剂量：${med.dose}${med.unit||''}`;
+  
+  if(msg){
+    lastNotifyKey=key;
+    if('Notification' in window && Notification.permission==='granted'){
+      new Notification('男孩养育管家',{body:msg,icon:'icons/icon-192.png'});
+    }
+    UI.toast(msg,5000);
+  }
+}
+
+/* ============================================================
+   疾病管理弹窗
+   ============================================================ */
+function showDiseaseModal(){
+  let html=`<div class="tab-bar" id="disTab">
+    <div class="tb active" onclick="switchDis('asthma',this)">哮喘</div>
+    <div class="tb" onclick="switchDis('rhinitis',this)">鼻炎</div>
+    <div class="tb" onclick="switchDis('vaccine',this)">疫苗</div>
+    <div class="tb" onclick="switchDis('med',this)">用药</div>
+    <div class="tb" onclick="switchDis('visit',this)">就医</div>
+  </div><div id="disContent"></div>`;
+  UI.modalWithTitle('🏥 疾病管理',html);
+  setTimeout(()=>switchDis('asthma',document.querySelector('#disTab .tb')),0);
+}
+function switchDis(type,el){
+  document.querySelectorAll('#disTab .tb').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  const c=document.getElementById('disContent');
+  if(type==='asthma'){
+    c.innerHTML=`
+      <div style="background:var(--blue-light);border-radius:8px;padding:10px;font-size:12px;color:var(--blue);margin-bottom:12px;line-height:1.7">
+        💡 提醒：避免过敏原 · 戴口罩 · 保持室内湿度50-60%
+      </div>
+      <button class="btn btn-primary btn-block btn-sm" onclick="addAsthma()" style="margin-bottom:12px">+ 记录发作</button>
+      ${Store.data.asthmaRecords.length===0?'<div class="empty"><div class="emoji">📭✨</div><div class="text">还没有发作记录，希望一直空空的～</div></div>':
+      Store.data.asthmaRecords.slice().reverse().map(r=>`<div class="card" style="margin-bottom:8px"><div style="font-size:13px"><b>${r.date}</b> · ${r.severity}</div><div style="font-size:12px;color:var(--text-light);margin-top:2px">诱因：${r.trigger} · 持续${r.duration||'-'}</div>${r.meds?'<div style="font-size:12px;color:var(--text-light)">用药：'+r.meds+'</div>':''}</div>`).join('')}
+    `;
+  }
+  if(type==='rhinitis'){
+    const now=new Date(); const ym=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    const monthDays=Object.entries(Store.data.rhinitisRecords).filter(([k,v])=>k.startsWith(ym)&&v).length;
+    const today=D.todayStr();
+    const nr=Store.data.nasalRinse[today]||{morning:false,evening:false};
+    c.innerHTML=`
+      <div style="background:var(--blue-light);border-radius:8px;padding:10px;font-size:12px;color:var(--blue);margin-bottom:12px;line-height:1.7">
+        💡 提醒：每日洗鼻 · 避免尘螨 · 花粉季戴口罩
+      </div>
+      <div class="card" style="text-align:center"><div style="font-size:24px;font-weight:700;color:var(--orange)">${monthDays}</div><div style="font-size:12px;color:var(--text-light)">本月发作天数</div></div>
+      <div style="margin-top:12px"><div style="font-size:13px;font-weight:600;margin-bottom:8px">🌊 今日洗鼻打卡</div>
+      <div style="display:flex;gap:10px;margin-bottom:12px">
+        <button class="btn ${nr.morning?'btn-primary':'btn-outline'}" style="flex:1" onclick="toggleNasalRinse('morning')">${nr.morning?'✅':'☀️'} 早上已洗</button>
+        <button class="btn ${nr.evening?'btn-primary':'btn-outline'}" style="flex:1" onclick="toggleNasalRinse('evening')">${nr.evening?'✅':'🌙'} 晚上已洗</button>
+      </div></div>
+      <div style="margin-top:12px"><div style="font-size:13px;font-weight:600;margin-bottom:8px">今日是否发作？</div>
+      <div style="display:flex;gap:10px">
+        <button class="btn ${Store.data.rhinitisRecords[today]?'btn-primary':'btn-outline'}" style="flex:1" onclick="setRhinitis(true)">有发作</button>
+        <button class="btn ${!Store.data.rhinitisRecords[today]?'btn-primary':'btn-outline'}" style="flex:1" onclick="setRhinitis(false)">无发作</button>
+      </div></div>
+    `;
+  }
+  if(type==='vaccine'){
+    c.innerHTML=`
+      <div style="background:var(--orange-light);border-radius:8px;padding:10px;font-size:12px;color:var(--orange-dark);margin-bottom:12px">
+        📋 6岁应接种：白破疫苗、流脑疫苗（据国家免疫规划）
+      </div>
+      <button class="btn btn-primary btn-block btn-sm" onclick="addVaccine()" style="margin-bottom:12px">+ 添加接种记录</button>
+      ${Store.data.vaccineRecords.length===0?'<div class="empty"><div class="emoji">💉✨</div><div class="text">还没有疫苗记录哦，快来添加吧！</div></div>':
+      Store.data.vaccineRecords.map((v,i)=>`<div class="card" style="margin-bottom:8px"><div style="font-size:13px"><b>${v.name}</b></div><div style="font-size:12px;color:var(--text-light);margin-top:2px">接种：${v.date} @ ${v.location||''}</div><div style="font-size:12px;color:var(--orange-dark)">下次：${v.nextDate||'-'}</div></div>`).join('')}
+    `;
+  }
+  if(type==='med'){
+    c.innerHTML=`
+      <button class="btn btn-primary btn-block btn-sm" onclick="addMedReminder();setTimeout(()=>{UI.closeModal();},0)" style="margin-bottom:12px">+ 添加用药（在提醒页添加）</button>
+      ${Store.data.medicationRecords.length===0?'<div class="empty"><div class="emoji">💊✨</div><div class="text">还没有用药记录哦～</div></div>':
+      Store.data.medicationRecords.map(m=>`<div class="card" style="margin-bottom:8px"><div style="font-size:13px"><b>${m.name}</b> ${m.dose}${m.unit||''}</div><div style="font-size:12px;color:var(--text-light);margin-top:2px">${m.freq||''} · ${m.time||''} ${m.note?'· '+m.note:''}</div>${m.stopDate?'<span class="tag tag-red" style="margin-top:4px">已停药 '+m.stopDate+'</span>':''}</div>`).join('')}
+    `;
+  }
+  if(type==='visit'){
+    c.innerHTML=`
+      <button class="btn btn-primary btn-block btn-sm" onclick="addVisit()" style="margin-bottom:12px">+ 添加就医记录</button>
+      ${Store.data.visitRecords.length===0?'<div class="empty"><div class="emoji">🏥✨</div><div class="text">还没有就医记录哦，健康最好啦！</div></div>':
+      Store.data.visitRecords.slice().reverse().map(v=>`<div class="card" style="margin-bottom:8px"><div style="font-size:13px"><b>${v.date}</b> ${v.hospital||''} ${v.dept||''}</div><div style="font-size:12px;color:var(--text-light);margin-top:2px">医生：${v.doctor||'-'}</div><div style="font-size:12px;margin-top:2px">诊断：${v.diagnosis||'-'}</div><div style="font-size:12px;color:var(--text-light)">处理：${v.plan||'-'}</div>${v.nextDate?'<div style="font-size:12px;color:var(--orange-dark)">复诊：'+v.nextDate+'</div>':''}</div>`).join('')}
+    `;
+  }
+}
+function addAsthma(){
+  UI.modalWithTitle('记录哮喘发作',`
+    <div class="form-group"><label class="form-label">日期</label><input type="date" class="form-input" id="as-date" value="${D.todayStr()}"></div>
+    <div class="form-group"><label class="form-label">诱发因素</label><select class="form-select" id="as-trigger"><option>运动</option><option>冷空气</option><option>过敏原</option><option>感冒</option><option>不明</option></select></div>
+    <div class="form-group"><label class="form-label">严重程度</label><select class="form-select" id="as-sev"><option>轻度</option><option>中度</option><option>重度</option></select></div>
+    <div class="form-group"><label class="form-label">持续时间</label><input type="text" class="form-input" id="as-dur" placeholder="如：30分钟"></div>
+    <div class="form-group"><label class="form-label">使用药物</label><input type="text" class="form-input" id="as-meds" placeholder="如：沙丁胺醇雾化"></div>
+    <button class="btn btn-primary btn-block" onclick="saveAsthma()">保存</button>
+  `);
+}
+function saveAsthma(){
+  Store.data.asthmaRecords.push({
+    date:document.getElementById('as-date').value,trigger:document.getElementById('as-trigger').value,
+    severity:document.getElementById('as-sev').value,duration:document.getElementById('as-dur').value,
+    meds:document.getElementById('as-meds').value
+  });
+  Store.save();UI.closeModal();showDiseaseModal();setTimeout(()=>switchDis('asthma',document.querySelectorAll('#disTab .tb')[0]),0);
+}
+function setRhinitis(v){
+  Store.data.rhinitisRecords[D.todayStr()]=v;
+  Store.save();showDiseaseModal();setTimeout(()=>switchDis('rhinitis',document.querySelectorAll('#disTab .tb')[1]),0);
+}
+function toggleNasalRinse(when){
+  const today=D.todayStr();
+  if(!Store.data.nasalRinse[today]) Store.data.nasalRinse[today]={morning:false,evening:false};
+  Store.data.nasalRinse[today][when]=!Store.data.nasalRinse[today][when];
+  Store.save();
+  showDiseaseModal();setTimeout(()=>switchDis('rhinitis',document.querySelectorAll('#disTab .tb')[1]),0);
+  UI.toast(when==='morning'?'早上洗鼻打卡成功！🌞':'晚上洗鼻打卡成功！🌙');
+}
+function addVaccine(){
+  UI.modalWithTitle('添加疫苗接种',`
+    <div class="form-group"><label class="form-label">疫苗名称</label><input type="text" class="form-input" id="vc-name" placeholder="如：白破疫苗"></div>
+    <div class="form-group"><label class="form-label">接种日期</label><input type="date" class="form-input" id="vc-date" value="${D.todayStr()}"></div>
+    <div class="form-group"><label class="form-label">接种地点</label><input type="text" class="form-input" id="vc-loc" placeholder="如：社区卫生服务中心"></div>
+    <div class="form-group"><label class="form-label">下次接种时间</label><input type="date" class="form-input" id="vc-next"></div>
+    <button class="btn btn-primary btn-block" onclick="saveVaccine()">保存</button>
+  `);
+}
+function saveVaccine(){
+  Store.data.vaccineRecords.push({name:document.getElementById('vc-name').value,date:document.getElementById('vc-date').value,location:document.getElementById('vc-loc').value,nextDate:document.getElementById('vc-next').value});
+  Store.save();UI.closeModal();showDiseaseModal();setTimeout(()=>switchDis('vaccine',document.querySelectorAll('#disTab .tb')[2]),0);
+}
+function addVisit(){
+  UI.modalWithTitle('添加就医记录',`
+    <div class="form-group"><label class="form-label">就诊日期</label><input type="date" class="form-input" id="vs-date" value="${D.todayStr()}"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">医院</label><input type="text" class="form-input" id="vs-hosp"></div>
+      <div class="form-group"><label class="form-label">科室</label><input type="text" class="form-input" id="vs-dept"></div>
+    </div>
+    <div class="form-group"><label class="form-label">医生</label><input type="text" class="form-input" id="vs-doc"></div>
+    <div class="form-group"><label class="form-label">诊断</label><input type="text" class="form-input" id="vs-dx"></div>
+    <div class="form-group"><label class="form-label">处理方案</label><textarea class="form-textarea" id="vs-plan"></textarea></div>
+    <div class="form-group"><label class="form-label">下次复诊</label><input type="date" class="form-input" id="vs-next"></div>
+    <button class="btn btn-primary btn-block" onclick="saveVisit()">保存</button>
+  `);
+}
+function saveVisit(){
+  Store.data.visitRecords.push({date:document.getElementById('vs-date').value,hospital:document.getElementById('vs-hosp').value,dept:document.getElementById('vs-dept').value,doctor:document.getElementById('vs-doc').value,diagnosis:document.getElementById('vs-dx').value,plan:document.getElementById('vs-plan').value,nextDate:document.getElementById('vs-next').value});
+  Store.save();UI.closeModal();showDiseaseModal();setTimeout(()=>switchDis('visit',document.querySelectorAll('#disTab .tb')[4]),0);
+}
+
+/* ============================================================
+   免疫力提升弹窗
+   ============================================================ */
+function showImmunityModal(){
+  const today=D.todayStr();
+  const sleep=Store.data.sleepRecords[today]||{};
+  const outdoor=Store.data.outdoorRecords[today]||{};
+  let html=`
+  <div class="tab-bar" id="immTab">
+    <div class="tb active" onclick="switchImm('sleep',this)">睡眠</div>
+    <div class="tb" onclick="switchImm('outdoor',this)">户外</div>
+    <div class="tb" onclick="switchImm('nutri',this)">营养</div>
+  </div><div id="immContent"></div>`;
+  UI.modalWithTitle('🛡️ 免疫力提升',html);
+  setTimeout(()=>switchImm('sleep',document.querySelector('#immTab .tb')),0);
+}
+function switchImm(type,el){
+  document.querySelectorAll('#immTab .tb').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  const c=document.getElementById('immContent');
+  const today=D.todayStr();
+  if(type==='sleep'){
+    const s=Store.data.sleepRecords[today]||{};
+    let dur='-',quality='';
+    if(s.bedTime&&s.wakeTime){
+      const [bh,bm]=s.bedTime.split(':').map(Number);const[wh,wm]=s.wakeTime.split(':').map(Number);
+      let mins=(wh*60+wm)-(bh*60+bm);if(mins<0)mins+=24*60;
+      dur=(mins/60).toFixed(1)+'小时';
+      quality=mins>=600?'充足 ✓':mins>=540?'基本充足':'不足 ⚠️';
+    }
+    c.innerHTML=`
+      <div class="card" style="text-align:center;background:var(--blue-light)">
+        <div style="font-size:12px;color:var(--text-light)">推荐21:00入睡 · 6岁需10-12小时</div>
+        <div style="font-size:28px;font-weight:700;color:var(--blue);margin:6px">${dur}</div>
+        <div style="font-size:13px">${quality||'未记录'}</div>
+      </div>
+      <div class="form-row" style="margin-top:12px">
+        <div class="form-group"><label class="form-label">就寝时间</label><input type="time" class="form-input" id="sl-bed" value="${s.bedTime||'21:00'}"></div>
+        <div class="form-group"><label class="form-label">起床时间</label><input type="time" class="form-input" id="sl-wake" value="${s.wakeTime||'07:00'}"></div>
+      </div>
+      <button class="btn btn-primary btn-block" onclick="saveSleep()">保存</button>
+    `;
+  }
+  if(type==='outdoor'){
+    const o=Store.data.outdoorRecords[today]||{};
+    let advice='';
+    if(o.weather==='☀️')advice='天气晴好，适合户外活动，注意防晒';
+    else if(o.weather==='🌧️')advice='雨天可在室内活动，开窗通风';
+    else if(o.weather==='❄️')advice='寒冷天气注意保暖，可短时户外';
+    else advice='请选择今日天气';
+    c.innerHTML=`
+      <div class="card" style="text-align:center;background:var(--green);color:#fff">
+        <div style="font-size:12px;opacity:.9">每日至少1小时户外活动</div>
+        <div style="font-size:28px;font-weight:700;margin:6px">${o.hours||0}<span style="font-size:14px">小时</span></div>
+      </div>
+      <div class="form-row" style="margin-top:12px">
+        <div class="form-group"><label class="form-label">户外时长(小时)</label><input type="number" class="form-input" id="od-hours" value="${o.hours||''}" step="0.5"></div>
+        <div class="form-group"><label class="form-label">天气</label><select class="form-select" id="od-weather"><option value="">选择</option><option ${o.weather==='☀️'?'selected':''}>☀️</option><option ${o.weather==='⛅'?'selected':''}>⛅</option><option ${o.weather==='🌧️'?'selected':''}>🌧️</option><option ${o.weather==='❄️'?'selected':''}>❄️</option></select></div>
+      </div>
+      <div style="background:var(--orange-light);border-radius:8px;padding:8px;font-size:12px;color:var(--orange-dark);margin-bottom:10px">${advice}</div>
+      <button class="btn btn-primary btn-block" onclick="saveOutdoor()">保存</button>
+    `;
+  }
+  if(type==='nutri'){
+    c.innerHTML=`
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px">🛡️ 提升免疫力食物清单（无蛋奶）</div>
+      <div class="card">
+        ${['🐟 深海鱼（三文鱼、鲈鱼）- 富含Omega-3','🥩 瘦肉 - 优质蛋白+铁','🫘 豆制品 - 植物蛋白+钙','🥬 深绿色蔬菜（菠菜、西兰花）- 维生素','🍊 橙黄色水果（橙子、木瓜）- 维C','🍄 菌菇类 - 多糖提升免疫'].map(f=>`<div style="padding:6px 0;font-size:13px;border-bottom:1px dashed var(--border)">${f}</div>`).join('')}
+      </div>
+      <div style="font-size:13px;font-weight:600;margin:12px 0 8px">💊 每日补充剂</div>
+      <div class="card">
+        <div style="font-size:13px;line-height:1.8">
+          ${['益生菌 - 调节肠道免疫','维生素D - 促进钙吸收','钙镁片 - 骨骼发育'].map(s=>`<div>${s}</div>`).join('')}
+        </div>
+      </div>
+      <div style="font-size:13px;font-weight:600;margin:12px 0 8px">🍂 季节性健康提醒</div>
+      <div class="card" style="font-size:12px;color:var(--text-light);line-height:1.8">
+        ${new Date().getMonth()+1>=6&&new Date().getMonth()+1<=8?'☀️ 夏季注意防暑、多喝水、避免正午外出':''}
+        ${new Date().getMonth()+1>=9||new Date().getMonth()+1<=11?'🍂 秋季注意防过敏、鼻炎高发期戴口罩':''}
+        ${new Date().getMonth()+1>=12||new Date().getMonth()+1<=2?'❄️ 冬季注意保暖、预防感冒诱发哮喘':''}
+        ${new Date().getMonth()+1>=3&&new Date().getMonth()+1<=5?'🌸 春季花粉过敏高发，外出戴口罩':''}
+      </div>
+    `;
+  }
+}
+function saveSleep(){
+  Store.data.sleepRecords[D.todayStr()]={bedTime:document.getElementById('sl-bed').value,wakeTime:document.getElementById('sl-wake').value};
+  Store.save();UI.toast('已保存');switchImm('sleep',document.querySelectorAll('#immTab .tb')[0]);
+}
+function saveOutdoor(){
+  Store.data.outdoorRecords[D.todayStr()]={hours:parseFloat(document.getElementById('od-hours').value)||0,weather:document.getElementById('od-weather').value};
+  Store.save();UI.toast('已保存');switchImm('outdoor',document.querySelectorAll('#immTab .tb')[1]);
+}
+
+/* ============================================================
+   儿童添加剂避坑清单
+   ============================================================ */
+const BUILTIN_ADDITIVES=[
+  // 人工色素 (7种)
+  {name:'柠檬黄（E102）',icon:'🟡',cat:'人工色素',harm:'可能引起注意力不集中、多动，欧盟要求标注"可能对儿童行为有不良影响"',foods:'糖果、果冻、饮料、冰淇淋',avoid:'选择天然色素食品（如胡萝卜素着色），避免颜色过于鲜艳的零食'},
+  {name:'日落黄（E110）',icon:'🟠',cat:'人工色素',harm:'与儿童多动症相关，部分国家已禁用',foods:'橙色糖果、调味饮料、果酱',avoid:'查看配料表，选无人工色素的品牌'},
+  {name:'胭脂红（E124）',icon:'🔴',cat:'人工色素',harm:'可能引发哮喘、皮疹等过敏反应，动物实验显示有致癌风险',foods:'红色糖果、草莓味饮料、香肠、果冻',avoid:'避免颜色异常鲜艳的红色食品，选择天然苋菜红色素替代'},
+  {name:'亮蓝（E133）',icon:'🔵',cat:'人工色素',harm:'可能引起过敏反应，在部分欧洲国家限制使用',foods:'蓝色糖果、冰淇淋、运动饮料、彩色糖霜',avoid:'蓝色零食几乎都是人工色素，直接避开'},
+  {name:'诱惑红（E129）',icon:'❤️',cat:'人工色素',harm:'动物实验显示可能致癌，欧盟严格限制使用量',foods:'红色饮料、糖果、糕点装饰',avoid:'选天然甜菜红或红曲米着色的食品'},
+  {name:'赤藓红（E127）',icon:'💗',cat:'人工色素',harm:'可能影响甲状腺功能，高剂量动物实验显示致癌',foods:'樱桃色糖果、蛋糕装饰、果冻',avoid:'粉色零食尤其注意配料表'},
+  {name:'喹啉黄（E104）',icon:'💛',cat:'人工色素',harm:'与儿童多动症强相关，英国已禁用',foods:'黄色饮料、糖果涂层、调味品',avoid:'英国已禁用，选天然姜黄色素替代'},
+  // 防腐剂 (7种)
+  {name:'苯甲酸钠',icon:'🧴',cat:'防腐剂',harm:'与维生素C反应生成致癌物苯，可能引发过敏和哮喘',foods:'碳酸饮料、果汁、酱油、酱菜',avoid:'选择冷藏短保产品，或标注"无防腐剂"的'},
+  {name:'山梨酸钾',icon:'🧂',cat:'防腐剂',harm:'过量摄入可能引起肠胃不适，少数人出现皮肤过敏',foods:'果酱、饮料、糕点、奶酪替代品',avoid:'虽然相对安全，儿童仍应减少摄入'},
+  {name:'亚硝酸钠',icon:'🥓',cat:'防腐剂',harm:'在体内转化为致癌物亚硝胺，WHO明确致癌风险',foods:'火腿肠、培根、腊肉、罐头肉',avoid:'新鲜肉类替代加工肉制品，看配料表排除'},
+  {name:'对羟基苯甲酸酯（尼泊金酯）',icon:'🧪',cat:'防腐剂',harm:'类雌激素作用，干扰内分泌，影响骨骼发育和性征',foods:'酱油、酱料、烘焙食品',avoid:'选标注"无尼泊金酯防腐剂"的产品'},
+  {name:'脱氢乙酸钠',icon:'🧫',cat:'防腐剂',harm:'过量可能损伤肝肾，2025年起中国烘焙食品已禁用',foods:'糕点、面包（2025年前常见）',avoid:'选新鲜现烤面包，不买长保质期糕点'},
+  {name:'丙酸钙',icon:'🍞',cat:'防腐剂',harm:'可能引起儿童注意力不集中、睡眠障碍',foods:'切片面包、蛋糕、饼干',avoid:'选短保质期面包，或自制'},
+  {name:'二氧化硫/亚硫酸盐',icon:'💨',cat:'漂白剂/防腐剂',harm:'可能诱发哮喘发作，对过敏体质儿童尤其危险',foods:'果脯、蜜饯、干果、葡萄酒、果汁',avoid:'选择"无硫"标注的干果，颜色过于鲜艳的避开'},
+  // 甜味剂 (7种)
+  {name:'阿斯巴甜',icon:'🍬',cat:'人工甜味剂',harm:'WHO列为2B类致癌物，可能影响神经系统',foods:'无糖饮料、口香糖、低糖零食',avoid:'选择天然甜味（水果、蜂蜜），6岁以下避免'},
+  {name:'安赛蜜（AK糖）',icon:'🍭',cat:'人工甜味剂',harm:'可能影响肠道菌群平衡，长期安全性数据不足',foods:'无糖饮料、酸奶替代品、果冻',avoid:'配料表出现"安赛蜜"或"Acesulfame-K"就放下'},
+  {name:'三氯蔗糖',icon:'🧁',cat:'人工甜味剂',harm:'高温烹饪可能产生有害物质，影响胰岛素敏感性',foods:'烘焙食品、蛋白棒、无糖零食',avoid:'6岁以下尽量不接触人工甜味剂'},
+  {name:'糖精钠',icon:'🍯',cat:'人工甜味剂',harm:'动物实验显示可能致癌，已被多国限制，甜度是蔗糖300倍',foods:'廉价糖果、蜜饯、低价饮料',avoid:'看到"糖精"或"Saccharin"绝对不要'},
+  {name:'甜蜜素',icon:'🍡',cat:'人工甜味剂',harm:'过量可能损伤肝肾，美国已禁用',foods:'蜜饯、果冻、饮料、冷冻饮品',avoid:'美国禁用，配料表出现"甜蜜素"不买'},
+  {name:'高果糖浆',icon:'🥤',cat:'甜味剂',harm:'导致肥胖、脂肪肝、胰岛素抵抗，影响钙吸收',foods:'几乎所有含糖饮料、零食、果冻',avoid:'配料表前3名有它就别买，选新鲜水果'},
+  {name:'麦芽糖醇（过量）',icon:'🍬',cat:'糖醇',harm:'过量引起腹胀腹泻，儿童肠道更敏感',foods:'无糖糖果、口香糖、减肥食品',avoid:'适量无害，但一次不超过10g'},
+  // 增味剂/抗氧化剂/其他 (9种)
+  {name:'BHA/BHT',icon:'🧪',cat:'抗氧化剂',harm:'动物实验显示可能致癌，扰乱内分泌',foods:'油炸零食、方便面、饼干、口香糖',avoid:'选择无添加的天然零食，避免油炸膨化食品'},
+  {name:'TBHQ（特丁基对苯二酚）',icon:'⚠️',cat:'抗氧化剂',harm:'高剂量可能致癌，影响免疫系统，日本已禁用',foods:'方便面、油炸零食、冷冻食品',avoid:'配料表有"TBHQ"或"特丁基对苯二酚"就不买'},
+  {name:'味精（过量）',icon:'🧂',cat:'增味剂',harm:'过量可能引起头痛、口渴，儿童敏感度更高',foods:'方便面调料包、膨化食品、调味酱',avoid:'家庭烹饪少放，外食选清淡口味'},
+  {name:'焦糖色（氨法）',icon:'🟤',cat:'色素',harm:'生产过程中可能产生致癌物4-甲基咪唑',foods:'可乐、酱油、老抽、调味酱',avoid:'选择"天然焦糖色"或非氨法生产的品牌'},
+  {name:'磷酸盐',icon:'🦴',cat:'品质改良剂',harm:'过量摄入影响钙吸收，可能导致骨质疏松风险',foods:'可乐类饮料、加工奶酪替代品、肉制品',avoid:'可乐含磷酸最多，直接不给孩子喝'},
+  {name:'反式脂肪酸',icon:'🧈',cat:'油脂',harm:'增加心血管疾病风险，影响儿童神经系统发育',foods:'人造黄油、起酥油、油炸食品、饼干',avoid:'配料表有"氢化植物油""起酥油""植脂末"不买'},
+  {name:'卡拉胶（降解型）',icon:'🌿',cat:'增稠剂',harm:'降解型卡拉胶可能引起肠道炎症，影响消化',foods:'果冻、冰淇淋、豆酸奶、酱料',avoid:'选择无卡拉胶或明确标注"食品级非降解型"的'},
+  {name:'明矾（铝）',icon:'🪨',cat:'膨松剂',harm:'铝在体内蓄积影响神经系统，可能导致记忆力下降',foods:'油条、粉条、膨化食品、海蜇',avoid:'选"无铝"标注的油条粉条，自制最安全'},
+  {name:'溴酸钾',icon:'🍞',cat:'面粉处理剂',harm:'致癌物，中国已禁用但仍有非法添加',foods:'劣质面包、馒头',avoid:'选正规品牌，面包选大厂生产'}
+];
+function showAdditiveModal(){
+  let html=`<div style="background:linear-gradient(135deg,#FFE8E8,var(--pink));border-radius:14px;padding:12px;margin-bottom:14px;font-size:12px;line-height:1.7;color:var(--red)">
+    ⚠️ <b>为什么要注意添加剂？</b>6岁儿童肝脏解毒能力仅为成人60%，添加剂更容易在体内蓄积。学会看配料表，是保护孩子健康的第一步！
+  </div>`;
+  // 搜索框
+  html+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+    <input type="text" class="form-input" id="additiveSearch" placeholder="🔍 搜索添加剂名称或类别..." style="flex:1;margin:0" oninput="renderAdditiveList()">
+    <button class="btn btn-outline btn-sm" onclick="document.getElementById('additiveSearch').value='';renderAdditiveList()" style="flex-shrink:0">清除</button>
+    <button class="btn btn-orange btn-sm" onclick="addCustomAdditive()" style="flex-shrink:0">+ 添加</button>
+  </div>`;
+  html+=`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+    <span class="tag tag-red" onclick="document.getElementById('additiveSearch').value='人工色素';renderAdditiveList()" style="cursor:pointer">人工色素</span>
+    <span class="tag tag-orange" onclick="document.getElementById('additiveSearch').value='防腐剂';renderAdditiveList()" style="cursor:pointer">防腐剂</span>
+    <span class="tag tag-yellow" onclick="document.getElementById('additiveSearch').value='甜味剂';renderAdditiveList()" style="cursor:pointer">甜味剂</span>
+    <span class="tag tag-blue" onclick="document.getElementById('additiveSearch').value='';renderAdditiveList()" style="cursor:pointer">全部</span>
+  </div>`;
+  html+=`<div id="additiveList"></div>`;
+  html+=`<div class="card" style="background:var(--blue-light);font-size:12px;line-height:1.7;margin-top:10px">
+    <b>🛒 购物口诀：</b>配料表越短越好！前3名有糖/色素/防腐剂→放下。选配料表认识的东西（如面粉、水、盐），不认识的化学名词越少越好。
+  </div>`;
+  UI.modalWithTitle('⚠️ 儿童添加剂避坑清单',html);
+  renderAdditiveList();
+}
+
+function renderAdditiveList(){
+  const el=document.getElementById('additiveList');
+  if(!el) return;
+  const kw=(document.getElementById('additiveSearch')?.value||'').toLowerCase();
+  let additives=Store.getAdditives();
+  if(kw) additives=additives.filter(a=>a.name.toLowerCase().includes(kw)||a.cat.includes(kw)||a.harm.includes(kw)||a.foods.includes(kw));
+  el.innerHTML=additives.length===0
+    ?`<div class="empty"><div class="emoji">🔍</div><div class="text">没找到"${kw}"相关的添加剂，试试其他关键词或点击"+ 添加"</div></div>`
+    :additives.map((a,i)=>{
+      const isCustom=i>=BUILTIN_ADDITIVES.length;
+      return `<div class="card" style="margin-bottom:8px;border-left:4px solid ${isCustom?'var(--orange)':'var(--red)'};position:relative">
+        ${isCustom?`<button onclick="deleteAdditive(${i-BUILTIN_ADDITIVES.length})" style="position:absolute;top:6px;right:10px;background:none;border:none;font-size:16px;cursor:pointer;color:var(--text-light)">🗑️</button>`:''}
+        <div style="font-weight:800;font-size:14px;display:flex;align-items:center;gap:6px">${a.icon} ${a.name} <span class="tag ${isCustom?'tag-orange':'tag-red'}">${a.cat}${isCustom?' · 自定义':''}</span></div>
+        <div style="font-size:12px;color:var(--text);margin-top:6px;line-height:1.7"><b>⚠️ 危害：</b>${a.harm}</div>
+        <div style="font-size:12px;color:var(--text-light);margin-top:4px"><b>🍬 常见食品：</b>${a.foods}</div>
+        <div style="font-size:12px;color:var(--green);margin-top:4px;background:var(--green-light);border-radius:8px;padding:4px 8px"><b>✅ 规避方法：</b>${a.avoid}</div>
+      </div>`;
+    }).join('');
+}
+
+function addCustomAdditive(){
+  UI.modalWithTitle('添加自定义添加剂',`
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">图标emoji</label><input type="text" class="form-input" id="ca-icon" value="⚠️" maxlength="2"></div>
+      <div class="form-group"><label class="form-label">名称</label><input type="text" class="form-input" id="ca-name" placeholder="如：诱惑红"></div>
+    </div>
+    <div class="form-group"><label class="form-label">类别</label><select class="form-select" id="ca-cat"><option>人工色素</option><option>防腐剂</option><option>甜味剂</option><option>增味剂</option><option>乳化剂</option><option>其他</option></select></div>
+    <div class="form-group"><label class="form-label">危害说明</label><textarea class="form-textarea" id="ca-harm" placeholder="如：可能引起过敏反应"></textarea></div>
+    <div class="form-group"><label class="form-label">常见食品</label><input type="text" class="form-input" id="ca-foods" placeholder="如：糖果、饮料">
+    <div class="form-group"><label class="form-label">规避方法</label><input type="text" class="form-input" id="ca-avoid" placeholder="如：选择无添加版本">
+    <button class="btn btn-orange btn-block" onclick="saveAdditive()">保存</button>
+  `);
+}
+function saveAdditive(){
+  if(!Store.data.myAdditives) Store.data.myAdditives=[];
+  Store.data.myAdditives.push({
+    icon:document.getElementById('ca-icon').value||'⚠️',
+    name:document.getElementById('ca-name').value||'未命名',
+    cat:document.getElementById('ca-cat').value,
+    harm:document.getElementById('ca-harm').value,
+    foods:document.getElementById('ca-foods').value,
+    avoid:document.getElementById('ca-avoid').value
+  });
+  Store.save();UI.closeModal();UI.toast('已添加！');showAdditiveModal();
+}
+function deleteAdditive(idx){
+  if(confirm('确定删除这个自定义添加剂？')){
+    Store.data.myAdditives.splice(idx,1);
+    Store.save();showAdditiveModal();UI.toast('已删除');
+  }
+}
+
+/* ============================================================
+   好物推荐（零食/玩具/书籍）
+   ============================================================ */
+const BUILTIN_RECOMMENDATIONS={
+  snack:[
+    {name:'原味海苔',icon:'🌿',reason:'低热量高纤维，含碘和矿物质，无蛋无奶安全',age:'3岁+',tag:'天然零食'},
+    {name:'冻干水果干（草莓/芒果/苹果）',icon:'🍓',reason:'保留水果营养，无添加糖，酥脆口感孩子喜欢',age:'2岁+',tag:'维生素'},
+    {name:'原味坚果（核桃/腰果/杏仁）',icon:'🥜',reason:'高能健康脂肪+蛋白质，每日一小把助增重',age:'4岁+',tag:'增重补脑'},
+    {name:'豆酸奶（强化钙版）',icon:'🥛',reason:'牛奶最佳替代！选强化钙+益生菌版，肠道健康',age:'3岁+',tag:'补钙'},
+    {name:'蒸红薯/紫薯/玉米',icon:'🍠',reason:'天然甜味+膳食纤维，代替甜食的最佳选择',age:'1岁+',tag:'粗粮'},
+    {name:'鹰嘴豆泥/毛豆',icon:'🫘',reason:'高蛋白高纤维，搭配蔬菜条蘸着吃，趣味又营养',age:'3岁+',tag:'植物蛋白'},
+    {name:'椰子片/椰子脆',icon:'🥥',reason:'天然甜味+健康脂肪，无添加剂，便携零食',age:'3岁+',tag:'健康脂肪'},
+    {name:'无添加肉松（鸡肉/猪肉）',icon:'🍗',reason:'高蛋白零食，拌饭或直接吃，选无防腐剂版本',age:'3岁+',tag:'补铁蛋白'},
+    {name:'无糖黑芝麻糊',icon:'🖤',reason:'黑芝麻钙含量是牛奶8倍，高钙高铁，助长高',age:'2岁+',tag:'高钙'},
+    {name:'有机米饼/米泡',icon:'🍘',reason:'无蛋无奶无麸质，配料只有大米，敏宝安全零食',age:'1岁+',tag:'低敏'},
+    {name:'蔬菜脆片（胡萝卜/秋葵/南瓜）',icon:'🥕',reason:'非油炸冻干工艺，保留蔬菜营养，替代薯片',age:'3岁+',tag:'蔬菜零食'},
+    {name:'无添加山楂条/果丹皮',icon:'🍎',reason:'天然果胶制成，开胃消食，选无额外加糖版本',age:'3岁+',tag:'开胃'},
+    {name:'藜麦能量棒（无蛋奶版）',icon:'🌾',reason:'全营养谷物+坚果，高蛋白饱腹，户外活动补充能量',age:'4岁+',tag:'能量'},
+    {name:'纯果汁冰棒（自制）',icon:'🍧',reason:'纯果汁冷冻，无添加剂，夏天健康解暑',age:'2岁+',tag:'夏日'},
+    {name:'红枣/椰枣',icon:'🌴',reason:'天然甜味能量来源，富含铁和钾，运动后补充',age:'3岁+',tag:'天然能量'}
+  ],
+  toy:[
+    {name:'乐高经典创意盒',icon:'🧱',reason:'锻炼精细动作+空间想象力+专注力，6岁最佳启蒙',age:'4-12岁',tag:'益智搭建'},
+    {name:'儿童显微镜套装',icon:'🔬',reason:'满足好奇心，培养科学兴趣，观察微观世界',age:'6岁+',tag:'科学启蒙'},
+    {name:'舒尔特方格训练卡',icon:'🔢',reason:'专注力训练神器！每天5分钟提升注意力',age:'5岁+',tag:'专注力'},
+    {name:'拼图（100-200片）',icon:'🧩',reason:'锻炼观察力+耐心+手眼协调，亲子共拼增进感情',age:'5岁+',tag:'亲子互动'},
+    {name:'儿童桌游（大富翁/卡坦岛/UNO）',icon:'🎲',reason:'学习规则意识+数学启蒙+社交能力',age:'6岁+',tag:'逻辑思维'},
+    {name:'科学实验套装（火山/结晶/电路）',icon:'⚗️',reason:'动手做实验，培养STEM兴趣，幼小衔接科学启蒙',age:'6岁+',tag:'动手能力'},
+    {name:'儿童篮球架（可调节高度）',icon:'🏀',reason:'跳跃运动助长高，培养运动习惯，每天投篮20分钟',age:'4岁+',tag:'长高运动'},
+    {name:'智能跳绳（计数款）',icon:'🪢',reason:'科学记录跳绳数据，激励坚持，助力长高',age:'5岁+',tag:'长高运动'},
+    {name:'磁力片/磁力积木',icon:'🧲',reason:'开放式搭建，培养空间思维+创造力，比乐高更自由',age:'3-8岁',tag:'创意搭建'},
+    {name:'编程启蒙机器人（无屏版）',icon:'🤖',reason:'实物编程卡片控制机器人，不伤眼学逻辑思维',age:'5-8岁',tag:'编程启蒙'},
+    {name:'儿童天文望远镜',icon:'🔭',reason:'看月亮环形山+木星卫星，点燃天文兴趣',age:'6岁+',tag:'天文'},
+    {name:'魔方（三阶入门）',icon:'🟦',reason:'锻炼手指灵活+记忆力+耐心，学会后有巨大成就感',age:'5岁+',tag:'益智'},
+    {name:'彩泥/超轻粘土套装',icon:'🎨',reason:'捏塑创作锻炼手部精细动作，释放想象力和情绪',age:'3-8岁',tag:'艺术创作'},
+    {name:'儿童羽毛球/乒乓球套装',icon:'🏸',reason:'锻炼反应速度+手眼协调，户外亲子运动最佳选择',age:'5岁+',tag:'运动'},
+    {name:'儿童安全飞镖（磁吸式）',icon:'🎯',reason:'练习瞄准+算数（计分），安全磁吸不伤人',age:'5岁+',tag:'数学+运动'}
+  ],
+  book:[
+    {name:'《小阿力的大学校》',icon:'📖',reason:'缓解入学焦虑经典绘本，让孩子对小学生活充满期待',age:'5-7岁',tag:'幼小衔接'},
+    {name:'《大卫上学去》',icon:'📚',reason:'幽默画风教孩子理解学校规则，在笑声中学会适应',age:'4-7岁',tag:'规则意识'},
+    {name:'《一年级的小豌豆》',icon:'📗',reason:'用故事预览小学生活，了解课堂、作业、朋友关系',age:'5-7岁',tag:'入学准备'},
+    {name:'《DK儿童百科全书》',icon:'📘',reason:'满足6岁"十万个为什么"阶段，图文并茂培养阅读兴趣',age:'5-12岁',tag:'科普百科'},
+    {name:'《我的情绪小怪兽》',icon:'📙',reason:'用颜色教孩子识别和管理情绪，适合脾气大的孩子',age:'3-7岁',tag:'情绪管理'},
+    {name:'《猜猜我有多爱你》',icon:'📕',reason:'温暖亲子共读经典，建立安全感和爱的表达',age:'3-7岁',tag:'亲子共读'},
+    {name:'《法布尔昆虫记》',icon:'🐞',reason:'激发自然科学兴趣，培养观察力，男孩超爱',age:'5-10岁',tag:'自然科学'},
+    {name:'《上下五千年》儿童版',icon:'📜',reason:'历史启蒙入门，用故事了解中华文明，建立文化自信',age:'6-10岁',tag:'历史启蒙'},
+    {name:'《不一样的卡梅拉》',icon:'🐔',reason:'勇敢冒险故事系列，培养独立和勇气，孩子反复读',age:'4-8岁',tag:'品格培养'},
+    {name:'《神奇校车》系列',icon:'🚌',reason:'科普+冒险完美结合，每本一个科学主题，百读不厌',age:'5-10岁',tag:'科普冒险'},
+    {name:'《宫西达也恐龙系列》',icon:'🦕',reason:'温暖催泪的恐龙故事，教孩子爱与善良，男孩最爱',age:'3-7岁',tag:'情感启蒙'},
+    {name:'《这就是物理/化学/生物》',icon:'⚡',reason:'漫画形式讲科学原理，幼小衔接科学启蒙首选',age:'5-10岁',tag:'科学漫画'},
+    {name:'《小猪唏哩呼噜》',icon:'🐷',reason:'中国原创经典童话，幽默温暖，拼音版自主阅读入门',age:'5-8岁',tag:'自主阅读'},
+    {name:'《父与子》全集',icon:'👨‍👦',reason:'无字漫画经典，父子温情幽默，培养看图说话能力',age:'4-10岁',tag:'幽默亲情'},
+    {name:'《给孩子的诗》北岛编',icon:'📝',reason:'精选中外名诗，语言启蒙+审美培养，睡前朗读最佳',age:'5-12岁',tag:'语言启蒙'}
+  ]
+};
+let recTab='snack';
+function showRecommendModal(){
+  const tabs=[{key:'snack',icon:'🍎',label:'健康零食'},{key:'toy',icon:'🧩',label:'益智玩具'},{key:'book',icon:'📖',label:'推荐书籍'}];
+  let html=`<div class="tab-bar" id="recTab">
+    ${tabs.map(t=>`<div class="tb ${recTab===t.key?'active':''}" onclick="recTab='${t.key}';showRecommendModal()">${t.icon} ${t.label}</div>`).join('')}
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+    <input type="text" class="form-input" id="recSearch" placeholder="🔍 搜索推荐..." style="flex:1;margin:0" oninput="renderRecContent()">
+    <button class="btn btn-outline btn-sm" onclick="document.getElementById('recSearch').value='';renderRecContent()" style="flex-shrink:0">清除</button>
+    <button class="btn btn-orange btn-sm" onclick="addCustomRec()" style="flex-shrink:0">+ 添加</button>
+  </div>
+  <div id="recContent"></div>`;
+  UI.modalWithTitle('🎁 好物推荐',html);
+  renderRecContent();
+}
+function renderRecContent(){
+  let items=Store.getRecommendations(recTab);
+  const builtinCount=BUILTIN_RECOMMENDATIONS[recTab]?.length||0;
+  // 搜索过滤
+  const kw=(document.getElementById('recSearch')?.value||'').toLowerCase();
+  if(kw) items=items.filter(it=>it.name.toLowerCase().includes(kw)||it.reason.includes(kw)||it.tag.includes(kw));
+  const c=document.getElementById('recContent');
+  if(!c) return;
+  c.innerHTML=items.length===0
+    ?`<div class="empty"><div class="emoji">🔍</div><div class="text">没找到"${kw}"相关的推荐，试试其他关键词或点击"+ 添加"</div></div>`
+    :items.map((it,i)=>{
+      const isCustom=i>=builtinCount;
+      return `<div class="card" style="margin-bottom:8px;padding:0;overflow:hidden;position:relative">
+        ${isCustom?`<button onclick="deleteRec('${recTab}',${i-builtinCount})" style="position:absolute;top:6px;right:10px;background:none;border:none;font-size:16px;cursor:pointer;color:var(--text-light);z-index:1">🗑️</button>`:''}
+        <div style="display:flex;align-items:stretch">
+          <div style="width:60px;background:var(--orange-light);display:flex;align-items:center;justify-content:center;font-size:32px;flex-shrink:0">${it.icon}</div>
+          <div style="flex:1;padding:10px 12px">
+            <div style="font-weight:800;font-size:14px">${it.name}${isCustom?' <span class="tag tag-orange">自定义</span>':''}</div>
+            <div style="font-size:12px;color:var(--text);margin:4px 0;line-height:1.6">${it.reason}</div>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+              <span class="tag tag-blue">${it.age}</span>
+              <span class="tag tag-orange">${it.tag}</span>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+}
+
+function addCustomRec(){
+  const labels={snack:'健康零食',toy:'益智玩具',book:'推荐书籍'};
+  UI.modalWithTitle('添加自定义'+labels[recTab],`
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">图标</label><input type="text" class="form-input" id="cr-icon" value="⭐" maxlength="2"></div>
+      <div class="form-group"><label class="form-label">名称</label><input type="text" class="form-input" id="cr-name" placeholder="如：有机海苔"></div>
+    </div>
+    <div class="form-group"><label class="form-label">推荐理由</label><textarea class="form-textarea" id="cr-reason" placeholder="如：无添加高纤维，孩子超爱吃"></textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">适用年龄</label><input type="text" class="form-input" id="cr-age" placeholder="如：3岁+"></div>
+      <div class="form-group"><label class="form-label">标签</label><input type="text" class="form-input" id="cr-tag" placeholder="如：补钙"></div>
+    </div>
+    <button class="btn btn-orange btn-block" onclick="saveRec()">保存</button>
+  `);
+}
+function saveRec(){
+  if(!Store.data.myRecommendations) Store.data.myRecommendations={snack:[],toy:[],book:[]};
+  if(!Store.data.myRecommendations[recTab]) Store.data.myRecommendations[recTab]=[];
+  Store.data.myRecommendations[recTab].push({
+    icon:document.getElementById('cr-icon').value||'⭐',
+    name:document.getElementById('cr-name').value||'未命名',
+    reason:document.getElementById('cr-reason').value,
+    age:document.getElementById('cr-age').value||'3岁+',
+    tag:document.getElementById('cr-tag').value||'推荐'
+  });
+  Store.save();UI.closeModal();UI.toast('已添加！');showRecommendModal();
+}
+function deleteRec(type,idx){
+  if(confirm('确定删除这个自定义推荐？')){
+    Store.data.myRecommendations[type].splice(idx,1);
+    Store.save();showRecommendModal();UI.toast('已删除');
+  }
+}
+
+/* ============================================================
+   幼小衔接弹窗
+   ============================================================ */
+function showTransitionModal(){
+  const days=D.daysUntil('2026-09-01');
+  const weeks=Math.floor(days/7);
+  const cl=Store.data.checklist.items;
+  const cats={};cl.forEach(i=>{if(!cats[i.cat])cats[i.cat]=[];cats[i.cat].push(i);});
+  const sr=Store.data.studyRecords[D.todayStr()]||{};
+  let html=`
+    <div class="card" style="text-align:center;background:linear-gradient(135deg,var(--orange),var(--orange-dark));color:#fff;margin-bottom:14px">
+      <div style="font-size:12px;opacity:.9">距9月1日开学</div>
+      <div style="font-size:36px;font-weight:800">${days}<span style="font-size:16px">天</span></div>
+      <div style="font-size:13px;opacity:.9">约${weeks}周 · 幼小衔接冲刺期</div>
+    </div>
+    <div class="tab-bar" id="trTab">
+      <div class="tb active" onclick="switchTr('checklist',this)">准备清单</div>
+      <div class="tb" onclick="switchTr('study',this)">学习习惯</div>
+      <div class="tb" onclick="switchTr('psych',this)">心理准备</div>
+    </div><div id="trContent"></div>`;
+  UI.modalWithTitle('📚 幼小衔接',html);
+  setTimeout(()=>switchTr('checklist',document.querySelector('#trTab .tb')),0);
+}
+function switchTr(type,el){
+  document.querySelectorAll('#trTab .tb').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  const c=document.getElementById('trContent');
+  if(type==='checklist'){
+    const cats={};Store.data.checklist.items.forEach((i,idx)=>{if(!cats[i.cat])cats[i.cat]=[];cats[i.cat].push({...i,idx});});
+    c.innerHTML=Object.entries(cats).map(([cat,items])=>`
+      <div style="font-size:14px;font-weight:600;margin:12px 0 6px">${cat}</div>
+      <div class="card">
+        ${items.map(it=>`<div class="checklist-item"><div class="ck ${it.done?'done':''}" onclick="toggleChecklist(${it.idx})">${it.done?'✓':''}</div><span class="tx ${it.done?'done':''}">${it.text}</span></div>`).join('')}
+      </div>
+    `).join('');
+  }
+  if(type==='study'){
+    const sr=Store.data.studyRecords[D.todayStr()]||{};
+    const items=[{key:'focus',name:'专注力训练',icon:'🧩',desc:'15分钟静坐/拼图/找不同'},{key:'write',name:'写字练习',icon:'✏️',desc:'每日描红/写字15分钟'},{key:'pinyin',name:'拼音启蒙',icon:'🔤',desc:'拼音动画/儿歌'},{key:'math',name:'数学思维',icon:'🔢',desc:'数数/简单加减'}];
+    c.innerHTML=items.map(it=>`
+      <div class="card" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div><div style="font-size:14px;font-weight:500">${it.icon} ${it.name}</div><div style="font-size:12px;color:var(--text-light)">${it.desc}</div></div>
+        <button class="btn ${sr[it.key]?'btn-outline':'btn-orange'} btn-sm" onclick="toggleStudy('${it.key}')">${sr[it.key]?'已完成 ✓':'打卡'}</button>
+      </div>
+    `).join('');
+  }
+  if(type==='psych'){
+    c.innerHTML=`
+      <div class="knowledge-card">
+        <h3>📖 入学焦虑缓解（家长篇）</h3>
+        <ul>
+          <li>正面聊小学：讲小学的趣事，避免用"上小学就没人管你了"吓唬</li>
+          <li>参观学校：开学前带孩子走走上学路，熟悉环境</li>
+          <li>角色扮演：在家模拟上课举手、排队、整理书包</li>
+          <li>建立期待：一起选购文具，让孩子对开学有仪式感</li>
+          <li>接纳情绪：允许孩子表达紧张，不说"这有什么好怕的"</li>
+        </ul>
+      </div>
+      <div class="knowledge-card">
+        <h3>📚 推荐绘本</h3>
+        <ul>
+          <li>《小阿力的大学校》- 缓解入学焦虑经典</li>
+          <li>《大卫上学去》- 理解学校规则</li>
+          <li>《一年级的小豌豆》- 预览小学生活</li>
+        </ul>
+      </div>
+    `;
+  }
+}
+function toggleChecklist(idx){
+  Store.data.checklist.items[idx].done=!Store.data.checklist.items[idx].done;
+  Store.save();
+  switchTr('checklist',document.querySelectorAll('#trTab .tb')[0]);
+  const all=Store.data.checklist.items.every(i=>i.done);
+  if(all) UI.celebrate('🎉','入学准备全部完成！','宝贝已经准备好上小学啦！');
+}
+function toggleStudy(key){
+  const today=D.todayStr();
+  if(!Store.data.studyRecords[today]) Store.data.studyRecords[today]={};
+  Store.data.studyRecords[today][key]=!Store.data.studyRecords[today][key];
+  if(Store.data.studyRecords[today][key]) addPoint('完成学习任务',2,'📚');
+  Store.save();
+  switchTr('study',document.querySelectorAll('#trTab .tb')[1]);
+}
+
+/* ============================================================
+   应用初始化
+   ============================================================ */
+function initApp(){
+  Store.init();
+  ensurePresetData();
+  // 创建页面容器
+  const app=document.getElementById('app');
+  app.innerHTML=`
+    <div class="page active" id="page-home"></div>
+    <div class="page" id="page-diet"></div>
+    <div class="page" id="page-exercise"></div>
+    <div class="page" id="page-growth"></div>
+    <div class="page" id="page-mind"></div>
+    <div class="page" id="page-reminder"></div>
+  `;
+  renderNav();
+  renderHome();
+  // 浮动添加按钮（根据当前页）
+  // 注册提醒检查
+  setInterval(checkReminders,30000);
+  checkReminders();
+  // 注册Service Worker
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('service-worker.js').catch(e=>console.log('SW注册失败',e));
+  }
+}
+
+// 启动
+document.addEventListener('DOMContentLoaded',initApp);
+</script>
+</body>
+</html>
