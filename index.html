@@ -3755,4 +3755,84 @@ function switchTr(type,el){
   }
   if(type==='study'){
     const sr=Store.data.studyRecords[D.todayStr()]||{};
-    const items=[{key:'focus',name:'专注力训练',icon:'🧩',desc:'15分钟静坐/拼图/找不同'},{key:'write',name:'写字练习',icon:'✏️',desc:'每日描红/写字15分钟'},{key:'pinyin',name:'拼音启蒙',icon:'🔤',desc:'拼音动画/儿歌'},{key:'math',name:'数学思维',icon:
+    const items=[{key:'focus',name:'专注力训练',icon:'🧩',desc:'15分钟静坐/拼图/找不同'},{key:'write',name:'写字练习',icon:'✏️',desc:'每日描红/写字15分钟'},{key:'pinyin',name:'拼音启蒙',icon:'🔤',desc:'拼音动画/儿歌'},{key:'math',name:'数学思维',icon:'🔢',desc:'数数/简单加减'}];
+    c.innerHTML=items.map(it=>`
+      <div class="card" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div><div style="font-size:14px;font-weight:500">${it.icon} ${it.name}</div><div style="font-size:12px;color:var(--text-light)">${it.desc}</div></div>
+        <button class="btn ${sr[it.key]?'btn-outline':'btn-orange'} btn-sm" onclick="toggleStudy('${it.key}')">${sr[it.key]?'已完成 ✓':'打卡'}</button>
+      </div>
+    `).join('');
+  }
+  if(type==='psych'){
+    c.innerHTML=`
+      <div class="knowledge-card">
+        <h3>📖 入学焦虑缓解（家长篇）</h3>
+        <ul>
+          <li>正面聊小学：讲小学的趣事，避免用"上小学就没人管你了"吓唬</li>
+          <li>参观学校：开学前带孩子走走上学路，熟悉环境</li>
+          <li>角色扮演：在家模拟上课举手、排队、整理书包</li>
+          <li>建立期待：一起选购文具，让孩子对开学有仪式感</li>
+          <li>接纳情绪：允许孩子表达紧张，不说"这有什么好怕的"</li>
+        </ul>
+      </div>
+      <div class="knowledge-card">
+        <h3>📚 推荐绘本</h3>
+        <ul>
+          <li>《小阿力的大学校》- 缓解入学焦虑经典</li>
+          <li>《大卫上学去》- 理解学校规则</li>
+          <li>《一年级的小豌豆》- 预览小学生活</li>
+        </ul>
+      </div>
+    `;
+  }
+}
+function toggleChecklist(idx){
+  Store.data.checklist.items[idx].done=!Store.data.checklist.items[idx].done;
+  Store.save();
+  switchTr('checklist',document.querySelectorAll('#trTab .tb')[0]);
+  const all=Store.data.checklist.items.every(i=>i.done);
+  if(all) UI.celebrate('🎉','入学准备全部完成！','宝贝已经准备好上小学啦！');
+}
+function toggleStudy(key){
+  const today=D.todayStr();
+  if(!Store.data.studyRecords[today]) Store.data.studyRecords[today]={};
+  Store.data.studyRecords[today][key]=!Store.data.studyRecords[today][key];
+  if(Store.data.studyRecords[today][key]) addPoint('完成学习任务',2,'📚');
+  Store.save();
+  switchTr('study',document.querySelectorAll('#trTab .tb')[1]);
+}
+
+/* ============================================================
+   应用初始化
+   ============================================================ */
+function initApp(){
+  AudioFX.init();
+  Store.init();
+  ensurePresetData();
+  // 创建页面容器
+  const app=document.getElementById('app');
+  app.innerHTML=`
+    <div class="page active" id="page-home"></div>
+    <div class="page" id="page-diet"></div>
+    <div class="page" id="page-exercise"></div>
+    <div class="page" id="page-growth"></div>
+    <div class="page" id="page-mind"></div>
+    <div class="page" id="page-reminder"></div>
+  `;
+  renderNav();
+  renderHome();
+  // 浮动添加按钮（根据当前页）
+  // 注册提醒检查
+  setInterval(checkReminders,30000);
+  checkReminders();
+  // 注册Service Worker
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('service-worker.js').catch(e=>console.log('SW注册失败',e));
+  }
+}
+
+// 启动
+document.addEventListener('DOMContentLoaded',initApp);
+</script>
+</body>
+</html>
