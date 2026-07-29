@@ -651,6 +651,72 @@ canvas{max-width:100%;}
    男孩养育管家 PWA - 核心逻辑
    ============================================================ */
 
+/* ========== 音效系统（Web Audio API） ========== */
+const AudioFX = {
+  ctx: null,
+  muted: localStorage.getItem('boyCareMuted') === 'true',
+  init(){
+    try { this.ctx = new (window.AudioContext||window.webkitAudioContext)(); } catch(e) {}
+  },
+  play(type){
+    if(this.muted || !this.ctx) return;
+    if(this.ctx.state==='suspended') this.ctx.resume();
+    const t=this.ctx.currentTime;
+    const g=this.ctx.createGain();
+    g.connect(this.ctx.destination);
+    const osc=this.ctx.createOscillator();
+    const vol=g.gain;
+    
+    if(type==='click'){ // 按钮点击：轻柔"嗒"
+      osc.type='sine'; osc.frequency.setValueAtTime(800,t);
+      osc.frequency.exponentialRampToValueAtTime(400,t+0.08);
+      vol.setValueAtTime(0.15,t); vol.exponentialRampToValueAtTime(0.001,t+0.1);
+      osc.start(t); osc.stop(t+0.1);
+    }else if(type==='success'){ // 打卡成功：叮叮～
+      osc.type='sine';
+      [800,1200].forEach((f,i)=>{
+        const o2=this.ctx.createOscillator();
+        o2.type='sine'; o2.frequency.setValueAtTime(f,t+i*0.1);
+        const g2=this.ctx.createGain(); g2.connect(this.ctx.destination);
+        g2.gain.setValueAtTime(0.2,t+i*0.1); g2.gain.exponentialRampToValueAtTime(0.001,t+i*0.1+0.25);
+        o2.connect(g2); o2.start(t+i*0.1); o2.stop(t+i*0.1+0.25);
+      });
+    }else if(type==='error'){ // 错误：低沉嗡嗡
+      osc.type='triangle'; osc.frequency.setValueAtTime(200,t);
+      osc.frequency.exponentialRampToValueAtTime(100,t+0.3);
+      vol.setValueAtTime(0.15,t); vol.exponentialRampToValueAtTime(0.001,t+0.35);
+      osc.start(t); osc.stop(t+0.35);
+    }else if(type==='switch'){ // 切换页面：轻柔滑音
+      osc.type='sine'; osc.frequency.setValueAtTime(400,t);
+      osc.frequency.exponentialRampToValueAtTime(600,t+0.15);
+      vol.setValueAtTime(0.1,t); vol.exponentialRampToValueAtTime(0.001,t+0.18);
+      osc.start(t); osc.stop(t+0.18);
+    }else if(type==='reminder'){ // 提醒：叮叮叮
+      [600,800,1000].forEach((f,i)=>{
+        const o2=this.ctx.createOscillator();
+        o2.type='triangle'; o2.frequency.setValueAtTime(f,t+i*0.12);
+        const g2=this.ctx.createGain(); g2.connect(this.ctx.destination);
+        g2.gain.setValueAtTime(0.18,t+i*0.12); g2.gain.exponentialRampToValueAtTime(0.001,t+i*0.12+0.2);
+        o2.connect(g2); o2.start(t+i*0.12); o2.stop(t+i*0.12+0.2);
+      });
+    }else if(type==='celebrate'){ // 庆祝：上升音阶
+      [400,500,600,700,800,900,1000,1200].forEach((f,i)=>{
+        const o2=this.ctx.createOscillator();
+        o2.type='sine'; o2.frequency.setValueAtTime(f,t+i*0.06);
+        const g2=this.ctx.createGain(); g2.connect(this.ctx.destination);
+        g2.gain.setValueAtTime(0.15,t+i*0.06); g2.gain.exponentialRampToValueAtTime(0.001,t+i*0.06+0.25);
+        o2.connect(g2); o2.start(t+i*0.06); o2.stop(t+i*0.06+0.25);
+      });
+    }
+    osc.connect(g);
+  },
+  toggleMute(){
+    this.muted = !this.muted;
+    localStorage.setItem('boyCareMuted', this.muted);
+    return this.muted;
+  }
+};
+
 /* ========== 全局数据层 ========== */
 const Store = {
   KEY: 'boyCareData',
@@ -832,6 +898,7 @@ const UI = {
     document.getElementById('celText').textContent=text;
     const cel=document.getElementById('celebrate');
     cel.classList.add('show');
+    AudioFX.play('celebrate');
     // 生成烟花粒子
     const box=cel.querySelector('.celebrate-box');
     const colors=['#FF7B7B','#FFB74D','#FFD93D','#7DD87D','#7EC8E3','#B39DDB','#FF8FA3'];
@@ -893,6 +960,7 @@ function ensurePresetData(){
 const Pages = {
   current: 'home',
   go(page){
+    AudioFX.play('switch');
     this.current=page;
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
     const el=document.getElementById('page-'+page);
@@ -1221,15 +1289,23 @@ function openSettings(){
   let html=`<div class="setting-group">
     <div class="setting-row" onclick="editProfile()"><span class="label">👦 孩子档案</span><span class="value">${p.name} ›</span></div>
     <div class="setting-row" onclick="editGoals()"><span class="label">🎯 目标设置</span><span class="value">›</span></div>
+    <div class="setting-row" onclick="toggleMute()"><span class="label">${AudioFX.muted?'🔇':'🔊'} 音效开关</span><span class="value">${AudioFX.muted?'已静音':'已开启'} ›</span></div>
   </div>`;
   html+=`<div class="setting-group">
     <div class="setting-row" onclick="exportAllData()"><span class="label">📤 导出全部数据</span><span class="value">›</span></div>
     <div class="setting-row" onclick="resetAllData()"><span class="label" style="color:var(--red)">🗑️ 清空所有数据</span><span class="value">›</span></div>
   </div>`;
   html+=`<div class="setting-group">
-    <div class="setting-row" onclick="showAbout()"><span class="label">ℹ️ 关于</span><span class="value">v1.0.0 ›</span></div>
+    <div class="setting-row" onclick="showAbout()"><span class="label">ℹ️ 关于</span><span class="value">v2.0.0 ›</span></div>
   </div>`;
   UI.modalWithTitle('⚙️ 设置',html);
+}
+
+function toggleMute(){
+  const muted=AudioFX.toggleMute();
+  UI.toast(muted?'🔇 音效已关闭':'🔊 音效已开启');
+  UI.closeModal();
+  setTimeout(()=>openSettings(),300);
 }
 
 function editProfile(){
@@ -1335,6 +1411,7 @@ function getTotalPoints(){
 function addPoint(action,pts,icon){
   Store.data.pointsRecords.push({date:D.todayStr(),action,points:pts,icon});
   Store.save();
+  AudioFX.play('success');
 }
 
 /* ============================================================
@@ -1481,6 +1558,22 @@ function renderDiet(){
   html+=`<div class="section">
     <div class="section-title"><span class="left">📅 饮食日历</span><span class="more" onclick="showMealRecordModal()">记录今日饮食 ›</span></div>
     <div class="card">${renderMealCalendar()}</div>
+  </div>`;
+
+  // 食物相克 + 儿童汤品快捷入口
+  html+=`<div class="section">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="card" onclick="showFoodClashModal()" style="cursor:pointer;text-align:center;padding:16px;background:linear-gradient(135deg,#FFE8E8,#FFF3E0);border:2px solid var(--border)">
+        <div style="font-size:32px">⚠️</div>
+        <div style="font-weight:800;font-size:14px;margin-top:4px">食物相克查询</div>
+        <div style="font-size:11px;color:var(--text-light)">50+组 · 安全饮食</div>
+      </div>
+      <div class="card" onclick="showChildSoupModal()" style="cursor:pointer;text-align:center;padding:16px;background:linear-gradient(135deg,#E8F8E8,#E8F6FC);border:2px solid var(--border)">
+        <div style="font-size:32px">🍲</div>
+        <div style="font-weight:800;font-size:14px;margin-top:4px">儿童汤品大全</div>
+        <div style="font-size:11px;color:var(--text-light)">25+款 · 健脾润肺长高</div>
+      </div>
+    </div>
   </div>`;
   
   document.getElementById('page-diet').innerHTML=html;
@@ -2203,79 +2296,258 @@ function renderMind(){
 }
 
 /* ============================================================
-   社交安全模块 — 防霸凌动画片风格
+   社交安全模块 — 防霸凌动画片风格（升级版：15场景+动画）
    ============================================================ */
-// 动画场景数据（每页一个场景，左右滑动切换）
+// 15个完整霸凌场景
 const SOCIAL_SCENES=[
+  // ========== 言语霸凌 (4个) ==========
   {
-    title:'🏫 场景一：被起外号',
-    emoji:'😢',bg:'#FFE0B2',
-    story:`下课了，几个同学围着小明喊"小矮子！小矮子！"小明很难过，低着头不说话……`,
-    question:'小朋友，你觉得小明应该怎么办？',
+    id:1,title:'起难听的外号',emoji:'🏷️',type:'言语',bg:'#FFE0B2',
+    story:'班上的大壮总叫小明"小矮子"，还让其他同学一起叫，小明每次听到都很难过。',
+    definition:'用侮辱性称呼反复嘲笑他人，属于言语霸凌。',
+    realCase:'某小学男生因个子矮被叫"小不点"三年，变得沉默寡言不敢举手发言。',
+    impact:'长期被起外号会让孩子自卑，觉得自己真的不如别人。',
+    strategy:{victim:'坚定地说"我不喜欢这个称呼，请叫我的名字"，然后走开不理他。',bystander:'不跟着叫外号，告诉被欺负的同学"我喜欢你的真名"。',teacher:'在班上明确禁止起外号，引导同学互相尊重名字。',parent:'告诉孩子每个人都有特点，练习大声说出"请尊重我"。'},
+    question:'同学叫你难听外号，你该怎么做？',
     options:[
-      {text:'😡 也给他们起外号骂回去',good:false,feedback:'骂回去只会让事情更糟糕，还可能被老师批评'},
-      {text:'😢 躲在厕所偷偷哭',good:false,feedback:'一个人难过解决不了问题，要勇敢说出来'},
-      {text:'💪 大声说"我不喜欢你们这样叫我，请停止！"然后告诉老师',good:true,feedback:'太棒了！坚定表达+寻求帮助是最勇敢的做法！⭐'}
+      {text:'大声说"我不喜欢，请叫我的名字"',good:true,feedback:'勇敢表达感受是对的！🌟'},
+      {text:'也给他起个外号骂回去',good:false,feedback:'以牙还牙会让冲突升级'},
+      {text:'不理他，走开去找老师',good:true,feedback:'冷处理也是好方法！🌟'}
     ],
-    tip:'记住：被欺负不是你的错！说出来才是勇敢的孩子！',
+    tips:'叫我名字别乱起，大声说出我不喜，转身走开不理你，找老师来帮助己。',
     icon:'🛡️'
   },
   {
-    title:'🤼 场景二：被推搡',
-    emoji:'😣',bg:'#FFCCBC',
-    story:`排队时，前面的同学用力推了小明一把，小明差点摔倒。那个同学还瞪着眼睛说"谁让你站那么近"……`,
-    question:'小明应该怎么保护自己？',
+    id:2,title:'当众嘲笑人',emoji:'😤',type:'言语',bg:'#FFECB3',
+    story:'小明回答问题时说错了一个字，几个同学哈哈大笑，还学他说话的样子。',
+    definition:'在众人面前取笑他人的失误或缺陷，是言语霸凌。',
+    realCase:'一个男孩因口音被同学模仿嘲笑，后来拒绝在课堂上朗读课文。',
+    impact:'被当众嘲笑会让孩子害怕在人多时发言，失去自信。',
+    strategy:{victim:'深呼吸告诉自己"说错很正常"，平静地说"这一点都不好笑"。',bystander:'不跟着笑，可以小声对旁边的人说"这样不好"。',teacher:'及时制止并说"每个人都有学习的过程，我们要互相鼓励"。',parent:'在家多鼓励孩子表达，告诉他犯错是成长的一部分。'},
+    question:'你答错问题被同学嘲笑怎么办？',
     options:[
-      {text:'👊 推回去，不能吃亏',good:false,feedback:'推回去可能变成打架，两个人都受伤'},
-      {text:'🏃 赶紧跑开躲起来',good:false,feedback:'跑开是暂时的，但没有解决根本问题'},
-      {text:'🗣️ 后退一步，大声说"不要推我！"然后立刻告诉老师',good:true,feedback:'正确！先保护自己安全，再坚定说"不"，然后找大人帮忙！⭐'}
+      {text:'低下头再也不举手回答问题了',good:false,feedback:'逃避会让自信越来越少'},
+      {text:'平静地说"说错很正常，我会努力"',good:true,feedback:'勇敢面对是最好的办法！🌟'},
+      {text:'告诉老师或家长这件事',good:true,feedback:'向大人求助是对的！🌟'}
     ],
-    tip:'身体安全最重要！被推搡时要先稳住自己，然后大声说"不"！',
+    tips:'答错问题很正常，嘲笑别人不应当，稳住心情抬起头，告诉大人帮帮忙。',
+    icon:'💬'
+  },
+  {
+    id:3,title:'用狠话威胁人',emoji:'😨',type:'言语',bg:'#FFCDD2',
+    story:'小明不小心撞到了同学的水杯，那个同学说"放学后你等着，我叫人来收拾你"。',
+    definition:'用恐吓语言让别人害怕，属于言语霸凌中的威胁。',
+    realCase:'一个孩子被威胁"敢告诉老师就打你"，半年不敢上学，每天装病。',
+    impact:'被威胁的孩子会长期生活在恐惧中，影响学习和睡眠。',
+    strategy:{victim:'不要害怕，立刻告诉老师或家长，威胁的话越早说出来越安全。',bystander:'听到威胁要立刻报告老师，这不是"告状"而是保护同学。',teacher:'严肃处理威胁行为，让学生明白用暴力语言也是不可以的。',parent:'让孩子明白被威胁不是他的错，大人一定会保护他。'},
+    question:'有人威胁你"放学等着"，你怎么办？',
+    options:[
+      {text:'害怕但不敢告诉任何人',good:false,feedback:'不说出来坏人会更嚣张'},
+      {text:'立刻告诉老师或家长',good:true,feedback:'第一时间求助最安全！🌟'},
+      {text:'放学后找好朋友一起走',good:true,feedback:'结伴同行也是好办法！🌟'}
+    ],
+    tips:'威胁的话别害怕，第一时间告诉家，大人会来保护你，安全永远放第一。',
+    icon:'🚨'
+  },
+  {
+    id:4,title:'用脏话骂人',emoji:'🤬',type:'言语',bg:'#F3E5F5',
+    story:'体育课上小明跑得慢了点，一个同学就指着他说"你真没用，笨得像猪一样"。',
+    definition:'用脏话或侮辱性词语攻击他人，是言语霸凌的常见形式。',
+    realCase:'某男孩因学习慢被同学当众辱骂"脑子有问题"，之后再也不愿意上学。',
+    impact:'被辱骂的孩子容易觉得自己一无是处，产生厌学情绪。',
+    strategy:{victim:'不要相信那些话，你很好。转身离开，把这件事告诉信任的大人。',bystander:'可以说"这样说不好"，或者直接去找老师说明情况。',teacher:'零容忍脏话辱骂，当场制止并教育，联系双方家长沟通。',parent:'每天告诉孩子他的优点，帮他建立不受脏话伤害的内心盾牌。'},
+    question:'有人用脏话骂你，你该怎么做？',
+    options:[
+      {text:'也骂回去，不能输',good:false,feedback:'对骂解决不了问题'},
+      {text:'转身走开，告诉老师',good:true,feedback:'冷静离开再去求助！🌟'},
+      {text:'大声说"你这样说话不对"',good:true,feedback:'勇敢指出来也很棒！🌟'}
+    ],
+    tips:'脏话骂人伤人心，不要相信也别听，转身走开找老师，你本就是个好孩子。',
+    icon:'🗣️'
+  },
+  // ========== 肢体霸凌 (4个) ==========
+  {
+    id:5,title:'故意推搡别人',emoji:'👐',type:'肢体',bg:'#FFCCBC',
+    story:'下课时小明在走廊走路，一个同学故意用力推了他一把，小明差点摔倒。',
+    definition:'用手推、撞他人的身体，属于肢体霸凌。',
+    realCase:'一个孩子常被推搡导致不敢走楼梯，每次下课都最后一个出教室。',
+    impact:'经常被推搡会让孩子时刻紧张，害怕在人多的走廊走动。',
+    strategy:{victim:'站稳后大声说"不要推我"，立刻远离推人者，去老师办公室方向走。',bystander:'帮忙扶住被推的同学，大声喊"老师，有人推人"，引起注意。',teacher:'课间多在走廊巡视，发现推搡立刻制止并严肃教育。',parent:'和孩子练习大声喊"停"的勇气，告诉他身体安全最重要。'},
+    question:'有人故意推你，你该怎么办？',
+    options:[
+      {text:'大声喊"不要推我"然后走开',good:true,feedback:'大声制止很有效！🌟'},
+      {text:'推回去，让他知道不好惹',good:false,feedback:'还手可能受伤更严重'},
+      {text:'立刻走向老师办公室求助',good:true,feedback:'找大人保护很聪明！🌟'}
+    ],
+    tips:'有人推我大声喊，站稳脚步不慌乱，赶紧走向老师边，保护自己不受伤。',
     icon:'✋'
   },
   {
-    title:'🎒 场景三：被抢东西',
-    emoji:'😰',bg:'#C8E6C9',
-    story:`小明拿出新买的文具盒，旁边的同学一把抢过去说"借我玩两天！"小明想拿回来，同学举得高高的不给他……`,
-    question:'小朋友，遇到这种情况怎么办？',
+    id:6,title:'动手打人',emoji:'👊',type:'肢体',bg:'#EF9A9A',
+    story:'小明和同学争抢篮球，对方突然生气，一拳打在小明的胳膊上。',
+    definition:'用手或物品击打他人身体，是最直接的肢体霸凌。',
+    realCase:'某男孩被同学用铅笔盒砸头缝了三针，打人者却说"只是开玩笑"。',
+    impact:'被打的孩子身体会疼，更会变得胆小、不敢和同学玩耍。',
+    strategy:{victim:'用手护住头部，大声喊"别打我"，立刻跑开去找老师。',bystander:'大声呼救"有人打架了"，马上去找最近的老师来帮忙。',teacher:'立刻分开双方，检查伤情，通知双方家长，严肃教育打人者。',parent:'教孩子"护头、喊叫、跑开"三步法，受伤一定要第一时间说。'},
+    question:'同学动手打你，第一件事做什么？',
     options:[
-      {text:'😭 哭着说"求你还给我"',good:false,feedback:'示弱可能会让对方更想欺负你'},
-      {text:'👮 严肃地说"这是我的东西，请你还给我"如果不还马上去找老师',good:true,feedback:'非常棒！先自己尝试解决，不行立刻求助大人！⭐'},
-      {text:'🤷 算了不要了，回家让妈妈再买一个',good:false,feedback:'这会让对方觉得抢东西没关系，下次还会抢'}
+      {text:'护住自己然后跑去找老师',good:true,feedback:'保护自己永远第一位！🌟'},
+      {text:'忍着不说，怕被报复',good:false,feedback:'不说只会让打人继续'},
+      {text:'大声喊"别打我"引来关注',good:true,feedback:'引起注意能有效制止！🌟'}
     ],
-    tip:'自己的东西有权利要回来！如果对方不给，马上找老师或家长！',
+    tips:'护住头部大声喊，跑开去找老师管，不要忍痛也不还，身体安全不冒险。',
+    icon:'🤚'
+  },
+  {
+    id:7,title:'抢走你的东西',emoji:'🎒',type:'肢体',bg:'#C8E6C9',
+    story:'小明带的新文具盒被一个同学一把抢走，还举得高高的让小明跳着够。',
+    definition:'强行拿走或损坏他人物品，属于肢体霸凌。',
+    realCase:'一个孩子的书包被扔到垃圾桶里三次，家长找到学校才解决。',
+    impact:'东西被抢会让孩子没有安全感，不敢带自己喜欢的物品上学。',
+    strategy:{victim:'大声说"这是我的东西，请还给我"，不给就去告诉老师。',bystander:'帮他说"快还给他，这样不好玩"，或者直接去找老师。',teacher:'明确告诉学生抢别人东西是错误行为，要求归还并道歉。',parent:'在物品上写名字，告诉孩子东西被抢要大声说出来。'},
+    question:'有人抢你东西不还，你怎么办？',
+    options:[
+      {text:'大声说"请还给我"再告老师',good:true,feedback:'先沟通再求助最合理！🌟'},
+      {text:'冲上去抢回来',good:false,feedback:'争抢可能受伤或弄坏东西'},
+      {text:'直接去找老师说明情况',good:true,feedback:'请老师帮忙也是好办法！🌟'}
+    ],
+    tips:'我的东西我做主，别人不能随便取，大声索要不退缩，老师家长来帮助。',
     icon:'📢'
   },
   {
-    title:'👥 场景四：被孤立排挤',
-    emoji:'😔',bg:'#E1BEE7',
-    story:`班上有几个同学说"我们不跟小明玩"，还让其他人也不要跟小明玩。体育课分组时，没人愿意和小明一组……`,
-    question:'小明应该怎么面对？',
+    id:8,title:'故意伸脚绊倒人',emoji:'🦶',type:'肢体',bg:'#FFF9C4',
+    story:'小明端着饭盒走过，一个同学偷偷伸出脚把小明绊倒，饭菜洒了一地。',
+    definition:'故意伸脚或用其他方式让人摔倒，是危险的肢体霸凌。',
+    realCase:'一个孩子被绊倒磕掉两颗门牙，绊人者家长赔了上万元医药费。',
+    impact:'被绊倒不仅身体受伤，还会让孩子走路时总是紧张看脚下。',
+    strategy:{victim:'摔倒后先检查有没有受伤，马上告诉老师，记住是谁绊的。',bystander:'帮忙扶起摔倒的同学，主动告诉老师你看到了什么。',teacher:'调取监控查明情况，严肃处理并教育全班绊人的危险后果。',parent:'告诉孩子走路注意脚下，被绊倒后不管有没有受伤都要说。'},
+    question:'有人伸脚绊你摔倒了怎么办？',
     options:[
-      {text:'🏠 不想上学了，躲在家里',good:false,feedback:'逃避不能解决问题，反而会错过更多交朋友的机会'},
-      {text:'🤝 找愿意一起玩的同学做朋友，告诉老师发生了什么事',good:true,feedback:'太棒了！总会有人愿意做你的朋友，同时让老师了解情况！⭐'},
-      {text:'😤 自己一个人玩，不理所有人',good:false,feedback:'封闭自己只会更孤单，要学会主动寻找友善的同学'}
+      {text:'先检查受伤没，再告诉老师',good:true,feedback:'安全第一，及时求助！🌟'},
+      {text:'爬起来假装没事就算了',good:false,feedback:'不说的话他还可能再犯'},
+      {text:'大声说"你绊我，我要告老师"',good:true,feedback:'大声指出来让大家知道！🌟'}
     ],
-    tip:'不是所有人都值得做朋友，找到那些善良的同学，1个真心朋友胜过10个假朋友！',
+    tips:'走路双眼看前方，有人绊我倒地上，先查伤口再报告，记住是谁别慌张。',
+    icon:'👣'
+  },
+  // ========== 关系霸凌 (4个) ==========
+  {
+    id:9,title:'被同学孤立排挤',emoji:'😔',type:'关系',bg:'#E1BEE7',
+    story:'小组活动时，同学们都说"我们不跟小明一组"，小明一个人坐在旁边很孤单。',
+    definition:'故意排斥某人不让参与集体活动，是关系霸凌。',
+    realCase:'一个转学生被全班孤立一学期，每天一个人吃饭、一个人走路。',
+    impact:'被孤立的孩子会感到特别孤独，觉得自己不受欢迎。',
+    strategy:{victim:'主动找友善的同学说话，参加学校的兴趣小组交新朋友。',bystander:'邀请被孤立的同学加入你的小组，一个招手就能温暖人心。',teacher:'分组时故意打乱安排，创造让每个孩子都能参与的机会。',parent:'帮孩子发展一个特长，用自信吸引朋友，安排课外社交活动。'},
+    question:'同学们都不跟你玩，你怎么办？',
+    options:[
+      {text:'主动找一个友善的同学说话',good:true,feedback:'勇敢迈出第一步很重要！🌟'},
+      {text:'一个人躲着哭',good:false,feedback:'难过可以，但要找人帮忙'},
+      {text:'告诉老师或爸妈这件事',good:true,feedback:'大人会帮你找到朋友！🌟'}
+    ],
+    tips:'没人跟我玩别慌，主动微笑找友方，参加社团交新友，老师爸妈帮你忙。',
     icon:'❤️'
   },
   {
-    title:'🗣️ 场景五：被威胁恐吓',
-    emoji:'😨',bg:'#FFCDD2',
-    story:`放学路上，一个大孩子拦住小明说"明天带10块钱给我，不许告诉别人，不然见你一次打一次！"小明吓得心砰砰跳……`,
-    question:'这是非常严重的情况，小明该怎么做？',
+    id:10,title:'散布谣言传坏话',emoji:'🗣️',type:'关系',bg:'#D1C4E9',
+    story:'小明听到同学在背后说他"偷了别人的橡皮"，但其实小明根本没有拿过。',
+    definition:'传播不实信息损害他人名声，属于关系霸凌。',
+    realCase:'一个女孩被造谣说"身上有怪味"，全班躲着她走，后来查出是假话。',
+    impact:'被造谣的孩子会被大家误会，明明没做错却要承受指责。',
+    strategy:{victim:'找到传谣的人当面说"这不是真的"，同时告诉老师澄清事实。',bystander:'不传谣不信谣，听到谣言说"你确定吗，不要乱说"。',teacher:'在班上公开澄清事实，教育学生传谣的危害，找到造谣源头。',parent:'帮孩子理清事实，和老师沟通，让孩子知道真相总会大白。'},
+    question:'有人传你坏话，你该怎么处理？',
     options:[
-      {text:'💰 偷偷拿家里的钱给他，希望他别再找我',good:false,feedback:'千万不行！给一次就会有第二次，问题只会越来越大'},
-      {text:'🔇 谁也不告诉，自己忍着',good:false,feedback:'绝对不能忍！威胁恐吓是严重的事，必须告诉大人'},
-      {text:'🏠 立刻告诉爸爸妈妈和老师！这是严重的事，需要大人保护',good:true,feedback:'完全正确！被威胁恐吓一定要第一时间告诉家长和老师，他们会保护你！⭐'}
+      {text:'当面澄清"这不是真的"',good:true,feedback:'勇敢说出真相很重要！🌟'},
+      {text:'也编他的坏话报复',good:false,feedback:'以谣还谣只会更乱'},
+      {text:'告诉老师，请老师帮忙澄清',good:true,feedback:'让老师在班上说明最有效！🌟'}
     ],
-    tip:'如果有人威胁你——不管他说什么——第一时间告诉爸爸妈妈！这是最重要的安全法则！',
-    icon:'🚨'
+    tips:'谣言传话不可信，当面澄清说分明，告诉老师来帮忙，真相总会亮晶晶。',
+    icon:'📣'
+  },
+  {
+    id:11,title:'不让参加集体游戏',emoji:'🚫',type:'关系',bg:'#B3E5FC',
+    story:'课间大家都在踢毽子，小明想加入，带头的同学说"你太笨了，不带你玩"。',
+    definition:'故意将某人排除在集体活动之外，是关系霸凌。',
+    realCase:'一个孩子被排斥一学期不能参加任何课间游戏，性格越来越内向。',
+    impact:'长期被排斥会让孩子觉得自己不配和大家一起玩，变得孤僻。',
+    strategy:{victim:'先问一次"我可以一起玩吗"，被拒绝就去找别的同学玩或自己玩。',bystander:'说"让他一起玩吧，人多更好玩"，或者和他一起玩别的。',teacher:'设计全班都能参与的集体游戏，关注被排斥的孩子主动邀请。',parent:'教孩子几个小游戏，课间可以主动邀请别的同学一起玩。'},
+    question:'同学不让你加入游戏，你怎么办？',
+    options:[
+      {text:'找别的同学玩或自己玩',good:true,feedback:'不勉强，总有愿意玩的人！🌟'},
+      {text:'硬挤进去抢着玩',good:false,feedback:'硬来会被更排斥'},
+      {text:'告诉老师让大家轮流玩',good:true,feedback:'请老师组织公平游戏！🌟'}
+    ],
+    tips:'想加入先问一声，被拒绝也别伤心，找别人玩也可以，开心才是第一名。',
+    icon:'🤝'
+  },
+  {
+    id:12,title:'被强迫做坏事',emoji:'😰',type:'关系',bg:'#DCEDC8',
+    story:'几个同学对小明说"你帮我们去小卖部偷一包零食，不去的话我们就都不理你了"。',
+    definition:'用关系要挟逼迫他人做错误的事情，是关系霸凌。',
+    realCase:'一个男孩被逼偷东西后成了"替罪羊"，偷东西的人反过来举报他。',
+    impact:'被逼做坏事的孩子内心充满矛盾，既害怕失去朋友又知道做的不对。',
+    strategy:{victim:'坚定地说"我不做"，真正的好朋友不会逼你做坏事，告诉家长或老师。',bystander:'说"别逼他，这样不对"，如果对方不听就悄悄告诉老师。',teacher:'严肃处理胁迫行为，让全班明白强迫别人做坏事是严重错误。',parent:'教孩子分辨好坏朋友，练习说"不"的勇气，家永远是安全港湾。'},
+    question:'有人逼你做坏事不然不跟你玩？',
+    options:[
+      {text:'坚定拒绝并告诉老师',good:true,feedback:'对坏事说"不"非常勇敢！🌟'},
+      {text:'怕失去朋友只好照做',good:false,feedback:'真朋友不会逼你做坏事'},
+      {text:'告诉爸妈这件事',good:true,feedback:'爸妈永远会保护你！🌟'}
+    ],
+    tips:'坏事绝对不要做，谁说都不可以破，真朋友不会逼你错，告诉爸妈没有过。',
+    icon:'🛑'
+  },
+  // ========== 网络霸凌 (3个) ==========
+  {
+    id:13,title:'群里多人一起骂',emoji:'💬',type:'网络',bg:'#B2DFDB',
+    story:'小明的班级群里，几个同学一起发消息说小明"真讨厌""滚出我们班"。',
+    definition:'在网络群组中多人联合攻击辱骂某人，是网络霸凌。',
+    realCase:'一个孩子被班级群几十条骂人消息刷屏，吓得再也不敢打开手机。',
+    impact:'被群骂的孩子感觉全世界都在骂自己，会产生严重的心理阴影。',
+    strategy:{victim:'不要回复，截图保存证据，立刻告诉爸爸妈妈，必要时退出群聊。',bystander:'不在群里跟风，可以私信被骂的同学说"我支持你"。',teacher:'联系家长在群里制止，严肃处理带头者，开展网络文明教育。',parent:'帮孩子截图保存证据，联系对方家长或老师，必要时报警处理。'},
+    question:'群里很多人一起骂你，怎么办？',
+    options:[
+      {text:'截图保存，马上告诉爸妈',good:true,feedback:'保存证据最重要！🌟'},
+      {text:'在群里骂回去',good:false,feedback:'对骂只会让情况更糟'},
+      {text:'退出群聊，不理他们',good:true,feedback:'远离伤害环境是对的！🌟'}
+    ],
+    tips:'群里骂人快截图，不要回复也别躲，告诉爸妈来帮我，退出群聊没烦忧。',
+    icon:'💻'
+  },
+  {
+    id:14,title:'恶意P图传播',emoji:'📱',type:'网络',bg:'#FFE082',
+    story:'小明发现同学把他照片P成了丑八怪的样子，还发到好几个群里让大家笑话。',
+    definition:'恶意修改他人照片并在网络传播，是网络霸凌。',
+    realCase:'一个孩子的照片被P成动物表情包疯传全校，孩子要求转学。',
+    impact:'自己的照片被恶意传播，孩子会感觉被羞辱，不想见任何人。',
+    strategy:{victim:'立刻告诉家长，让家长联系对方删除，不要自己默默忍受。',bystander:'不转发不评论，看到别人发可以说"删掉吧，这样不好"。',teacher:'通知双方家长，要求立刻删除，对传播者严肃教育并道歉。',parent:'立刻截图取证，联系学校和对方家长要求删除并道歉，必要时报警。'},
+    question:'有人把你的照片P丑后传播怎么办？',
+    options:[
+      {text:'立刻告诉爸妈，要求对方删除',good:true,feedback:'第一时间处理最有效！🌟'},
+      {text:'觉得丢人，谁也不告诉',good:false,feedback:'越不说传播越广'},
+      {text:'告诉老师，要求对方道歉',good:true,feedback:'学校和家长一起处理！🌟'}
+    ],
+    tips:'照片被P不要怕，马上告诉爸和妈，截图保存作证据，要求删除别拖拉。',
+    icon:'📸'
+  },
+  {
+    id:15,title:'网上陌生人诈骗',emoji:'🕵️',type:'网络',bg:'#CFD8DC',
+    story:'小明玩游戏时，一个陌生人说"送你皮肤，把爸妈手机号和验证码告诉我"。',
+    definition:'通过网络冒充好友或利诱骗取信息财物，是网络诈骗型霸凌。',
+    realCase:'一个孩子为领游戏皮肤泄露家长信息，导致银行卡被盗刷两万元。',
+    impact:'被骗的孩子不仅家庭损失钱财，自己也会深深自责和害怕。',
+    strategy:{victim:'绝对不给陌生人任何信息，立刻告诉家长，不要因为害怕而隐瞒。',bystander:'看到同学可能被骗要提醒他"别信，这是骗子"，或告诉大人。',teacher:'开展网络安全课，教学生识别常见网络诈骗套路。',parent:'给孩子讲清楚不透露个人信息，手机支付密码不让孩子知道。'},
+    question:'陌生人要你给手机号和验证码？',
+    options:[
+      {text:'绝对不给，马上告诉爸妈',good:true,feedback:'个人信息是最重要的！🌟'},
+      {text:'想要皮肤就给他吧',good:false,feedback:'皮肤是假的，骗钱是真的'},
+      {text:'不理他，关掉聊天窗口',good:true,feedback:'不理陌生人是好习惯！🌟'}
+    ],
+    tips:'陌生人来送东西，个人信息不给去，验证码是命根子，告诉爸妈别迟疑。',
+    icon:'🔒'
   }
 ];
 
 let socialSceneIdx=0;
-let socialAnswered={}; // 记录已答对场景
+let socialAnswered={};
 function renderSocialSafety(){
   const scene=SOCIAL_SCENES[socialSceneIdx];
   const answered=socialAnswered[socialSceneIdx];
@@ -2283,39 +2555,63 @@ function renderSocialSafety(){
   if(!Store.data.socialRecords) Store.data.socialRecords={};
   const completed=Store.data.socialRecords[today]||{};
   const totalCompleted=Object.values(completed).filter(v=>v).length;
+  const unlocked=Object.keys(completed).length; // 已解锁的场景数
+  const types={言语:0,肢体:0,关系:0,网络:0};
+  Object.entries(completed).forEach(([k,v])=>{if(v){const t=SOCIAL_SCENES[parseInt(k)].type;types[t]=(types[t]||0)+1;}});
   
   let html=`
   <div style="background:linear-gradient(135deg,#E8F6FC,#FFF3E0);border-radius:16px;padding:12px;margin-bottom:14px;text-align:center">
     <div style="font-size:13px;font-weight:700;color:var(--blue-dark)">
       🎬 防霸凌小剧场 — 跟小明一起学习保护自己！
     </div>
-    <div style="font-size:11px;color:var(--text-light);margin-top:2px">
+    <div style="font-size:11px;color:var(--text-light);margin-top:4px;line-height:1.6">
       已完成 ${totalCompleted}/${SOCIAL_SCENES.length} 个场景 
       ${totalCompleted===SOCIAL_SCENES.length?'🎉 全部完成！你是安全小达人！':''}
+      <br>🗣️${types.言语||0} 👊${types.肢体||0} 🤝${types.关系||0} 💻${types.网络||0}
     </div>
   </div>`;
   
-  // 场景导航
+  // 场景导航（带类型标签）
   html+=`<div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:10px">
-    ${SOCIAL_SCENES.map((s,i)=>`
-      <div onclick="socialSceneIdx=${i};renderMind()" style="flex-shrink:0;padding:7px 12px;border-radius:14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .2s;
+    ${SOCIAL_SCENES.map((s,i)=>{
+      const isUnlocked=!unlocked||i<=unlocked; // 已解锁或第一个
+      const isCompleted=completed[i];
+      return `<div onclick="${isUnlocked?`socialSceneIdx=${i};socialAnswered={};renderMind()`:''}" style="flex-shrink:0;padding:7px 12px;border-radius:14px;font-size:11px;font-weight:700;cursor:${isUnlocked?'pointer':'not-allowed'};white-space:nowrap;transition:all .2s;opacity:${isUnlocked?'1':'0.5'};
         ${i===socialSceneIdx?'background:var(--blue);color:#fff;box-shadow:0 3px 10px rgba(126,200,227,0.4)':'background:#fff;color:var(--text-light);border:2px solid var(--border)'}">
-        ${s.icon} ${completed[i]?'✅ ':''}场景${i+1}
-      </div>
-    `).join('')}
+        ${s.icon} ${isCompleted?'✅ ':isUnlocked?'':'🔒'}${i+1}
+      </div>`;
+    }).join('')}
   </div>`;
   
-  // 动画场景卡片
-  html+=`<div class="card" style="background:${scene.bg};border:3px solid rgba(255,255,255,0.8);overflow:hidden;padding:0">
-    <div style="text-align:center;padding:16px 16px 4px">
+  // 主场景卡片
+  html+=`<div class="card" style="background:${scene.bg};border:3px solid rgba(255,255,255,0.8);overflow:hidden;padding:0;position:relative">
+    <!-- 动画角色区域 -->
+    <div style="text-align:center;padding:16px 16px 4px;position:relative;min-height:80px">
       <div style="font-size:56px;animation:bounce 2s ease infinite">${scene.emoji}</div>
       <div style="font-size:18px;font-weight:900;margin-top:4px;color:var(--text)">${scene.title}</div>
+      <span class="tag tag-orange" style="position:absolute;top:10px;right:12px;font-size:10px">${scene.type}</span>
     </div>
     <div style="padding:12px 16px">
-      <div style="background:rgba(255,255,255,0.8);border-radius:14px;padding:14px;font-size:14px;line-height:1.8;font-weight:600;text-align:center;margin-bottom:12px;border-left:4px solid var(--orange)">
-        ${scene.story}
+      <!-- 定义+案例+影响 -->
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <div style="flex:1;background:rgba(255,255,255,0.7);border-radius:10px;padding:8px;font-size:11px;line-height:1.5">
+          <b>📖 定义：</b>${scene.definition}
+        </div>
       </div>
-      <div style="font-weight:800;font-size:14px;text-align:center;margin-bottom:10px">${scene.question}</div>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <div style="flex:1;background:rgba(255,255,255,0.7);border-radius:10px;padding:8px;font-size:11px;line-height:1.5">
+          <b>📰 真实案例：</b>${scene.realCase}
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,0.7);border-radius:10px;padding:8px;font-size:11px;line-height:1.5;margin-bottom:10px">
+        <b>💔 心理影响：</b>${scene.impact}
+      </div>
+      <!-- 故事 -->
+      <div style="background:rgba(255,255,255,0.85);border-radius:14px;padding:14px;font-size:14px;line-height:1.8;font-weight:600;text-align:center;margin-bottom:12px;border-left:4px solid var(--orange)">
+        📺 ${scene.story}
+      </div>
+      <!-- 问题+选项 -->
+      <div style="font-weight:800;font-size:14px;text-align:center;margin-bottom:10px;color:var(--text)">${scene.question}</div>
       ${scene.options.map((opt,i)=>`
         <div onclick="answerSocial(${socialSceneIdx},${i})" style="
           background:${answered===i?(opt.good?'#E8F8E8':'#FFE8E8'):'#fff'};
@@ -2329,18 +2625,33 @@ function renderSocialSafety(){
         </div>
       `).join('')}
       ${answered!==undefined?`
-        <div style="background:${SOCIAL_SCENES[socialSceneIdx].options[answered].good?'var(--green-light)':'var(--pink-light)'};border-radius:12px;padding:10px 12px;margin-top:8px;font-size:12px;line-height:1.6;font-weight:600;color:${SOCIAL_SCENES[socialSceneIdx].options[answered].good?'#5BAE5B':'var(--red)'}">
-          💬 ${SOCIAL_SCENES[socialSceneIdx].options[answered].feedback}
-          ${SOCIAL_SCENES[socialSceneIdx].options[answered].good?`
+        <div style="background:${scene.options[answered].good?'var(--green-light)':'var(--pink-light)'};border-radius:12px;padding:10px 12px;margin-top:8px;font-size:12px;line-height:1.6;font-weight:600;color:${scene.options[answered].good?'#5BAE5B':'var(--red)'}">
+          💬 ${scene.options[answered].feedback}
+          ${scene.options[answered].good?`
             <div style="margin-top:6px;background:rgba(255,255,255,0.7);border-radius:8px;padding:6px 8px">
-              🛡️ <b>记住：</b>${scene.tip}
+              🛡️ <b>应对口诀：</b>${scene.tips}
             </div>
-            <div style="text-align:center;margin-top:8px">
+            <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+              <div style="flex:1;min-width:120px;background:rgba(255,255,255,0.7);border-radius:8px;padding:6px 8px;font-size:10px">
+                <b>👦 受害者：</b>${scene.strategy.victim}
+              </div>
+              <div style="flex:1;min-width:120px;background:rgba(255,255,255,0.7);border-radius:8px;padding:6px 8px;font-size:10px">
+                <b>👀 旁观者：</b>${scene.strategy.bystander}
+              </div>
+              <div style="flex:1;min-width:120px;background:rgba(255,255,255,0.7);border-radius:8px;padding:6px 8px;font-size:10px">
+                <b>👨‍🏫 老师：</b>${scene.strategy.teacher}
+              </div>
+              <div style="flex:1;min-width:120px;background:rgba(255,255,255,0.7);border-radius:8px;padding:6px 8px;font-size:10px">
+                <b>👨‍👩‍👦 家长：</b>${scene.strategy.parent}
+              </div>
+            </div>
+            <div style="text-align:center;margin-top:10px">
               ${socialSceneIdx<SOCIAL_SCENES.length-1?`
                 <button class="btn btn-orange btn-sm" onclick="socialSceneIdx=${socialSceneIdx+1};socialAnswered={};renderMind()">下一个场景 ➡️</button>
               `:`
                 <div style="font-weight:800;color:var(--orange-dark);font-size:14px">🎉 恭喜！所有场景都学会了！你是安全小达人！</div>
               `}
+              <button class="btn btn-outline btn-sm" style="margin-left:6px" onclick="showSocialTipScreenshot()">📸 保存口诀</button>
             </div>
           `:`
             <div style="text-align:center;margin-top:6px">
@@ -2354,7 +2665,7 @@ function renderSocialSafety(){
   
   // 防霸凌口诀
   html+=`<div class="card" style="background:linear-gradient(135deg,var(--blue-light),#fff);margin-top:14px;text-align:center">
-    <div style="font-weight:800;font-size:14px;color:var(--blue-dark);margin-bottom:8px">🦸 防霸凌小口诀</div>
+    <div style="font-weight:800;font-size:14px;color:var(--blue-dark);margin-bottom:8px">🦸 防霸凌总口诀</div>
     <div style="font-size:13px;line-height:2;font-weight:600">
       🛑 被欺负，不害怕<br>
       🗣️ 大声说"不"告诉他<br>
@@ -2380,6 +2691,17 @@ function renderSocialSafety(){
   return html;
 }
 
+function showSocialTipScreenshot(){
+  const scene=SOCIAL_SCENES[socialSceneIdx];
+  const tipHtml=`<div style="background:linear-gradient(135deg,var(--blue-light),var(--pink-light));border-radius:20px;padding:20px;text-align:center;max-width:320px;margin:0 auto">
+    <div style="font-size:48px">${scene.emoji}</div>
+    <div style="font-size:18px;font-weight:900;margin:8px 0;color:var(--text)">${scene.title}</div>
+    <div style="font-size:16px;font-weight:700;line-height:2;color:var(--blue-dark);margin:12px 0;white-space:pre-line">${scene.tips.replace(/，/g,'，<br>')}</div>
+    <div style="font-size:11px;color:var(--text-light);margin-top:8px">—— 男孩养育管家 · 防霸凌口诀</div>
+  </div>`;
+  UI.modalWithTitle('📸 保存口诀到相册',tipHtml+'<div style="text-align:center;margin-top:10px;font-size:12px;color:var(--text-light)">长按上方卡片 → 保存图片</div>');
+}
+
 function answerSocial(sceneIdx,optIdx){
   socialAnswered[sceneIdx]=optIdx;
   const opt=SOCIAL_SCENES[sceneIdx].options[optIdx];
@@ -2387,12 +2709,15 @@ function answerSocial(sceneIdx,optIdx){
   if(!Store.data.socialRecords) Store.data.socialRecords={};
   if(!Store.data.socialRecords[today]) Store.data.socialRecords[today]={};
   if(opt.good){
+    AudioFX.play('success');
     Store.data.socialRecords[today][sceneIdx]=true;
     Store.save();
     addPoint('学会防霸凌知识',3,'🛡️');
     if(Object.values(Store.data.socialRecords[today]||{}).filter(v=>v).length===SOCIAL_SCENES.length){
-      setTimeout(()=>UI.celebrate('🦸','安全小达人！','太棒了！所有防霸凌场景都学会了！你已经知道怎么保护自己啦！'),300);
+      setTimeout(()=>UI.celebrate('🦸','安全小达人！','太棒了！所��防霸凌场景都学会了！你已经知道怎么保护自己啦！'),300);
     }
+  } else {
+    AudioFX.play('error');
   }
   renderMind();
 }
@@ -3008,6 +3333,142 @@ function saveOutdoor(){
 }
 
 /* ============================================================
+   食物相克查询（50组）
+   ============================================================ */
+const FOOD_CLASHES=[{id:1,foods:'虾 + 维生素C',severity:'高危',principle:'虾中的五价砷遇到大量维C会转化为三价砷（砒霜），虽然日常量达不到中毒剂量但敏感儿童仍有风险',symptoms:'恶心、腹痛、腹泻',interval:'间隔2小时以上',alternative:'虾可与低维C蔬菜搭配（如白菜、黄瓜）',tags:['海鲜','维C']},{id:2,foods:'菠菜 + 豆腐',severity:'轻微',principle:'菠菜中的草酸与豆腐中的钙结合形成草酸钙，影响钙吸收',symptoms:'一般无明显症状，长期可能影响钙吸收',interval:'菠菜焯水后可同食',alternative:'菠菜焯水后搭配豆腐，或用小油菜替代菠菜',tags:['蔬菜','豆制品','草酸']},{id:3,foods:'柿子 + 螃蟹',severity:'高危',principle:'柿子中的鞣酸与螃蟹蛋白质结合形成不易消化的复合物，可能形成胃石',symptoms:'腹痛、恶心、呕吐、严重者可致胃出血',interval:'间隔3小时以上',alternative:'柿子与海鲜分开食用，柿子成熟去皮后鞣酸降低',tags:['水果','海鲜','鞣酸']},{id:4,foods:'牛奶 + 巧克力',severity:'中等',principle:'巧克力中的草酸与牛奶中的钙结合形成草酸钙，影响钙吸收',symptoms:'长期可能影响钙吸收和发育',interval:'间隔1小时以上',alternative:'牛奶搭配水果或面包，巧克力单独食用',tags:['乳制品','零食','草酸']},{id:5,foods:'白萝卜 + 胡萝卜',severity:'轻微',principle:'胡萝卜中的抗坏血酸分解酶会破坏白萝卜中的维生素C',symptoms:'无明显症状，仅降低营养利用率',interval:'间隔30分钟即可',alternative:'白萝卜与胡萝卜可分别搭配肉类烹饪',tags:['蔬菜','维C']},{id:6,foods:'海鲜 + 啤酒',severity:'高危',principle:'海鲜富含嘌呤，啤酒也含嘌呤并促进尿酸生成，易导致血尿酸急剧升高',symptoms:'关节红肿疼痛、痛风急性发作',interval:'间隔4小时以上',alternative:'海鲜搭配白水或淡茶',tags:['海鲜','酒精','嘌呤']},{id:7,foods:'牛奶 + 药物',severity:'高危',principle:'牛奶中的钙和蛋白质会与部分抗生素结合，降低药物吸收率',symptoms:'药效降低、治疗失败',interval:'服药前后1-2小时内不饮牛奶',alternative:'用温水送服药物，间隔后再喝牛奶',tags:['乳制品','药物','儿童']},{id:8,foods:'蜂蜜 + 开水',severity:'轻微',principle:'高温会破坏蜂蜜中的活性酶和维生素',symptoms:'无明显症状，仅营养损失',interval:'用60°C以下温水冲泡',alternative:'用温水或凉开水冲泡蜂蜜',tags:['饮品','儿童','营养']},{id:9,foods:'豆浆 + 鸡蛋',severity:'中等',principle:'生豆浆中的胰蛋白酶抑制剂会抑制鸡蛋蛋白质的消化吸收',symptoms:'消化不良、腹胀',interval:'豆浆充分煮沸后可同食',alternative:'豆浆充分煮熟后搭配鸡蛋',tags:['豆制品','蛋类','儿童']},{id:10,foods:'红薯 + 柿子',severity:'高危',principle:'红薯刺激胃酸分泌，与柿子鞣酸在胃酸作用下易形成胃石',symptoms:'腹痛、腹胀、严重者胃出血',interval:'间隔2小时以上',alternative:'红薯搭配蔬菜，柿子去皮食用',tags:['薯类','水果','鞣酸']},{id:11,foods:'海鲜 + 高维C水果',severity:'高危',principle:'部分海鲜含微量砷化合物，大量维C水果可能促使其还原为有毒的三价砷',symptoms:'腹痛、腹泻、恶心',interval:'间隔2小时以上',alternative:'海鲜搭配低维C蔬菜，水果餐后2小时食用',tags:['海鲜','水果','维C']},{id:12,foods:'柿子 + 白酒',severity:'高危',principle:'白酒加速胃酸分泌，与柿子鞣酸更易形成胃石',symptoms:'剧烈腹痛、呕血',interval:'间隔4小时以上',alternative:'饮酒后避免食用柿子',tags:['水果','酒精','鞣酸']},{id:13,foods:'猪肝 + 维生素C',severity:'轻微',principle:'猪肝中微量铜离子会加速维生素C的氧化分解',symptoms:'无明显症状，仅维C营养损失',interval:'间隔30分钟即可',alternative:'猪肝搭配其他蔬菜，维C水果单独食用',tags:['内脏','维C']},{id:14,foods:'茶 + 鸡蛋',severity:'轻微',principle:'浓茶中单宁酸与鸡蛋蛋白质结合形成凝固物',symptoms:'轻微消化不良',interval:'间隔1小时以上',alternative:'鸡蛋搭配粥或面包，茶水餐后饮用',tags:['饮品','蛋类']},{id:15,foods:'黄瓜 + 花生',severity:'中等',principle:'黄瓜性寒凉，花生富含油脂，寒凉与油脂同食易导致滑肠腹泻',symptoms:'腹泻、腹痛',interval:'间隔1小时以上',alternative:'黄瓜搭配其他蔬菜，花生煮食或炖汤',tags:['蔬菜','坚果']},{id:16,foods:'柿子 + 牛奶',severity:'中等',principle:'柿子鞣酸与牛奶蛋白质结合形成凝块，影响消化',symptoms:'腹胀、消化不良',interval:'间隔1小时以上',alternative:'牛奶搭配面包等淀粉类食物',tags:['水果','乳制品','鞣酸']},{id:17,foods:'牛奶 + 果汁',severity:'轻微',principle:'果汁中果酸使牛奶蛋白质遇酸凝固沉淀',symptoms:'轻微腹胀',interval:'间隔30分钟以上',alternative:'牛奶单独饮用，果汁餐间饮用',tags:['乳制品','水果','儿童']},{id:18,foods:'酒 + 浓茶',severity:'高危',principle:'浓茶中茶碱加速心跳，与酒精共同刺激心血管系统',symptoms:'心悸、心律失常',interval:'饮酒后4小时以上再饮茶',alternative:'酒后饮用蜂蜜水或温水解酒',tags:['酒精','饮品','心血管']},{id:19,foods:'豆腐 + 蜂蜜',severity:'中等',principle:'蜂蜜有机酸与豆腐植物蛋白结合产生变性沉淀',symptoms:'腹胀、腹泻',interval:'间隔1小时以上',alternative:'豆腐搭配蔬菜，蜂蜜冲水饮用',tags:['豆制品','甜品']},{id:20,foods:'羊肉 + 西瓜',severity:'轻微',principle:'羊肉性温热，西瓜性寒凉，大量同食可能引起脾胃功能紊乱',symptoms:'轻微腹泻、腹胀',interval:'间隔1小时以上',alternative:'羊肉搭配萝卜，西瓜餐后食用',tags:['肉类','水果']},{id:21,foods:'牛肉 + 栗子',severity:'中等',principle:'牛肉和栗子都不易消化，同食加重胃肠负担',symptoms:'腹胀、消化不良',interval:'间隔1-2小时',alternative:'牛肉搭配蔬菜，栗子做甜品或粥',tags:['肉类','坚果']},{id:22,foods:'萝卜 + 木耳',severity:'中等',principle:'萝卜含维生素C分解酶，敏感体质者同食可能引起皮肤过敏',symptoms:'敏感体质可能皮肤发痒',interval:'间隔1小时以上',alternative:'萝卜搭配肉类，木耳搭配鸡蛋',tags:['蔬菜','菌类','过敏']},{id:23,foods:'土豆 + 香蕉',severity:'中等',principle:'两者含较多碳水化合物和钾，同食可能产生饱胀感',symptoms:'腹胀、消化不良',interval:'间隔1小时以上',alternative:'土豆搭配蔬菜，香蕉餐间食用',tags:['薯类','水果']},{id:24,foods:'鸡蛋 + 柿子',severity:'高危',principle:'柿子鞣酸与鸡蛋蛋白质结合形成不易消化的凝块，可能形成胃石',symptoms:'剧烈腹痛、呕吐',interval:'间隔3小时以上',alternative:'鸡蛋搭配粥类，柿子去皮单独食用',tags:['蛋类','水果','鞣酸']},{id:25,foods:'蜂蜜 + 洋葱',severity:'中等',principle:'蜂蜜有机酸与洋葱含硫化合物反应可能刺激胃肠道',symptoms:'腹胀、腹泻',interval:'间隔1小时以上',alternative:'蜂蜜冲水饮用，洋葱炒熟后食用',tags:['甜品','蔬菜']},{id:26,foods:'红糖 + 皮蛋',severity:'中等',principle:'皮蛋含铅，红糖有机酸可能促进铅的溶出吸收',symptoms:'长期大量食用可能影响神经和造血系统',interval:'间隔1小时以上',alternative:'皮蛋搭配醋和姜，红糖单独冲饮',tags:['蛋类','甜品','重金属']},{id:27,foods:'豆浆 + 红糖',severity:'中等',principle:'红糖有机酸与豆浆蛋白质结合产生变性沉淀',symptoms:'腹胀、消化不良',interval:'间隔1小时以上',alternative:'豆浆加少量白糖或单独饮用',tags:['豆制品','甜品']},{id:28,foods:'酒 + 胡萝卜',severity:'高危',principle:'胡萝卜素与酒精共同进入肝脏代谢，可能加重肝脏负担',symptoms:'肝区不适、肝功能异常',interval:'间隔3小时以上',alternative:'饮酒后避免大量食用胡萝卜',tags:['酒精','蔬菜','肝脏']},{id:29,foods:'柿子 + 酸奶',severity:'高危',principle:'柿子鞣酸与酸奶蛋白质结合形成凝块，可能形成胃石',symptoms:'剧烈腹痛、呕吐',interval:'间隔3小时以上',alternative:'酸奶搭配面包或谷物，柿子去皮食用',tags:['水果','乳制品','鞣酸']},{id:30,foods:'虾 + 南瓜',severity:'中等',principle:'虾与南瓜同食��部分体质中可能引起肠道刺激',symptoms:'腹泻、腹痛',interval:'间隔1小时以上',alternative:'虾搭配清淡蔬菜，南瓜煮粥或蒸食',tags:['海鲜','蔬菜']},{id:31,foods:'鹅肉 + 鸡蛋',severity:'中等',principle:'两者都富含高蛋白质，同食加重消化负担',symptoms:'腹胀、消化不良',interval:'间隔1小时以上',alternative:'鹅肉搭配蔬菜，鸡蛋单独食用',tags:['肉类','蛋类']},{id:32,foods:'猪肉 + 甘草',severity:'轻微',principle:'甘草中甘草酸可能影响猪肉蛋白质消化',symptoms:'轻微腹胀',interval:'间隔2小时以上',alternative:'猪肉正常烹饪，甘草泡水单独饮用',tags:['肉类','中药']},{id:33,foods:'河虾 + 番茄',severity:'高危',principle:'番茄富含维生素C，与虾中微量砷化合物反应可能产生有毒三价砷',symptoms:'腹痛、腹泻、恶心',interval:'间隔2小时以上',alternative:'虾搭配低维C蔬菜，番茄单独食用',tags:['海鲜','蔬菜','维C']},{id:34,foods:'羊肉 + 醋',severity:'中等',principle:'羊肉性温，醋性酸温，大量同食可能加重内热',symptoms:'上火、消化不良',interval:'间隔1小时以上',alternative:'羊肉搭配萝卜消食，少量醋调味即可',tags:['肉类','调料']},{id:35,foods:'豆腐 + 菠菜（未焯水）',severity:'中等',principle:'菠菜草酸与豆腐钙结合形成草酸钙沉淀，影响钙吸收',symptoms:'长期大量食用增加结石风险',interval:'菠菜焯水30秒后可同食',alternative:'菠菜焯水后搭配豆腐，或用油菜替代',tags:['豆制品','蔬菜','草酸']},{id:36,foods:'西瓜 + 桃子',severity:'轻微',principle:'两���均性寒凉且含大量水分，大量同食可能增加肠胃负担',symptoms:'腹泻、腹胀',interval:'间隔30分钟以上',alternative:'适量分开食用',tags:['水果','儿童']},{id:37,foods:'蜂蜜 + 豆浆',severity:'轻微',principle:'蜂蜜有机酸与豆浆蛋白质反应产生沉淀',symptoms:'轻微腹胀',interval:'间隔30分钟以上',alternative:'豆浆加少量白糖，蜂蜜冲温水饮用',tags:['饮品','豆制品']},{id:38,foods:'山楂 + 海参',severity:'中等',principle:'山楂含大量有机酸和鞣酸，与海参蛋白质结合形成不易消化复合物',symptoms:'腹胀、消化不良',interval:'间隔2小时以上',alternative:'海参搭配清淡蔬菜，山楂单独食用',tags:['水果','海鲜']},{id:39,foods:'蜂蜜 + 鲫鱼',severity:'中等',principle:'蜂蜜有机酸与鲫鱼蛋白质可能产生反应，导致消化不良',symptoms:'腹胀、腹泻',interval:'间隔2小时以上',alternative:'鲫鱼搭配豆腐或萝卜烹饪',tags:['甜品','水产']},{id:40,foods:'狗肉 + 绿豆',severity:'轻微',principle:'狗肉性热，绿豆性寒，寒热同食可能引起胃肠道功能紊乱',symptoms:'轻微腹胀',interval:'间隔2小时以上',alternative:'狗肉搭配温性食材，绿豆汤单独饮用',tags:['肉类','豆类']},{id:41,foods:'田螺 + 牛肉',severity:'中等',principle:'田螺性寒，牛肉性温，寒温同食可能刺激肠胃',symptoms:'腹痛、腹胀',interval:'间隔2小时以上',alternative:'田螺充分煮熟，与不同温性食物分开食用',tags:['水产','肉类']},{id:42,foods:'蟹 + 柿子',severity:'高危',principle:'蟹富含蛋白质，柿子含大量鞣酸，结合形成胃石',symptoms:'剧烈腹痛、呕吐',interval:'间隔3小时以上',alternative:'蟹搭配姜醋暖胃，柿子去皮成熟后食用',tags:['海鲜','水果','鞣酸']},{id:43,foods:'豆腐 + 葱',severity:'轻微',principle:'葱中含草酸，与豆腐钙结合形成草酸钙',symptoms:'无明显症状，仅轻微影响钙吸收',interval:'无需严格间隔',alternative:'豆腐搭配小葱或用其他调料增香',tags:['蔬菜','豆制品','草酸']},{id:44,foods:'田螺 + 玉米',severity:'轻微',principle:'田螺性寒，玉米含较多粗纤维，同食加重消化负担',symptoms:'轻微腹痛、腹泻',interval:'间隔1小时以上',alternative:'田螺搭配姜蒜，玉米煮粥食用',tags:['水产','谷物']},{id:45,foods:'海鲜 + 柿子',severity:'高危',principle:'海鲜富含蛋白质，柿子含大量鞣酸，蛋白质遇鞣酸凝固形成胃石',symptoms:'剧烈腹痛、呕吐',interval:'间隔3小时以上',alternative:'海鲜搭配蔬菜，柿子去皮单独食用',tags:['海鲜','水果','鞣酸']},{id:46,foods:'羊肉 + 南瓜',severity:'轻微',principle:'两者性温，大量同食可能引起内热上火',symptoms:'口干、便秘',interval:'间隔1小时以上',alternative:'羊肉搭配萝卜，南瓜煮粥食用',tags:['肉类','蔬菜']},{id:47,foods:'螃蟹 + 泥鳅',severity:'轻微',principle:'两者性寒，同食可能加重寒凉刺激肠胃',symptoms:'轻微腹泻',interval:'间隔1小时以上',alternative:'螃蟹搭配姜醋，泥鳅搭配豆腐',tags:['海鲜','水产']},{id:48,foods:'猪肉 + 菊花',severity:'轻微',principle:'菊花性寒，猪肉性平，大量同食可能引起肠胃不适',symptoms:'轻微腹泻',interval:'间隔1小时以上',alternative:'猪肉正常烹饪，菊花茶单独饮用',tags:['肉类','茶饮']},{id:49,foods:'鳖 + 苋菜',severity:'中等',principle:'鳖肉含丰富蛋白质，苋菜含大量草酸，同食影响蛋白质和矿物质吸收',symptoms:'消化不良',interval:'间隔1小时以上',alternative:'鳖搭配菌菇，苋菜单独清炒',tags:['水产','蔬菜']},{id:50,foods:'鸡肉 + 芹菜',severity:'轻微',principle:'芹菜含丰富膳食纤维与挥发油，大量同食可能影响鸡肉蛋白质消化',symptoms:'轻微腹胀',interval:'间隔30分钟即可',alternative:'鸡肉搭配香菇或土豆，芹菜单独凉拌',tags:['肉类','蔬菜']}];
+
+/* ============================================================
+   儿童汤品大全（25款）
+   ============================================================ */
+const CHILD_SOUPS=[{id:1,name:'山楂苹果瘦肉汤',icon:'🍎',category:'健脾开胃',suitableAge:'3岁+',frequency:'每周1-2次',ingredients:[{name:'山楂',amount:'15g',note:'干山楂片'},{name:'苹果',amount:'1个',note:'去核切块'},{name:'瘦肉',amount:'150g',note:'猪里脊，切块'},{name:'蜜枣',amount:'2颗',note:'或无花果干替代'},{name:'姜片',amount:'2片',note:''}],steps:['瘦肉冷水下锅焯水2分钟，捞出洗净','山楂用温水泡10分钟去杂质','所有食材放入锅中，加清水1.5L','大火煮沸后转小火煲1小时','关火前5分钟加少许盐调味即可','汤渣（瘦肉和苹果）可食用'],nutrition:'开胃消食、健脾益气',benefits:'针对食欲不振、消化不良的儿童',taboo:'空腹不宜大量饮用，胃酸过多者减山楂量',allergens:[],season:'四季皆宜',prepTime:'15分钟备料+1小时煲汤',calorie:'约80kcal/碗'},{id:2,name:'淮山芡实排骨汤',icon:'🥔',category:'健脾开胃',suitableAge:'3岁+',frequency:'每周1-2次',ingredients:[{name:'淮山',amount:'100g',note:'干品30g或鲜品100g'},{name:'芡实',amount:'20g',note:'提前浸泡2小时'},{name:'排骨',amount:'200g',note:'小排，斩小块'},{name:'红枣',amount:'3颗',note:'去核'},{name:'姜片',amount:'2片',note:''}],steps:['排骨冷水下锅焯水3分钟，捞出洗净','芡实提前浸泡2小时至变软','淮山去皮切段（干品洗净即可）','所有食材放入汤锅，加清水1.8L','大火煮沸后撇去浮沫，转小火煲1.5小时','最后5分钟加少许盐调味','淮山和排骨均可食用'],nutrition:'健脾养胃、固肾涩肠',benefits:'适合脾胃虚弱、大便偏溏的儿童',taboo:'便秘者减少芡实用量，感冒发热期不宜',allergens:[],season:'四季皆宜',prepTime:'20分钟备料+1.5小时煲汤',calorie:'约120kcal/碗'},{id:3,name:'谷芽麦芽鸭肾汤',icon:'🌾',category:'健脾开胃',suitableAge:'3岁+',frequency:'每周1次',ingredients:[{name:'谷芽',amount:'15g',note:'炒谷芽更佳'},{name:'麦芽',amount:'15g',note:'炒麦芽更佳'},{name:'鸭肾',amount:'2个',note:'鲜鸭肾'},{name:'瘦肉',amount:'100g',note:'猪里脊'},{name:'蜜枣',amount:'1颗',note:''},{name:'姜片',amount:'2片',note:''}],steps:['鸭肾洗净，用盐搓洗去腥','瘦肉切块焯水2分钟','谷芽麦芽用清水快速冲洗','所有食材放入锅中，加清水1.5L','大火煮沸后转小火煲1小时','加盐少许调味即可'],nutrition:'消食化积、健脾开胃',benefits:'针对积食、食欲差的儿童',taboo:'麦芽有回乳作用，哺乳期母亲不宜同饮',allergens:[],season:'四季皆宜',prepTime:'15分钟备料+1小时煲汤',calorie:'约70kcal/碗'},{id:4,name:'番茄土豆牛肉汤',icon:'🍅',category:'健脾开胃',suitableAge:'3岁+',frequency:'每周1-2次',ingredients:[{name:'番茄',amount:'2个',note:'熟透红番茄'},{name:'土豆',amount:'1个',note:'约150g，去皮切块'},{name:'牛肉',amount:'150g',note:'牛腱或牛里脊'},{name:'洋葱',amount:'1/4个',note:'可选'},{name:'姜片',amount:'2片',note:''}],steps:['牛肉冷水下锅焯水3分钟','番茄去皮切块','土豆去皮切滚刀块','少许油炒香洋葱和番茄至出汁','加入牛肉、土豆和姜片，加清水1.5L','大火煮沸后转小火煲1小时','加盐少许调味即可'],nutrition:'开胃生津、补铁补锌',benefits:'番茄酸甜开胃，牛肉补铁补血，适合挑食偏瘦儿童',taboo:'对番茄过敏者不宜',allergens:[],season:'四季皆宜',prepTime:'20分钟备料+1小时煲汤',calorie:'约110kcal/碗'},{id:5,name:'雪梨银耳瘦肉汤',icon:'🍐',category:'润肺止咳',suitableAge:'3岁+',frequency:'每周1-2次',ingredients:[{name:'雪梨',amount:'1个',note:'去皮去核切块'},{name:'银耳',amount:'10g',note:'干品，提前泡发2小时'},{name:'瘦肉',amount:'100g',note:'猪里脊'},{name:'南杏仁',amount:'10g',note:'甜杏仁'},{name:'冰糖',amount:'5g',note:'可选'},{name:'姜片',amount:'1片',note:''}],steps:['银耳提前冷水泡发2小时，去蒂撕小朵','瘦肉焯水2分钟','雪梨去皮去核切块','所有食材放入汤锅，加清水1.5L','大火煮沸后转小火煲1小时','银耳出胶后加少许冰糖','汤和银耳、雪梨均可食用'],nutrition:'润肺止咳、滋阴润燥',benefits:'适合秋燥咳嗽、咽喉干痒的儿童',taboo:'风寒咳嗽（流清涕）不宜',allergens:['坚果'],season:'秋季为主',prepTime:'20分钟备料+1小时煲汤',calorie:'约60kcal/碗'},{id:6,name:'无花果南北杏猪肺汤',icon:'🌿',category:'润肺止咳',suitableAge:'4岁+',frequency:'每周1次',ingredients:[{name:'猪肺',amount:'200g',note:'鲜猪肺，清洗干净'},{name:'无花果',amount:'4颗',note:'干品，对半切开'},{name:'南杏仁',amount:'10g',note:'甜杏仁'},{name:'北杏仁',amount:'3g',note:'苦杏仁，量不可多'},{name:'姜片',amount:'3片',note:''}],steps:['猪肺灌水冲洗至发白，切小块','猪肺冷水下锅加姜片焯水5分钟','无花果用温水泡10分钟','所有食材放入锅中，加清水1.8L','大火煮沸后撇去浮沫，转小火煲1.5小时','加少许盐调味即可'],nutrition:'润肺化痰、止咳平喘',benefits:'针对久咳痰多的儿童',taboo:'北杏仁有微毒不可多放，3岁以下不宜',allergens:['坚果'],season:'秋冬为主',prepTime:'30分钟备料+1.5小时煲汤',calorie:'约90kcal/碗'},{id:7,name:'川贝雪梨冰糖汤',icon:'🍯',category:'润肺止咳',suitableAge:'3岁+',frequency:'咳嗽期间每周2-3次',ingredients:[{name:'雪梨',amount:'1个',note:'去皮去核'},{name:'川贝粉',amount:'3g',note:'药店有售'},{name:'冰糖',amount:'5g',note:'或蜂蜜1茶匙（1岁以上）'},{name:'清水',amount:'500ml',note:''}],steps:['雪梨洗净去皮，顶部切盖，挖去梨核','将川贝粉和冰糖填入雪梨中','盖上梨盖，放入炖盅','炖盅内加入清水500ml','隔水小火炖1小时','取出稍凉即可饮用，梨肉可食'],nutrition:'润肺止咳、化痰平喘',benefits:'针对燥热干咳、少痰的儿童',taboo:'风寒咳嗽不宜',allergens:[],season:'秋冬为主',prepTime:'10分钟备料+1小时炖煮',calorie:'约50kcal/碗'},{id:8,name:'罗汉果菜干汤',icon:'🥬',category:'润肺止咳',suitableAge:'4岁+',frequency:'每周1次',ingredients:[{name:'罗汉果',amount:'1/4个',note:'掰碎'},{name:'白菜干',amount:'30g',note:'提前泡发30分钟'},{name:'瘦肉',amount:'150g',note:'猪里脊'},{name:'南杏仁',amount:'10g',note:'甜杏仁'},{name:'蜜枣',amount:'1颗',note:''},{name:'姜片',amount:'2片',note:''}],steps:['白菜干提前浸泡30分钟至变软','瘦肉切块焯水2分钟','罗汉果掰成小块','所有食材放入锅中，加清水1.8L','大火煮沸后转小火煲1.5小时','加少许盐调味即可'],nutrition:'清热润肺、化痰止咳',benefits:'适合肺热咳嗽、咽干口燥的儿童',taboo:'脾胃虚寒、腹泻者不宜多饮',allergens:['坚果'],season:'秋冬为主',prepTime:'40分钟备料+1.5小时煲汤',calorie:'约70kcal/碗'},{id:9,name:'虾皮紫菜蛋花汤',icon:'🦐',category:'助长高补钙',suitableAge:'3岁+',frequency:'每周2-3次',ingredients:[{name:'虾皮',amount:'10g',note:'淡干虾皮，浸泡5分钟去盐'},{name:'紫菜',amount:'5g',note:'干紫菜'},{name:'鸡蛋',amount:'1个',note:'打散'},{name:'葱花',amount:'少许',note:''},{name:'香油',amount:'2滴',note:''}],steps:['虾皮用温水浸泡5分钟，沥干去盐','紫菜撕碎备用','锅中加清水800ml煮沸','放入虾皮煮3分钟','加入紫菜煮1分钟','淋入蛋液，用筷子轻轻搅散成蛋花','关火，加少许盐、香油和葱花即可'],nutrition:'补钙补碘、高蛋白',benefits:'虾皮和紫菜含钙量高，助力骨骼发育',taboo:'对海鲜过敏者不宜',allergens:['海鲜','鸡蛋'],season:'四季皆宜',prepTime:'10分钟',calorie:'约45kcal/碗'},{id:10,name:'豆腐鱼头汤',icon:'🐟',category:'助长高补钙',suitableAge:'3岁+',frequency:'每周1-2次',ingredients:[{name:'鱼头',amount:'1个',note:'鲢鱼头或草鱼头，约300g'},{name:'嫩豆腐',amount:'1块',note:'约200g，切块'},{name:'姜片',amount:'3片',note:''},{name:'葱段',amount:'2根',note:''}],steps:['鱼头洗净对半切开，擦干水分','锅中少许油，中火将鱼头两面煎至微黄','加入姜片和葱段，倒入开水1.5L','大火煮沸10分钟至汤色变白','放入豆腐块，转小火煲20分钟','加盐少许调味即可，注意去刺'],nutrition:'补钙补蛋白、健脑益智',benefits:'鱼头富含DHA促进大脑发育，豆腐补钙',taboo:'对鱼类过敏者不宜',allergens:['海鲜'],season:'四季皆宜',prepTime:'15分钟备料+30分钟煲汤',calorie:'约95kcal/碗'},{id:11,name:'田七鸡肉汤',icon:'🍗',category:'助长高补钙',suitableAge:'6岁+',frequency:'每周1次',ingredients:[{name:'田七',amount:'5g',note:'切片或打碎'},{name:'鸡肉',amount:'200g',note:'鸡腿肉或鸡胸肉'},{name:'红枣',amount:'3颗',note:'去核'},{name:'枸杞',amount:'5g',note:'最后放入'},{name:'姜片',amount:'2片',note:''}],steps:['鸡肉冷水下锅焯水3分钟','田七用温水泡10分钟','鸡肉、田七、红枣、姜片放入锅中，加清水1.5L','大火煮沸后转小火煲1小时','放入枸杞再煮10分钟','加少许盐调味即可'],nutrition:'活血化瘀、促进骨骼生长',benefits:'田七有助骨骼发育，适合6岁以上生长期儿童',taboo:'3岁以下不宜，感冒发热期不宜',allergens:[],season:'四季皆宜',prepTime:'15分钟备料+1小时煲汤',calorie:'约100kcal/碗'},{id:12,name:'黄豆筒骨汤',icon:'🦴',category:'助长高补钙',suitableAge:'3岁+',frequency:'每周1次',ingredients:[{name:'猪筒骨',amount:'300g',note:'或猪棒骨'},{name:'黄豆',amount:'50g',note:'提前浸泡4小时'},{name:'胡萝卜',amount:'1根',note:'切块'},{name:'姜片',amount:'3片',note:''},{name:'醋',amount:'几滴',note:'帮助钙质溶出'}],steps:['黄豆提前冷水浸泡4小时','筒骨冷水下锅焯水5分钟','筒骨、黄豆、姜片放入锅中，加清水2L','加几滴白醋促进钙质溶出','大火煮沸后转小火煲2小时','加入胡萝卜再煮20分钟','加盐少许调味即可'],nutrition:'补钙壮骨、健脾宽中',benefits:'筒骨富含钙质和骨胶原，助力骨骼生长',taboo:'痛风患儿不宜多饮，汤表面浮油建议撇去',allergens:[],season:'四季皆宜',prepTime:'4小时泡豆+2小时煲汤',calorie:'约130kcal/碗'},{id:13,name:'莲子百合瘦肉汤',icon:'🪷',category:'安神助眠',suitableAge:'3岁+',frequency:'每周2次',ingredients:[{name:'莲子',amount:'20g',note:'去芯干莲子，提前浸泡1小时'},{name:'百合',amount:'15g',note:'干品，或鲜品30g'},{name:'瘦肉',amount:'150g',note:'猪里脊'},{name:'红枣',amount:'3颗',note:'去核'},{name:'姜片',amount:'2片',note:''}],steps:['莲子提前浸泡1小时，去芯','百合干品泡发20分钟','瘦肉切块焯水2分钟','所有食材放入锅中，加清水1.5L','大火煮沸后转小火煲1小时','加少许盐调味即可'],nutrition:'养心安神、润肺滋阴',benefits:'适合睡眠不安、多梦易醒的儿童',taboo:'腹泻便溏者减少百合用量',allergens:[],season:'四季皆宜',prepTime:'1小时泡莲+1小时煲汤',calorie:'约75kcal/碗'},{id:14,name:'桂圆红枣鸡蛋汤',icon:'🥚',category:'安神助眠',suitableAge:'3岁+',frequency:'每周1-2次',ingredients:[{name:'桂圆肉',amount:'10g',note:'干品'},{name:'红枣',amount:'4颗',note:'去核'},{name:'鸡蛋',amount:'1个',note:''},{name:'红糖',amount:'5g',note:'可选'},{name:'清水',amount:'600ml',note:''}],steps:['红枣洗净去核，桂圆肉冲洗干净','锅中加清水600ml，放入红枣和桂圆','大火煮沸后转小火煮15分钟','打入鸡蛋（荷包蛋形式或打散）','继续煮5分钟至蛋熟','加少许红糖调味即可'],nutrition:'补血安神、益气养心',benefits:'适合面色苍白、睡眠差的儿童',taboo:'体质燥热、上火者不宜多饮',allergens:['鸡蛋'],season:'秋冬为主',prepTime:'10分钟备料+20分钟煮汤',calorie:'约85kcal/碗'},{id:15,name:'小米山药粥汤',icon:'🥣',category:'安神助眠',suitableAge:'2岁+',frequency:'每周2-3次',ingredients:[{name:'小米',amount:'50g',note:'洗净'},{name:'鲜山药',amount:'80g',note:'去皮切丁'},{name:'红枣',amount:'2颗',note:'去核切碎'},{name:'清水',amount:'1L',note:''}],steps:['小米淘洗干净，沥干水分','山药去皮切小丁（戴手套防过敏）','红枣去核切碎','锅中加清水1L，放入小米大火煮沸','加入山药丁和红枣碎，转小火煮30分钟','煮至米粒开花、汤汁浓稠即可'],nutrition:'健脾安神、养胃助眠',benefits:'小米含色氨酸促进褪黑素分泌，适合睡前1小时饮用',taboo:'山药皮可能引起皮肤瘙痒，处理时戴手套',allergens:[],season:'四季皆宜',prepTime:'10分钟备料+30分钟煮粥',calorie:'约65kcal/碗'},{id:16,name:'山楂麦芽消食汤',icon:'🍊',category:'消积化食',suitableAge:'3岁+',frequency:'每周1-2次',ingredients:[{name:'山楂',amount:'10g',note:'干山楂片'},{name:'炒麦芽',amount:'15g',note:'药店有售'},{name:'炒谷芽',amount:'15g',note:'药店有售'},{name:'瘦肉',amount:'100g',note:'切小块'},{name:'蜜枣',amount:'1颗',note:''},{name:'姜片',amount:'2片',note:''}],steps:['山楂、炒麦芽、炒谷芽用清水冲洗干净','瘦肉切块焯水2分钟','所有食材放入锅中，加清水1.2L','大火煮沸后转小火煲45分钟','加少许盐调味即可'],nutrition:'消食化积、行气健脾',benefits:'针对暴饮暴食后腹胀、积食的儿童',taboo:'空腹不宜饮用，胃酸过多者减山楂量',allergens:[],season:'四季皆宜',prepTime:'10分钟备料+45分钟煲汤',calorie:'约55kcal/碗'},{id:17,name:'白萝卜陈皮汤',icon:'🥗',category:'消积化食',suitableAge:'3岁+',frequency:'每周1-2次',ingredients:[{name:'白萝卜',amount:'200g',note:'去皮切块'},{name:'陈皮',amount:'5g',note:'干品，提前泡软刮白瓤'},{name:'瘦肉',amount:'100g',note:'切小块'},{name:'姜片',amount:'2片',note:''}],steps:['陈皮用温水泡软，刮去内层白瓤（去苦味）','白萝卜去皮切滚刀块','瘦肉焯水2分钟','所有食材放入锅中，加清水1.2L','大火煮沸后转小火煲40分钟','加少许盐调味即可'],nutrition:'消食下气、化痰清热',benefits:'适合食积腹胀、痰多的儿童',taboo:'服用人参期间不宜，脾胃虚寒者少量',allergens:[],season:'秋冬为主',prepTime:'15分钟备料+40分钟煲汤',calorie:'约50kcal/碗'},{id:18,name:'鸡内金山药汤',icon:'🍲',category:'消积化食',suitableAge:'3岁+',frequency:'每周1次',ingredients:[{name:'鸡内金',amount:'5g',note:'干品，药店有售'},{name:'鲜山药',amount:'100g',note:'去皮切块'},{name:'瘦肉',amount:'100g',note:'切小块'},{name:'红枣',amount:'2颗',note:'去核'},{name:'姜片',amount:'2片',note:''}],steps:['鸡内金用温水泡10分钟或研粉备用','山药去皮切块（戴手套防过敏）','瘦肉焯水2分钟','所有食材放入锅中，加清水1.2L','大火煮沸后转小火煲1小时','加少许盐调味即可'],nutrition:'消食化积、健脾固肾',benefits:'鸡内金为强效消食药，针对顽固性积食',taboo:'脾虚无积者不宜常用',allergens:[],season:'四季皆宜',prepTime:'15分钟备料+1小时煲汤',calorie:'约60kcal/碗'},{id:19,name:'冬瓜薏米排骨汤',icon:'🍉',category:'夏季清热',suitableAge:'3岁+',frequency:'夏季每周1-2次',ingredients:[{name:'冬瓜',amount:'300g',note:'带皮切块，清热效果更好'},{name:'薏米',amount:'30g',note:'提前浸泡1小时'},{name:'排骨',amount:'200g',note:'斩小块'},{name:'姜片',amount:'2片',note:''}],steps:['薏米提前浸泡1小时','排骨冷水下锅焯水3分钟','冬瓜带皮洗净切大块','排骨、薏米、姜片放入锅中，加清水1.8L','大火煮沸后转小火煲1小时','加入冬瓜块再煮20分钟','加盐少许调味即可'],nutrition:'清热祛湿、利尿消肿',benefits:'适合夏季湿热、食欲不振的儿童',taboo:'脾胃虚寒、腹泻者不宜多饮',allergens:[],season:'夏季',prepTime:'1小时泡薏米+1小时煲汤',calorie:'约85kcal/碗'},{id:20,name:'丝瓜花蛤汤',icon:'🥒',category:'夏季清热',suitableAge:'4岁+',frequency:'夏季每周1次',ingredients:[{name:'丝瓜',amount:'200g',note:'去皮切滚刀块'},{name:'花蛤',amount:'200g',note:'提前吐沙'},{name:'姜丝',amount:'5g',note:''},{name:'葱花',amount:'少许',note:''}],steps:['花蛤提前用盐水浸泡2小时吐沙，刷洗干净','丝瓜去皮切滚刀块','锅中加清水1L煮沸，放入姜丝','放入花蛤，煮至开口（约3分钟），捞出备用','放入丝瓜煮5分钟至变软','将花蛤回锅，加少许料酒','加盐少许调味，撒葱花即可'],nutrition:'清热化痰、凉血解毒',benefits:'适合夏季上火、口干烦渴的儿童',taboo:'脾胃虚寒者少饮，花蛤必须充分吐沙煮熟',allergens:['海鲜'],season:'夏季',prepTime:'2小时吐沙+15分钟煮汤',calorie:'约55kcal/碗'},{id:21,name:'绿豆百合莲子汤',icon:'🟢',category:'夏季清热',suitableAge:'3岁+',frequency:'夏季每周2-3次',ingredients:[{name:'绿豆',amount:'50g',note:'提前浸泡2小时'},{name:'百合',amount:'15g',note:'干品，或鲜品30g'},{name:'莲子',amount:'20g',note:'去芯，提前浸泡1小时'},{name:'冰糖',amount:'10g',note:'可选'},{name:'清水',amount:'1.5L',note:''}],steps:['绿豆提前浸泡2小时','莲子提前浸泡1小时，去芯','百合干品泡发20分钟','锅中加清水1.5L，放入绿豆和莲子','大火煮沸后转小火煮40分钟','加入百合再煮15分钟','加少许冰糖调味即可'],nutrition:'清热解毒、养心安神',benefits:'夏季消暑佳品，绿豆清热解毒',taboo:'脾胃虚寒、腹泻者不宜多饮',allergens:[],season:'夏季',prepTime:'2小时泡豆+55分钟煮汤',calorie:'约70kcal/碗'},{id:22,name:'苦瓜黄豆排骨汤',icon:'🫒',category:'夏季清热',suitableAge:'5岁+',frequency:'夏季每周1次',ingredients:[{name:'苦瓜',amount:'150g',note:'去瓤切块'},{name:'黄豆',amount:'40g',note:'提前浸泡4小时'},{name:'排骨',amount:'200g',note:'斩小块'},{name:'蜜枣',amount:'1颗',note:'中和苦味'},{name:'姜片',amount:'3片',note:''}],steps:['黄豆提前浸泡4小时','排骨冷水下锅焯水3分钟','苦瓜去瓤去籽切大块，用盐腌10分钟挤去苦水','所有食材放入锅中，加清水1.8L','大火煮沸后转小火煲1.5小时','加盐少许调味即可'],nutrition:'清热解暑、明目解毒',benefits:'适合夏季热气重、易上火的儿童',taboo:'脾胃虚寒者不宜',allergens:[],season:'夏季',prepTime:'4小时泡豆+1.5小时煲汤',calorie:'约90kcal/碗'},{id:23,name:'红枣枸杞乌鸡汤',icon:'🐦',category:'冬季暖身',suitableAge:'4岁+',frequency:'冬季每周1次',ingredients:[{name:'乌鸡',amount:'300g',note:'斩小块'},{name:'红枣',amount:'5颗',note:'去核'},{name:'枸杞',amount:'10g',note:'最后放入'},{name:'党参',amount:'10g',note:'温和补气'},{name:'姜片',amount:'3片',note:''}],steps:['乌鸡冷水下锅焯水5分钟','党参用温水泡10分钟','红枣洗净去核','乌鸡、党参、红枣、姜片放入锅中，加清水2L','大火煮沸后撇去浮沫，转小火煲2小时','放入枸杞再煮10分钟','加盐少许调味即可'],nutrition:'温中补气、养血暖身',benefits:'适合冬季手脚冰凉、体虚的儿童',taboo:'感冒发热期不宜，内热上火者不宜',allergens:[],season:'冬季',prepTime:'15分钟备料+2小时煲汤',calorie:'约110kcal/碗'},{id:24,name:'白胡椒猪肚汤',icon:'🫕',category:'冬季暖身',suitableAge:'5岁+',frequency:'冬季每周1次',ingredients:[{name:'猪肚',amount:'1个',note:'约300g，洗净'},{name:'白胡椒粒',amount:'5g',note:'拍碎'},{name:'红枣',amount:'3颗',note:'去核'},{name:'姜片',amount:'5片',note:''},{name:'面粉',amount:'适量',note:'清洗猪肚用'}],steps:['猪肚用面粉和盐反复搓洗3次','猪肚冷水下锅加姜片焯水5分钟，切条','白胡椒粒用刀背拍碎','所有食材放入锅中，加清水2L','大火煮沸后撇去浮沫，转小火煲2小时','煲至猪肚软烂','加盐少许调味即可'],nutrition:'温中散寒、健胃暖身',benefits:'适合冬季胃寒、腹痛的儿童',taboo:'胃热、口臭者不宜，3岁以下不宜',allergens:[],season:'冬季',prepTime:'30分钟清洗+2小时煲汤',calorie:'约100kcal/碗'},{id:25,name:'羊肉萝卜汤',icon:'🥩',category:'冬季暖身',suitableAge:'4岁+',frequency:'冬季每周1次',ingredients:[{name:'羊肉',amount:'200g',note:'羊腿肉，切块'},{name:'白萝卜',amount:'200g',note:'去皮切块'},{name:'红枣',amount:'3颗',note:'去核'},{name:'姜片',amount:'4片',note:''},{name:'葱段',amount:'2根',note:''},{name:'香菜',amount:'少许',note:'可选'}],steps:['羊肉冷水下锅，加姜片和葱段焯水5分钟','白萝卜去皮切滚刀块','羊肉、红枣、姜片放入锅中，加清水2L','大火煮沸后撇去浮沫，转小火煲1.5小时','加入白萝卜块再煮30分钟','加盐少许调味，撒香菜即可'],nutrition:'温补暖身、益气补虚',benefits:'适合冬季畏寒怕冷的儿童',taboo:'内热上火者不宜',allergens:[],season:'冬季',prepTime:'15分钟备料+2小时煲汤',calorie:'约120kcal/碗'}];
+
+/* ============================================================
+   食物相克弹窗
+   ============================================================ */
+function showFoodClashModal(){
+  let searchKW='';
+  let html=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+    <input type="text" class="form-input" id="fcSearch" placeholder="🔍 搜索食材名称..." style="flex:1;margin:0" oninput="renderFoodClashList()">
+    <button class="btn btn-outline btn-sm" onclick="document.getElementById('fcSearch').value='';renderFoodClashList()" style="flex-shrink:0">清除</button>
+  </div>`;
+  html+=`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+    <span class="tag tag-red" onclick="document.getElementById('fcSearch').value='高危';renderFoodClashList()" style="cursor:pointer">⚠️ 高危</span>
+    <span class="tag tag-orange" onclick="document.getElementById('fcSearch').value='中等';renderFoodClashList()" style="cursor:pointer">⚡ 中等</span>
+    <span class="tag tag-green" onclick="document.getElementById('fcSearch').value='轻微';renderFoodClashList()" style="cursor:pointer">✅ 轻微</span>
+    <span class="tag tag-blue" onclick="document.getElementById('fcSearch').value='';renderFoodClashList()" style="cursor:pointer">全部</span>
+  </div>`;
+  html+=`<div id="foodClashList"></div>`;
+  html+=`<div class="card" style="background:var(--blue-light);font-size:12px;line-height:1.7;margin-top:10px">
+    <b>🛒 安全饮食口诀：</b>柿蟹不同食，牛奶药分开；菠菜先焯水，海鲜配低C；间隔两小时，安全又健康！
+  </div>`;
+  UI.modalWithTitle('⚠️ 食物相克查询（50组）',html);
+  renderFoodClashList();
+}
+function renderFoodClashList(){
+  const el=document.getElementById('foodClashList');
+  if(!el) return;
+  const kw=(document.getElementById('fcSearch')?.value||'').toLowerCase();
+  let items=FOOD_CLASHES;
+  if(kw) items=items.filter(c=>c.foods.toLowerCase().includes(kw)||c.severity.includes(kw)||c.principle.includes(kw)||c.tags.some(t=>t.includes(kw)));
+  const sevColors={高危:'var(--red)',中等:'var(--orange)',轻微:'var(--green)'};
+  const sevIcons={高危:'🔴',中等:'🟡',轻微:'🟢'};
+  el.innerHTML=items.length===0
+    ?`<div class="empty"><div class="emoji">🔍</div><div class="text">没找到"${kw}"相关的食物相克组合</div></div>`
+    :items.map(c=>`<div class="card" style="margin-bottom:8px;border-left:4px solid ${sevColors[c.severity]};padding:10px 12px">
+      <div style="font-weight:800;font-size:14px;display:flex;align-items:center;gap:6px">
+        ${sevIcons[c.severity]} ${c.foods}
+        <span class="tag" style="background:${sevColors[c.severity]};color:#fff;font-size:10px">${c.severity}</span>
+      </div>
+      <div style="font-size:12px;color:var(--text);margin-top:6px;line-height:1.7"><b>⚠️ 原理：</b>${c.principle}</div>
+      <div style="font-size:12px;color:var(--red);margin-top:4px"><b>🤒 症状：</b>${c.symptoms}</div>
+      <div style="font-size:12px;color:var(--text-light);margin-top:4px"><b>⏱️ 间隔：</b>${c.interval}</div>
+      <div style="font-size:12px;color:var(--green);margin-top:4px;background:var(--green-light);border-radius:8px;padding:4px 8px"><b>✅ 替代：</b>${c.alternative}</div>
+    </div>`).join('');
+}
+
+/* ============================================================
+   儿童汤品弹窗
+   ============================================================ */
+let soupTab='all';
+let soupDetailId=null;
+function showChildSoupModal(){
+  const categories=['健脾开胃','润肺止咳','助长高补钙','安神助眠','消积化食','夏季清热','冬季暖身'];
+  const catIcons={健脾开胃:'🍎',润肺止咳:'🍐',助长高补钙:'🦴',安神助眠:'😴',消积化食:'🍊',夏季清热:'🧊',冬季暖身:'🔥'};
+  let html=`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+    <span class="tag ${soupTab==='all'?'tag-blue':''}" onclick="soupTab='all';soupDetailId=null;showChildSoupModal()" style="cursor:pointer">全部</span>
+    ${categories.map(c=>`<span class="tag ${soupTab===c?'tag-orange':''}" onclick="soupTab='${c}';soupDetailId=null;showChildSoupModal()" style="cursor:pointer">${catIcons[c]||'🍲'} ${c}</span>`).join('')}
+  </div>`;
+  html+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+    <input type="text" class="form-input" id="soupSearch" placeholder="🔍 搜索汤品名称或食材..." style="flex:1;margin:0" oninput="renderSoupList()">
+    <button class="btn btn-outline btn-sm" onclick="document.getElementById('soupSearch').value='';renderSoupList()" style="flex-shrink:0">清除</button>
+  </div>`;
+  html+=`<div id="soupList"></div>`;
+  UI.modalWithTitle('🍲 儿童汤品大全（25款）',html);
+  renderSoupList();
+}
+function renderSoupList(){
+  const el=document.getElementById('soupList');
+  if(!el) return;
+  let items=CHILD_SOUPS;
+  const kw=(document.getElementById('soupSearch')?.value||'').toLowerCase();
+  if(kw) items=items.filter(s=>s.name.toLowerCase().includes(kw)||s.category.includes(kw)||s.ingredients.some(i=>i.name.includes(kw))||s.benefits.includes(kw));
+  if(soupTab!=='all') items=items.filter(s=>s.category===soupTab);
+  
+  if(soupDetailId!==null){
+    const s=items.find(s=>s.id===soupDetailId);
+    if(!s){soupDetailId=null;renderSoupList();return;}
+    el.innerHTML=`
+      <button class="btn btn-outline btn-sm" style="margin-bottom:10px" onclick="soupDetailId=null;showChildSoupModal()">← 返回列表</button>
+      <div class="card" style="padding:0;overflow:hidden;border:2px solid var(--border)">
+        <div style="background:linear-gradient(135deg,var(--orange-light),var(--cream));padding:16px;text-align:center">
+          <div style="font-size:48px">${s.icon}</div>
+          <div style="font-size:18px;font-weight:900;margin-top:6px">${s.name}</div>
+          <div style="display:flex;gap:6px;justify-content:center;margin-top:6px;flex-wrap:wrap">
+            <span class="tag tag-orange">${s.category}</span>
+            <span class="tag tag-blue">${s.suitableAge}</span>
+            <span class="tag tag-green">${s.frequency}</span>
+          </div>
+        </div>
+        <div style="padding:14px">
+          <div style="font-weight:800;font-size:13px;margin-bottom:6px">📋 食材清单</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px">
+            ${s.ingredients.map(i=>`<div style="background:var(--cream);border-radius:8px;padding:6px 10px;font-size:12px"><b>${i.name}</b>：${i.amount}${i.note?' · '+i.note:''}</div>`).join('')}
+          </div>
+          <div style="font-weight:800;font-size:13px;margin-bottom:6px">👨‍🍳 制作步骤</div>
+          <div style="margin-bottom:12px">
+            ${s.steps.map((st,i)=>`<div style="display:flex;gap:8px;padding:6px 0;font-size:12px;line-height:1.6;border-bottom:1px dashed var(--border)"><span style="background:var(--blue);color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0">${i+1}</span><span>${st}</span></div>`).join('')}
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">
+            <div style="background:var(--green-light);border-radius:8px;padding:8px"><b>🥗 营养：</b>${s.nutrition}</div>
+            <div style="background:var(--blue-light);border-radius:8px;padding:8px"><b>💪 功效：</b>${s.benefits}</div>
+            <div style="background:var(--pink-light);border-radius:8px;padding:8px"><b>⚠️ 禁忌：</b>${s.taboo}</div>
+            <div style="background:var(--orange-light);border-radius:8px;padding:8px"><b>⏱️ 时间：</b>${s.prepTime}<br><b>🔥 热量：</b>${s.calorie}</div>
+          </div>
+          ${s.allergens.length>0?`<div style="margin-top:8px;background:#FFE8E8;border-radius:8px;padding:8px;font-size:12px"><b>🚨 过敏原：</b>${s.allergens.join('、')}</div>`:''}
+        </div>
+      </div>`;
+  } else {
+    el.innerHTML=items.length===0
+      ?`<div class="empty"><div class="emoji">🔍</div><div class="text">没找到相关汤品</div></div>`
+      :items.map(s=>`<div class="card" style="margin-bottom:8px;padding:0;overflow:hidden;cursor:pointer" onclick="soupDetailId=${s.id};renderSoupList()">
+        <div style="display:flex;align-items:stretch">
+          <div style="width:60px;background:var(--orange-light);display:flex;align-items:center;justify-content:center;font-size:32px;flex-shrink:0">${s.icon}</div>
+          <div style="flex:1;padding:10px 12px">
+            <div style="font-weight:800;font-size:14px">${s.name}</div>
+            <div style="font-size:12px;color:var(--text);margin:4px 0;line-height:1.5">${s.benefits}</div>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+              <span class="tag tag-orange">${s.category}</span>
+              <span class="tag tag-blue">${s.suitableAge}</span>
+              <span class="tag tag-green">${s.season}</span>
+              ${s.allergens.length>0?`<span class="tag tag-red">过敏原</span>`:''}
+            </div>
+          </div>
+        </div>
+      </div>`).join('');
+  }
+}
+
+/* ============================================================
    儿童添加剂避坑清单
    ============================================================ */
 const BUILTIN_ADDITIVES=[
@@ -3345,6 +3806,7 @@ function toggleStudy(key){
    应用初始化
    ============================================================ */
 function initApp(){
+  AudioFX.init();
   Store.init();
   ensurePresetData();
   // 创建页面容器
