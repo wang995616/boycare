@@ -1560,6 +1560,9 @@ function renderDiet(){
     <div class="card">${renderMealCalendar()}</div>
   </div>`;
 
+  // 一菜一汤联动推荐
+  html+=renderMealSoupCombo();
+
   // 食物相克 + 儿童汤品快捷入口
   html+=`<div class="section">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -2548,6 +2551,130 @@ const SOCIAL_SCENES=[
 
 let socialSceneIdx=0;
 let socialAnswered={};
+/* ========== 防霸凌 SVG 角色动画 ========== */
+function renderBullyingSceneAnimation(scene){
+  // 根据霸凌类型生成不同的 SVG 动画场景
+  const type=scene.type;
+  // 受害者角色（小明）
+  const victim=`
+    <g style="animation:victimShake 2s ease infinite">
+      <circle cx="40" cy="35" r="12" fill="#FFD4A8" stroke="#E0A060" stroke-width="1.5"/>
+      <circle cx="36" cy="33" r="2" fill="#333"/>
+      <circle cx="44" cy="33" r="2" fill="#333"/>
+      <path d="M36 40 Q40 38 44 40" stroke="#333" stroke-width="1.5" fill="none"/>
+      <rect x="30" y="47" width="20" height="25" rx="4" fill="#7EC8E3" stroke="#5BB3D9" stroke-width="1"/>
+      <rect x="32" y="72" width="6" height="15" rx="2" fill="#4A90D9"/>
+      <rect x="42" y="72" width="6" height="15" rx="2" fill="#4A90D9"/>
+    </g>`;
+  
+  // 欺负者角色
+  const bully=`
+    <g style="animation:bullyApproach 3s ease infinite">
+      <circle cx="100" cy="35" r="14" fill="#FFB088" stroke="#CC6600" stroke-width="1.5"/>
+      <circle cx="96" cy="33" r="2" fill="#333"/>
+      <circle cx="104" cy="33" r="2" fill="#333"/>
+      <path d="M94 42 L106 42" stroke="#333" stroke-width="2" fill="none"/>
+      <rect x="88" y="49" width="24" height="28" rx="4" fill="#FF7B7B" stroke="#E05050" stroke-width="1"/>
+      <rect x="90" y="77" width="7" height="16" rx="2" fill="#CC5050"/>
+      <rect x="103" y="77" width="7" height="16" rx="2" fill="#CC5050"/>
+    </g>`;
+  
+  // 对话气泡
+  const speechBubble=`
+    <g style="animation:bubblePop 2s ease infinite 1s">
+      <ellipse cx="100" cy="15" rx="25" ry="10" fill="#fff" stroke="#ccc" stroke-width="1"/>
+      <path d="M90 22 L85 28 L92 25" fill="#fff" stroke="#ccc" stroke-width="1"/>
+      <text x="100" y="18" text-anchor="middle" font-size="8" fill="#333" font-weight="bold">${scene.type==='言语'?'😡':scene.type==='肢体'?'👊':scene.type==='关系'?'🚫':'💻'}</text>
+    </g>`;
+  
+  // 老师角色（保护者）
+  const teacher=`
+    <g style="animation:teacherArrive 3s ease infinite 2s">
+      <circle cx="130" cy="40" r="12" fill="#FFD4A8" stroke="#E0A060" stroke-width="1.5"/>
+      <circle cx="126" cy="38" r="2" fill="#333"/>
+      <circle cx="134" cy="38" r="2" fill="#333"/>
+      <path d="M126 44 Q130 46 134 44" stroke="#333" stroke-width="1.5" fill="none"/>
+      <rect x="120" y="52" width="20" height="25" rx="4" fill="#7DD87D" stroke="#5BAE5B" stroke-width="1"/>
+      <text x="130" y="35" font-size="10" text-anchor="middle">👩‍🏫</text>
+    </g>`;
+  
+  // 根据类型定制场景
+  let sceneSVG='';
+  if(type==='言语'){
+    sceneSVG=`<svg viewBox="0 0 160 100" style="width:100%;height:100%">
+      ${victim}
+      ${bully}
+      ${speechBubble}
+      <!-- 声波动画 -->
+      <g style="animation:soundWave 1.5s ease infinite">
+        <path d="M55 30 Q50 25 55 20" stroke="#FF7B7B" stroke-width="1.5" fill="none" opacity="0.6"/>
+        <path d="M60 28 Q53 20 60 12" stroke="#FF7B7B" stroke-width="1.5" fill="none" opacity="0.4"/>
+      </g>
+    </svg>`;
+  } else if(type==='肢体'){
+    sceneSVG=`<svg viewBox="0 0 160 100" style="width:100%;height:100%">
+      ${victim}
+      <g style="animation:bullyPush 1.5s ease infinite">
+        <circle cx="100" cy="35" r="14" fill="#FFB088" stroke="#CC6600" stroke-width="1.5"/>
+        <circle cx="96" cy="33" r="2" fill="#333"/>
+        <circle cx="104" cy="33" r="2" fill="#333"/>
+        <path d="M94 42 L106 42" stroke="#333" stroke-width="2" fill="none"/>
+        <rect x="88" y="49" width="24" height="28" rx="4" fill="#FF7B7B" stroke="#E05050" stroke-width="1"/>
+        <!-- 推的手 -->
+        <rect x="75" y="50" width="15" height="5" rx="2" fill="#FFB088" style="animation:pushHand 1s ease infinite"/>
+      </g>
+    </svg>`;
+  } else if(type==='关系'){
+    sceneSVG=`<svg viewBox="0 0 160 100" style="width:100%;height:100%">
+      ${victim}
+      <!-- 一群人排斥 -->
+      <g style="animation:groupExclude 3s ease infinite">
+        <circle cx="90" cy="35" r="10" fill="#FFB088" stroke="#CC6600" stroke-width="1"/>
+        <circle cx="110" cy="35" r="10" fill="#FFB088" stroke="#CC6600" stroke-width="1"/>
+        <circle cx="130" cy="35" r="10" fill="#FFB088" stroke="#CC6600" stroke-width="1"/>
+        <!-- 禁止符号 -->
+        <g style="animation:bubblePop 2s ease infinite">
+          <circle cx="110" cy="55" r="12" fill="none" stroke="#FF7B7B" stroke-width="2.5"/>
+          <line x1="101" y1="46" x2="119" y2="64" stroke="#FF7B7B" stroke-width="2.5"/>
+        </g>
+      </g>
+    </svg>`;
+  } else { // 网络
+    sceneSVG=`<svg viewBox="0 0 160 100" style="width:100%;height:100%">
+      ${victim}
+      <!-- 手机/电脑 -->
+      <g style="animation:deviceShake 2s ease infinite">
+        <rect x="80" y="25" width="35" height="25" rx="3" fill="#333" stroke="#666" stroke-width="1"/>
+        <rect x="83" y="28" width="29" height="19" fill="#7EC8E3"/>
+        <text x="97" y="42" font-size="8" text-anchor="middle">💬💢</text>
+        <rect x="92" y="50" width="11" height="2" fill="#666"/>
+      </g>
+      <!-- 恶意消息动画 -->
+      <g style="animation:msgFly 2s ease infinite">
+        <rect x="75" y="15" width="20" height="8" rx="3" fill="#FF7B7B" opacity="0.8"/>
+        <text x="85" y="21" font-size="6" text-anchor="middle" fill="#fff">💢</text>
+      </g>
+    </svg>`;
+  }
+  
+  // 添加 CSS 动画
+  const animStyle=`
+  <style>
+    @keyframes victimShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-2px)}75%{transform:translateX(2px)}}
+    @keyframes bullyApproach{0%,100%{transform:translateX(0)}50%{transform:translateX(-5px)}}
+    @keyframes bubblePop{0%,100%{opacity:0.3;transform:scale(0.9)}50%{opacity:1;transform:scale(1.1)}}
+    @keyframes soundWave{0%,100%{opacity:0;transform:translateX(0)}50%{opacity:0.6;transform:translateX(-3px)}}
+    @keyframes bullyPush{0%,100%{transform:translateX(0)}50%{transform:translateX(-8px)}}
+    @keyframes pushHand{0%,100%{transform:translateX(0)}50%{transform:translateX(-5px)}}
+    @keyframes groupExclude{0%,100%{transform:translateX(0)}50%{transform:translateX(3px)}}
+    @keyframes deviceShake{0%,100%{transform:translateX(0) rotate(0)}25%{transform:translateX(-1px) rotate(-1deg)}75%{transform:translateX(1px) rotate(1deg)}}
+    @keyframes msgFly{0%{opacity:0;transform:translateY(10px)}50%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-10px)}}
+    @keyframes teacherArrive{0%,100%{opacity:0;transform:translateX(10px)}50%{opacity:1;transform:translateX(0)}}
+  </style>`;
+  
+  return animStyle+sceneSVG;
+}
+
 function renderSocialSafety(){
   const scene=SOCIAL_SCENES[socialSceneIdx];
   const answered=socialAnswered[socialSceneIdx];
@@ -2585,11 +2712,17 @@ function renderSocialSafety(){
   
   // 主场景卡片
   html+=`<div class="card" style="background:${scene.bg};border:3px solid rgba(255,255,255,0.8);overflow:hidden;padding:0;position:relative">
-    <!-- 动画角色区域 -->
-    <div style="text-align:center;padding:16px 16px 4px;position:relative;min-height:80px">
-      <div style="font-size:56px;animation:bounce 2s ease infinite">${scene.emoji}</div>
-      <div style="font-size:18px;font-weight:900;margin-top:4px;color:var(--text)">${scene.title}</div>
+    <!-- SVG 动画角色区域 -->
+    <div style="padding:16px 16px 4px;position:relative;min-height:120px;background:linear-gradient(180deg,rgba(255,255,255,0.3),transparent)">
+      <div style="text-align:center">
+        <div style="font-size:48px;animation:bounce 2s ease infinite;line-height:1">${scene.emoji}</div>
+        <div style="font-size:18px;font-weight:900;margin-top:4px;color:var(--text)">${scene.title}</div>
+      </div>
       <span class="tag tag-orange" style="position:absolute;top:10px;right:12px;font-size:10px">${scene.type}</span>
+      <!-- SVG 角色动画 -->
+      <div style="margin-top:8px;height:100px;position:relative;overflow:hidden;border-radius:12px;background:rgba(255,255,255,0.5)">
+        ${renderBullyingSceneAnimation(scene)}
+      </div>
     </div>
     <div style="padding:12px 16px">
       <!-- 定义+案例+影响 -->
@@ -3343,6 +3476,128 @@ const FOOD_CLASHES=[{id:1,foods:'虾 + 维生素C',severity:'高危',principle:'
 const CHILD_SOUPS=[{id:1,name:'山楂苹果瘦肉汤',icon:'🍎',category:'健脾开胃',suitableAge:'3岁+',frequency:'每周1-2次',ingredients:[{name:'山楂',amount:'15g',note:'干山楂片'},{name:'苹果',amount:'1个',note:'去核切块'},{name:'瘦肉',amount:'150g',note:'猪里脊，切块'},{name:'蜜枣',amount:'2颗',note:'或无花果干替代'},{name:'姜片',amount:'2片',note:''}],steps:['瘦肉冷水下锅焯水2分钟，捞出洗净','山楂用温水泡10分钟去杂质','所有食材放入锅中，加清水1.5L','大火煮沸后转小火煲1小时','关火前5分钟加少许盐调味即可','汤渣（瘦肉和苹果）可食用'],nutrition:'开胃消食、健脾益气',benefits:'针对食欲不振、消化不良的儿童',taboo:'空腹不宜大量饮用，胃酸过多者减山楂量',allergens:[],season:'四季皆宜',prepTime:'15分钟备料+1小时煲汤',calorie:'约80kcal/碗'},{id:2,name:'淮山芡实排骨汤',icon:'🥔',category:'健脾开胃',suitableAge:'3岁+',frequency:'每周1-2次',ingredients:[{name:'淮山',amount:'100g',note:'干品30g或鲜品100g'},{name:'芡实',amount:'20g',note:'提前浸泡2小时'},{name:'排骨',amount:'200g',note:'小排，斩小块'},{name:'红枣',amount:'3颗',note:'去核'},{name:'姜片',amount:'2片',note:''}],steps:['排骨冷水下锅焯水3分钟，捞出洗净','芡实提前浸泡2小时至变软','淮山去皮切段（干品洗净即可）','所有食材放入汤锅，加清水1.8L','大火煮沸后撇去浮沫，转小火煲1.5小时','最后5分钟加少许盐调味','淮山和排骨均可食用'],nutrition:'健脾养胃、固肾涩肠',benefits:'适合脾胃虚弱、大便偏溏的儿童',taboo:'便秘者减少芡实用量，感冒发热期不宜',allergens:[],season:'四季皆宜',prepTime:'20分钟备料+1.5小时煲汤',calorie:'约120kcal/碗'},{id:3,name:'谷芽麦芽鸭肾汤',icon:'🌾',category:'健脾开胃',suitableAge:'3岁+',frequency:'每周1次',ingredients:[{name:'谷芽',amount:'15g',note:'炒谷芽更佳'},{name:'麦芽',amount:'15g',note:'炒麦芽更佳'},{name:'鸭肾',amount:'2个',note:'鲜鸭肾'},{name:'瘦肉',amount:'100g',note:'猪里脊'},{name:'蜜枣',amount:'1颗',note:''},{name:'姜片',amount:'2片',note:''}],steps:['鸭肾洗净，用盐搓洗去腥','瘦肉切块焯水2分钟','谷芽麦芽用清水快速冲洗','所有食材放入锅中，加清水1.5L','大火煮沸后转小火煲1小时','加盐少许调味即可'],nutrition:'消食化积、健脾开胃',benefits:'针对积食、食欲差的儿童',taboo:'麦芽有回乳作用，哺乳期母亲不宜同饮',allergens:[],season:'四季皆宜',prepTime:'15分钟备料+1小时煲汤',calorie:'约70kcal/碗'},{id:4,name:'番茄土豆牛肉汤',icon:'🍅',category:'健脾开胃',suitableAge:'3岁+',frequency:'每周1-2次',ingredients:[{name:'番茄',amount:'2个',note:'熟透红番茄'},{name:'土豆',amount:'1个',note:'约150g，去皮切块'},{name:'牛肉',amount:'150g',note:'牛腱或牛里脊'},{name:'洋葱',amount:'1/4个',note:'可选'},{name:'姜片',amount:'2片',note:''}],steps:['牛肉冷水下锅焯水3分钟','番茄去皮切块','土豆去皮切滚刀块','少许油炒香洋葱和番茄至出汁','加入牛肉、土豆和姜片，加清水1.5L','大火煮沸后转小火煲1小时','加盐少许调味即可'],nutrition:'开胃生津、补铁补锌',benefits:'番茄酸甜开胃，牛肉补铁补血，适合挑食偏瘦儿童',taboo:'对番茄过敏者不宜',allergens:[],season:'四季皆宜',prepTime:'20分钟备料+1小时煲汤',calorie:'约110kcal/碗'},{id:5,name:'雪梨银耳瘦肉汤',icon:'🍐',category:'润肺止咳',suitableAge:'3岁+',frequency:'每周1-2次',ingredients:[{name:'雪梨',amount:'1个',note:'去皮去核切块'},{name:'银耳',amount:'10g',note:'干品，提前泡发2小时'},{name:'瘦肉',amount:'100g',note:'猪里脊'},{name:'南杏仁',amount:'10g',note:'甜杏仁'},{name:'冰糖',amount:'5g',note:'可选'},{name:'姜片',amount:'1片',note:''}],steps:['银耳提前冷水泡发2小时，去蒂撕小朵','瘦肉焯水2分钟','雪梨去皮去核切块','所有食材放入汤锅，加清水1.5L','大火煮沸后转小火煲1小时','银耳出胶后加少许冰糖','汤和银耳、雪梨均可食用'],nutrition:'润肺止咳、滋阴润燥',benefits:'适合秋燥咳嗽、咽喉干痒的儿童',taboo:'风寒咳嗽（流清涕）不宜',allergens:['坚果'],season:'秋季为主',prepTime:'20分钟备料+1小时煲汤',calorie:'约60kcal/碗'},{id:6,name:'无花果南北杏猪肺汤',icon:'🌿',category:'润肺止咳',suitableAge:'4岁+',frequency:'每周1次',ingredients:[{name:'猪肺',amount:'200g',note:'鲜猪肺，清洗干净'},{name:'无花果',amount:'4颗',note:'干品，对半切开'},{name:'南杏仁',amount:'10g',note:'甜杏仁'},{name:'北杏仁',amount:'3g',note:'苦杏仁，量不可多'},{name:'姜片',amount:'3片',note:''}],steps:['猪肺灌水冲洗至发白，切小块','猪肺冷水下锅加姜片焯水5分钟','无花果用温水泡10分钟','所有食材放入锅中，加清水1.8L','大火煮沸后撇去浮沫，转小火煲1.5小时','加少许盐调味即可'],nutrition:'润肺化痰、止咳平喘',benefits:'针对久咳痰多的儿童',taboo:'北杏仁有微毒不可多放，3岁以下不宜',allergens:['坚果'],season:'秋冬为主',prepTime:'30分钟备料+1.5小时煲汤',calorie:'约90kcal/碗'},{id:7,name:'川贝雪梨冰糖汤',icon:'🍯',category:'润肺止咳',suitableAge:'3岁+',frequency:'咳嗽期间每周2-3次',ingredients:[{name:'雪梨',amount:'1个',note:'去皮去核'},{name:'川贝粉',amount:'3g',note:'药店有售'},{name:'冰糖',amount:'5g',note:'或蜂蜜1茶匙（1岁以上）'},{name:'清水',amount:'500ml',note:''}],steps:['雪梨洗净去皮，顶部切盖，挖去梨核','将川贝粉和冰糖填入雪梨中','盖上梨盖，放入炖盅','炖盅内加入清水500ml','隔水小火炖1小时','取出稍凉即可饮用，梨肉可食'],nutrition:'润肺止咳、化痰平喘',benefits:'针对燥热干咳、少痰的儿童',taboo:'风寒咳嗽不宜',allergens:[],season:'秋冬为主',prepTime:'10分钟备料+1小时炖煮',calorie:'约50kcal/碗'},{id:8,name:'罗汉果菜干汤',icon:'🥬',category:'润肺止咳',suitableAge:'4岁+',frequency:'每周1次',ingredients:[{name:'罗汉果',amount:'1/4个',note:'掰碎'},{name:'白菜干',amount:'30g',note:'提前泡发30分钟'},{name:'瘦肉',amount:'150g',note:'猪里脊'},{name:'南杏仁',amount:'10g',note:'甜杏仁'},{name:'蜜枣',amount:'1颗',note:''},{name:'姜片',amount:'2片',note:''}],steps:['白菜干提前浸泡30分钟至变软','瘦肉切块焯水2分钟','罗汉果掰成小块','所有食材放入锅中，加清水1.8L','大火煮沸后转小火煲1.5小时','加少许盐调味即可'],nutrition:'清热润肺、化痰止咳',benefits:'适合肺热咳嗽、咽干口燥的儿童',taboo:'脾胃虚寒、腹泻者不宜多饮',allergens:['坚果'],season:'秋冬为主',prepTime:'40分钟备料+1.5小时煲汤',calorie:'约70kcal/碗'},{id:9,name:'虾皮紫菜蛋花汤',icon:'🦐',category:'助长高补钙',suitableAge:'3岁+',frequency:'每周2-3次',ingredients:[{name:'虾皮',amount:'10g',note:'淡干虾皮，浸泡5分钟去盐'},{name:'紫菜',amount:'5g',note:'干紫菜'},{name:'鸡蛋',amount:'1个',note:'打散'},{name:'葱花',amount:'少许',note:''},{name:'香油',amount:'2滴',note:''}],steps:['虾皮用温水浸泡5分钟，沥干去盐','紫菜撕碎备用','锅中加清水800ml煮沸','放入虾皮煮3分钟','加入紫菜煮1分钟','淋入蛋液，用筷子轻轻搅散成蛋花','关火，加少许盐、香油和葱花即可'],nutrition:'补钙补碘、高蛋白',benefits:'虾皮和紫菜含钙量高，助力骨骼发育',taboo:'对海鲜过敏者不宜',allergens:['海鲜','鸡蛋'],season:'四季皆宜',prepTime:'10分钟',calorie:'约45kcal/碗'},{id:10,name:'豆腐鱼头汤',icon:'🐟',category:'助长高补钙',suitableAge:'3岁+',frequency:'每周1-2次',ingredients:[{name:'鱼头',amount:'1个',note:'鲢鱼头或草鱼头，约300g'},{name:'嫩豆腐',amount:'1块',note:'约200g，切块'},{name:'姜片',amount:'3片',note:''},{name:'葱段',amount:'2根',note:''}],steps:['鱼头洗净对半切开，擦干水分','锅中少许油，中火将鱼头两面煎至微黄','加入姜片和葱段，倒入开水1.5L','大火煮沸10分钟至汤色变白','放入豆腐块，转小火煲20分钟','加盐少许调味即可，注意去刺'],nutrition:'补钙补蛋白、健脑益智',benefits:'鱼头富含DHA促进大脑发育，豆腐补钙',taboo:'对鱼类过敏者不宜',allergens:['海鲜'],season:'四季皆宜',prepTime:'15分钟备料+30分钟煲汤',calorie:'约95kcal/碗'},{id:11,name:'田七鸡肉汤',icon:'🍗',category:'助长高补钙',suitableAge:'6岁+',frequency:'每周1次',ingredients:[{name:'田七',amount:'5g',note:'切片或打碎'},{name:'鸡肉',amount:'200g',note:'鸡腿肉或鸡胸肉'},{name:'红枣',amount:'3颗',note:'去核'},{name:'枸杞',amount:'5g',note:'最后放入'},{name:'姜片',amount:'2片',note:''}],steps:['鸡肉冷水下锅焯水3分钟','田七用温水泡10分钟','鸡肉、田七、红枣、姜片放入锅中，加清水1.5L','大火煮沸后转小火煲1小时','放入枸杞再煮10分钟','加少许盐调味即可'],nutrition:'活血化瘀、促进骨骼生长',benefits:'田七有助骨骼发育，适合6岁以上生长期儿童',taboo:'3岁以下不宜，感冒发热期不宜',allergens:[],season:'四季皆宜',prepTime:'15分钟备料+1小时煲汤',calorie:'约100kcal/碗'},{id:12,name:'黄豆筒骨汤',icon:'🦴',category:'助长高补钙',suitableAge:'3岁+',frequency:'每周1次',ingredients:[{name:'猪筒骨',amount:'300g',note:'或猪棒骨'},{name:'黄豆',amount:'50g',note:'提前浸泡4小时'},{name:'胡萝卜',amount:'1根',note:'切块'},{name:'姜片',amount:'3片',note:''},{name:'醋',amount:'几滴',note:'帮助钙质溶出'}],steps:['黄豆提前冷水浸泡4小时','筒骨冷水下锅焯水5分钟','筒骨、黄豆、姜片放入锅中，加清水2L','加几滴白醋促进钙质溶出','大火煮沸后转小火煲2小时','加入胡萝卜再煮20分钟','加盐少许调味即可'],nutrition:'补钙壮骨、健脾宽中',benefits:'筒骨富含钙质和骨胶原，助力骨骼生长',taboo:'痛风患儿不宜多饮，汤表面浮油建议撇去',allergens:[],season:'四季皆宜',prepTime:'4小时泡豆+2小时煲汤',calorie:'约130kcal/碗'},{id:13,name:'莲子百合瘦肉汤',icon:'🪷',category:'安神助眠',suitableAge:'3岁+',frequency:'每周2次',ingredients:[{name:'莲子',amount:'20g',note:'去芯干莲子，提前浸泡1小时'},{name:'百合',amount:'15g',note:'干品，或鲜品30g'},{name:'瘦肉',amount:'150g',note:'猪里脊'},{name:'红枣',amount:'3颗',note:'去核'},{name:'姜片',amount:'2片',note:''}],steps:['莲子提前浸泡1小时，去芯','百合干品泡发20分钟','瘦肉切块焯水2分钟','所有食材放入锅中，加清水1.5L','大火煮沸后转小火煲1小时','加少许盐调味即可'],nutrition:'养心安神、润肺滋阴',benefits:'适合睡眠不安、多梦易醒的儿童',taboo:'腹泻便溏者减少百合用量',allergens:[],season:'四季皆宜',prepTime:'1小时泡莲+1小时煲汤',calorie:'约75kcal/碗'},{id:14,name:'桂圆红枣鸡蛋汤',icon:'🥚',category:'安神助眠',suitableAge:'3岁+',frequency:'每周1-2次',ingredients:[{name:'桂圆肉',amount:'10g',note:'干品'},{name:'红枣',amount:'4颗',note:'去核'},{name:'鸡蛋',amount:'1个',note:''},{name:'红糖',amount:'5g',note:'可选'},{name:'清水',amount:'600ml',note:''}],steps:['红枣洗净去核，桂圆肉冲洗干净','锅中加清水600ml，放入红枣和桂圆','大火煮沸后转小火煮15分钟','打入鸡蛋（荷包蛋形式或打散）','继续煮5分钟至蛋熟','加少许红糖调味即可'],nutrition:'补血安神、益气养心',benefits:'适合面色苍白、睡眠差的儿童',taboo:'体质燥热、上火者不宜多饮',allergens:['鸡蛋'],season:'秋冬为主',prepTime:'10分钟备料+20分钟煮汤',calorie:'约85kcal/碗'},{id:15,name:'小米山药粥汤',icon:'🥣',category:'安神助眠',suitableAge:'2岁+',frequency:'每周2-3次',ingredients:[{name:'小米',amount:'50g',note:'洗净'},{name:'鲜山药',amount:'80g',note:'去皮切丁'},{name:'红枣',amount:'2颗',note:'去核切碎'},{name:'清水',amount:'1L',note:''}],steps:['小米淘洗干净，沥干水分','山药去皮切小丁（戴手套防过敏）','红枣去核切碎','锅中加清水1L，放入小米大火煮沸','加入山药丁和红枣碎，转小火煮30分钟','煮至米粒开花、汤汁浓稠即可'],nutrition:'健脾安神、养胃助眠',benefits:'小米含色氨酸促进褪黑素分泌，适合睡前1小时饮用',taboo:'山药皮可能引起皮肤瘙痒，处理时戴手套',allergens:[],season:'四季皆宜',prepTime:'10分钟备料+30分钟煮粥',calorie:'约65kcal/碗'},{id:16,name:'山楂麦芽消食汤',icon:'🍊',category:'消积化食',suitableAge:'3岁+',frequency:'每周1-2次',ingredients:[{name:'山楂',amount:'10g',note:'干山楂片'},{name:'炒麦芽',amount:'15g',note:'药店有售'},{name:'炒谷芽',amount:'15g',note:'药店有售'},{name:'瘦肉',amount:'100g',note:'切小块'},{name:'蜜枣',amount:'1颗',note:''},{name:'姜片',amount:'2片',note:''}],steps:['山楂、炒麦芽、炒谷芽用清水冲洗干净','瘦肉切块焯水2分钟','所有食材放入锅中，加清水1.2L','大火煮沸后转小火煲45分钟','加少许盐调味即可'],nutrition:'消食化积、行气健脾',benefits:'针对暴饮暴食后腹胀、积食的儿童',taboo:'空腹不宜饮用，胃酸过多者减山楂量',allergens:[],season:'四季皆宜',prepTime:'10分钟备料+45分钟煲汤',calorie:'约55kcal/碗'},{id:17,name:'白萝卜陈皮汤',icon:'🥗',category:'消积化食',suitableAge:'3岁+',frequency:'每周1-2次',ingredients:[{name:'白萝卜',amount:'200g',note:'去皮切块'},{name:'陈皮',amount:'5g',note:'干品，提前泡软刮白瓤'},{name:'瘦肉',amount:'100g',note:'切小块'},{name:'姜片',amount:'2片',note:''}],steps:['陈皮用温水泡软，刮去内层白瓤（去苦味）','白萝卜去皮切滚刀块','瘦肉焯水2分钟','所有食材放入锅中，加清水1.2L','大火煮沸后转小火煲40分钟','加少许盐调味即可'],nutrition:'消食下气、化痰清热',benefits:'适合食积腹胀、痰多的儿童',taboo:'服用人参期间不宜，脾胃虚寒者少量',allergens:[],season:'秋冬为主',prepTime:'15分钟备料+40分钟煲汤',calorie:'约50kcal/碗'},{id:18,name:'鸡内金山药汤',icon:'🍲',category:'消积化食',suitableAge:'3岁+',frequency:'每周1次',ingredients:[{name:'鸡内金',amount:'5g',note:'干品，药店有售'},{name:'鲜山药',amount:'100g',note:'去皮切块'},{name:'瘦肉',amount:'100g',note:'切小块'},{name:'红枣',amount:'2颗',note:'去核'},{name:'姜片',amount:'2片',note:''}],steps:['鸡内金用温水泡10分钟或研粉备用','山药去皮切块（戴手套防过敏）','瘦肉焯水2分钟','所有食材放入锅中，加清水1.2L','大火煮沸后转小火煲1小时','加少许盐调味即可'],nutrition:'消食化积、健脾固肾',benefits:'鸡内金为强效消食药，针对顽固性积食',taboo:'脾虚无积者不宜常用',allergens:[],season:'四季皆宜',prepTime:'15分钟备料+1小时煲汤',calorie:'约60kcal/碗'},{id:19,name:'冬瓜薏米排骨汤',icon:'🍉',category:'夏季清热',suitableAge:'3岁+',frequency:'夏季每周1-2次',ingredients:[{name:'冬瓜',amount:'300g',note:'带皮切块，清热效果更好'},{name:'薏米',amount:'30g',note:'提前浸泡1小时'},{name:'排骨',amount:'200g',note:'斩小块'},{name:'姜片',amount:'2片',note:''}],steps:['薏米提前浸泡1小时','排骨冷水下锅焯水3分钟','冬瓜带皮洗净切大块','排骨、薏米、姜片放入锅中，加清水1.8L','大火煮沸后转小火煲1小时','加入冬瓜块再煮20分钟','加盐少许调味即可'],nutrition:'清热祛湿、利尿消肿',benefits:'适合夏季湿热、食欲不振的儿童',taboo:'脾胃虚寒、腹泻者不宜多饮',allergens:[],season:'夏季',prepTime:'1小时泡薏米+1小时煲汤',calorie:'约85kcal/碗'},{id:20,name:'丝瓜花蛤汤',icon:'🥒',category:'夏季清热',suitableAge:'4岁+',frequency:'夏季每周1次',ingredients:[{name:'丝瓜',amount:'200g',note:'去皮切滚刀块'},{name:'花蛤',amount:'200g',note:'提前吐沙'},{name:'姜丝',amount:'5g',note:''},{name:'葱花',amount:'少许',note:''}],steps:['花蛤提前用盐水浸泡2小时吐沙，刷洗干净','丝瓜去皮切滚刀块','锅中加清水1L煮沸，放入姜丝','放入花蛤，煮至开口（约3分钟），捞出备用','放入丝瓜煮5分钟至变软','将花蛤回锅，加少许料酒','加盐少许调味，撒葱花即可'],nutrition:'清热化痰、凉血解毒',benefits:'适合夏季上火、口干烦渴的儿童',taboo:'脾胃虚寒者少饮，花蛤必须充分吐沙煮熟',allergens:['海鲜'],season:'夏季',prepTime:'2小时吐沙+15分钟煮汤',calorie:'约55kcal/碗'},{id:21,name:'绿豆百合莲子汤',icon:'🟢',category:'夏季清热',suitableAge:'3岁+',frequency:'夏季每周2-3次',ingredients:[{name:'绿豆',amount:'50g',note:'提前浸泡2小时'},{name:'百合',amount:'15g',note:'干品，或鲜品30g'},{name:'莲子',amount:'20g',note:'去芯，提前浸泡1小时'},{name:'冰糖',amount:'10g',note:'可选'},{name:'清水',amount:'1.5L',note:''}],steps:['绿豆提前浸泡2小时','莲子提前浸泡1小时，去芯','百合干品泡发20分钟','锅中加清水1.5L，放入绿豆和莲子','大火煮沸后转小火煮40分钟','加入百合再煮15分钟','加少许冰糖调味即可'],nutrition:'清热解毒、养心安神',benefits:'夏季消暑佳品，绿豆清热解毒',taboo:'脾胃虚寒、腹泻者不宜多饮',allergens:[],season:'夏季',prepTime:'2小时泡豆+55分钟煮汤',calorie:'约70kcal/碗'},{id:22,name:'苦瓜黄豆排骨汤',icon:'🫒',category:'夏季清热',suitableAge:'5岁+',frequency:'夏季每周1次',ingredients:[{name:'苦瓜',amount:'150g',note:'去瓤切块'},{name:'黄豆',amount:'40g',note:'提前浸泡4小时'},{name:'排骨',amount:'200g',note:'斩小块'},{name:'蜜枣',amount:'1颗',note:'中和苦味'},{name:'姜片',amount:'3片',note:''}],steps:['黄豆提前浸泡4小时','排骨冷水下锅焯水3分钟','苦瓜去瓤去籽切大块，用盐腌10分钟挤去苦水','所有食材放入锅中，加清水1.8L','大火煮沸后转小火煲1.5小时','加盐少许调味即可'],nutrition:'清热解暑、明目解毒',benefits:'适合夏季热气重、易上火的儿童',taboo:'脾胃虚寒者不宜',allergens:[],season:'夏季',prepTime:'4小时泡豆+1.5小时煲汤',calorie:'约90kcal/碗'},{id:23,name:'红枣枸杞乌鸡汤',icon:'🐦',category:'冬季暖身',suitableAge:'4岁+',frequency:'冬季每周1次',ingredients:[{name:'乌鸡',amount:'300g',note:'斩小块'},{name:'红枣',amount:'5颗',note:'去核'},{name:'枸杞',amount:'10g',note:'最后放入'},{name:'党参',amount:'10g',note:'温和补气'},{name:'姜片',amount:'3片',note:''}],steps:['乌鸡冷水下锅焯水5分钟','党参用温水泡10分钟','红枣洗净去核','乌鸡、党参、红枣、姜片放入锅中，加清水2L','大火煮沸后撇去浮沫，转小火煲2小时','放入枸杞再煮10分钟','加盐少许调味即可'],nutrition:'温中补气、养血暖身',benefits:'适合冬季手脚冰凉、体虚的儿童',taboo:'感冒发热期不宜，内热上火者不宜',allergens:[],season:'冬季',prepTime:'15分钟备料+2小时煲汤',calorie:'约110kcal/碗'},{id:24,name:'白胡椒猪肚汤',icon:'🫕',category:'冬季暖身',suitableAge:'5岁+',frequency:'冬季每周1次',ingredients:[{name:'猪肚',amount:'1个',note:'约300g，洗净'},{name:'白胡椒粒',amount:'5g',note:'拍碎'},{name:'红枣',amount:'3颗',note:'去核'},{name:'姜片',amount:'5片',note:''},{name:'面粉',amount:'适量',note:'清洗猪肚用'}],steps:['猪肚用面粉和盐反复搓洗3次','猪肚冷水下锅加姜片焯水5分钟，切条','白胡椒粒用刀背拍碎','所有食材放入锅中，加清水2L','大火煮沸后撇去浮沫，转小火煲2小时','煲至猪肚软烂','加盐少许调味即可'],nutrition:'温中散寒、健胃暖身',benefits:'适合冬季胃寒、腹痛的儿童',taboo:'胃热、口臭者不宜，3岁以下不宜',allergens:[],season:'冬季',prepTime:'30分钟清洗+2小时煲汤',calorie:'约100kcal/碗'},{id:25,name:'羊肉萝卜汤',icon:'🥩',category:'冬季暖身',suitableAge:'4岁+',frequency:'冬季每周1次',ingredients:[{name:'羊肉',amount:'200g',note:'羊腿肉，切块'},{name:'白萝卜',amount:'200g',note:'去皮切块'},{name:'红枣',amount:'3颗',note:'去核'},{name:'姜片',amount:'4片',note:''},{name:'葱段',amount:'2根',note:''},{name:'香菜',amount:'少许',note:'可选'}],steps:['羊肉冷水下锅，加姜片和葱段焯水5分钟','白萝卜去皮切滚刀块','羊肉、红枣、姜片放入锅中，加清水2L','大火煮沸后撇去浮沫，转小火煲1.5小时','加入白萝卜块再煮30分钟','加盐少许调味，撒香菜即可'],nutrition:'温补暖身、益气补虚',benefits:'适合冬季畏寒怕冷的儿童',taboo:'内热上火者不宜',allergens:[],season:'冬季',prepTime:'15分钟备料+2小时煲汤',calorie:'约120kcal/碗'}];
 
 /* ============================================================
+   一菜一汤联动推荐系统
+   ============================================================ */
+function renderMealSoupCombo(){
+  const today=D.todayStr();
+  const dayOfYear=Math.floor((new Date()-new Date(new Date().getFullYear(),0,0))/(1000*60*60*24));
+  // 根据日期选择当日菜和汤
+  const meals=WEEKLY_MEALS[new Date().getDay()===0?6:new Date().getDay()-1];
+  const lunchMeal=meals.lunch;
+  const soup=CHILD_SOUPS[dayOfYear%CHILD_SOUPS.length];
+  
+  // 检测相克风险
+  const clashRisks=checkMealSoupClash(lunchMeal.dishes,soup);
+  // 检测营养覆盖
+  const nutriCover=checkNutriCoverage(lunchMeal,soup);
+  
+  const hasRisk=clashRisks.length>0;
+  
+  return `<div class="section">
+    <div class="section-title"><span class="left">🍽️ 今日一菜一汤推荐</span><span class="more" onclick="refreshMealSoupCombo()">换一组 🔄</span></div>
+    <div class="card" style="padding:0;overflow:hidden;border:2px solid ${hasRisk?'var(--red)':'var(--green)'}">
+      <div style="display:flex;align-items:stretch">
+        <!-- 菜 -->
+        <div style="flex:1;padding:12px;text-align:center;border-right:2px dashed var(--border)">
+          <div style="font-size:36px">${lunchMeal.emoji||'🍽️'}</div>
+          <div style="font-weight:800;font-size:13px;margin-top:4px">${lunchMeal.name}</div>
+          <div style="font-size:11px;color:var(--text-light);margin-top:2px">今日午餐菜</div>
+        </div>
+        <!-- 汤 -->
+        <div style="flex:1;padding:12px;text-align:center">
+          <div style="font-size:36px">${soup.icon}</div>
+          <div style="font-weight:800;font-size:13px;margin-top:4px">${soup.name}</div>
+          <div style="font-size:11px;color:var(--text-light);margin-top:2px">搭配汤品</div>
+        </div>
+      </div>
+      <!-- 相克检测 -->
+      <div style="padding:10px 12px;background:${hasRisk?'#FFE8E8':'var(--green-light)'};font-size:12px;line-height:1.6">
+        ${hasRisk
+          ?`<b style="color:var(--red)">⚠️ 检测到相克风险：</b><br>${clashRisks.map(r=>`• ${r.foods}：${r.risk}<br>💡 <b>建议：</b>${r.advice}`).join('<br>')}`
+          :`<b style="color:#5BAE5B">✅ 安全搭配！</b>菜与汤之间无相克风险，放心食用！`
+        }
+      </div>
+      <!-- 营养覆盖 -->
+      <div style="padding:10px 12px;background:var(--cream);font-size:12px">
+        <div style="font-weight:800;margin-bottom:6px">📊 五大营养素覆盖</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          ${[
+            {name:'蛋白质',icon:'🥩',cover:nutriCover.protein},
+            {name:'碳水',icon:'🍚',cover:nutriCover.carb},
+            {name:'脂肪',icon:'🥑',cover:nutriCover.fat},
+            {name:'维生素',icon:'🥕',cover:nutriCover.vitamin},
+            {name:'矿物质',icon:'🦴',cover:nutriCover.mineral}
+          ].map(n=>`<span class="tag ${n.cover?'tag-green':'tag-red'}" style="font-size:11px">${n.icon} ${n.name} ${n.cover?'✅':'❌'}</span>`).join('')}
+        </div>
+        ${nutriCover.missing.length>0?`<div style="margin-top:6px;color:var(--orange-dark);font-size:11px">💡 建议：搭配${nutriCover.missing.join('、')}补充缺少的营养素</div>`:''}
+      </div>
+    </div>
+  </div>`;
+}
+
+function refreshMealSoupCombo(){
+  // 强制刷新页面即可换一组
+  AudioFX.play('click');
+  renderDiet();
+  UI.toast('已换一组推荐！');
+}
+
+function checkMealSoupClash(dishes,soup){
+  const risks=[];
+  // 提取菜和汤的食材关键词
+  const dishText=dishes.join('');
+  const soupIngredients=soup.ingredients.map(i=>i.name).join('');
+  const allText=dishText+soupIngredients;
+  
+  // 检查已知的相克组合
+  FOOD_CLASHES.forEach(c=>{
+    const foods=c.foods.split('+').map(f=>f.trim().toLowerCase());
+    // 简化检测：如果两种食材都在组合中出现
+    let found=false;
+    for(const f of foods){
+      const fKey=f.split('（')[0].trim();
+      if(allText.includes(fKey)){
+        found=true;
+        break;
+      }
+    }
+    if(found && c.severity!=='轻微'){
+      risks.push({foods:c.foods,risk:c.symptoms,advice:c.alternative,severity:c.severity});
+    }
+  });
+  
+  // 额外检查常见搭配风险
+  if(soup.allergens.includes('海鲜') && dishText.includes('维C')){
+    risks.push({foods:'海鲜+维C',risk:'腹痛腹泻',advice:'搭配低维C蔬菜',severity:'高危'});
+  }
+  if(soup.allergens.includes('鸡蛋') && dishText.includes('柿子')){
+    risks.push({foods:'鸡蛋+柿子',risk:'腹痛',advice:'柿子改餐后食用',severity:'高危'});
+  }
+  
+  return risks;
+}
+
+function checkNutriCoverage(meal,soup){
+  const cover={protein:false,carb:false,fat:false,vitamin:false,mineral:false};
+  const missing=[];
+  const allText=(meal.dishes.join(''))+soup.nutrition+(soup.ingredients.map(i=>i.name).join(''));
+  
+  if(allText.match(/肉|鱼|虾|鸡|排骨|牛肉|豆|蛋|瘦肉/i)) cover.protein=true;
+  if(allText.match(/米|面|粥|土豆|红薯|碳水|淀粉/i)) cover.carb=true;
+  if(allText.match(/油|脂|脂肪|骨|鸡皮/i)) cover.fat=true;
+  if(allText.match(/菜|果|维|番茄|萝卜|胡萝卜|山楂|苹果|梨|绿豆/i)) cover.vitamin=true;
+  if(allText.match(/钙|铁|锌|碘|矿|骨|虾皮|紫菜|豆|红枣|枸杞/i)) cover.mineral=true;
+  
+  if(!cover.protein) missing.push('蛋白质');
+  if(!cover.carb) missing.push('碳水');
+  if(!cover.fat) missing.push('脂肪');
+  if(!cover.vitamin) missing.push('维生素');
+  if(!cover.mineral) missing.push('矿物质');
+  
+  return {cover,missing};
+}
+
+/* ============================================================
    食物相克弹窗
    ============================================================ */
 function showFoodClashModal(){
@@ -3430,6 +3685,25 @@ function renderSoupList(){
           </div>
         </div>
         <div style="padding:14px">
+          <!-- SVG 做法动画 -->
+          <div style="background:linear-gradient(135deg,#FFF8E1,#FFF3E0);border-radius:14px;padding:12px;margin-bottom:12px;border:2px solid var(--orange)">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <div style="font-weight:800;font-size:13px;color:var(--orange-dark)">🎬 做法动画</div>
+              <div style="display:flex;gap:6px">
+                <button class="btn btn-outline btn-sm" style="padding:4px 10px;font-size:11px" onclick="playSoupAnimation('${s.icon}',${s.id})">▶️ 播放</button>
+                <button class="btn btn-outline btn-sm" style="padding:4px 10px;font-size:11px" onclick="pauseSoupAnimation()">⏸️ 暂停</button>
+                <button class="btn btn-outline btn-sm" style="padding:4px 10px;font-size:11px" onclick="replaySoupAnimation('${s.icon}',${s.id})">🔄 重播</button>
+              </div>
+            </div>
+            <div id="soupAnimArea" style="background:#fff;border-radius:12px;height:160px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center">
+              <div id="soupAnimPlaceholder" style="text-align:center;color:var(--text-light);font-size:12px">点击 ▶️ 播放 看做法动画</div>
+              <div id="soupAnimStage" style="display:none;width:100%;height:100%;position:relative"></div>
+            </div>
+            <div id="soupAnimStep" style="text-align:center;margin-top:6px;font-size:12px;font-weight:600;color:var(--orange-dark);min-height:18px"></div>
+            <div id="soupAnimProgress" style="background:var(--border);height:6px;border-radius:3px;margin-top:6px;overflow:hidden">
+              <div id="soupAnimBar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--orange),var(--orange-dark));border-radius:3px;transition:width .3s"></div>
+            </div>
+          </div>
           <div style="font-weight:800;font-size:13px;margin-bottom:6px">📋 食材清单</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px">
             ${s.ingredients.map(i=>`<div style="background:var(--cream);border-radius:8px;padding:6px 10px;font-size:12px"><b>${i.name}</b>：${i.amount}${i.note?' · '+i.note:''}</div>`).join('')}
@@ -3466,6 +3740,110 @@ function renderSoupList(){
         </div>
       </div>`).join('');
   }
+}
+
+/* ========== 汤品做法动画系统 ========== */
+let soupAnimTimer=null;
+let soupAnimStepIdx=0;
+let soupAnimPlaying=false;
+
+function playSoupAnimation(icon,soupId){
+  const soup=CHILD_SOUPS.find(s=>s.id===soupId);
+  if(!soup) return;
+  soupAnimPlaying=true;
+  soupAnimStepIdx=0;
+  const placeholder=document.getElementById('soupAnimPlaceholder');
+  const stage=document.getElementById('soupAnimStage');
+  if(placeholder) placeholder.style.display='none';
+  if(stage) stage.style.display='block';
+  AudioFX.play('click');
+  runSoupAnimationFrame(icon,soup);
+}
+
+function runSoupAnimationFrame(icon,soup){
+  const stage=document.getElementById('soupAnimStage');
+  const stepEl=document.getElementById('soupAnimStep');
+  const barEl=document.getElementById('soupAnimBar');
+  if(!stage||!soupAnimPlaying) return;
+  
+  const steps=soup.steps;
+  const totalSteps=steps.length;
+  const stepDuration=3000; // 每步3秒
+  
+  if(soupAnimStepIdx>=totalSteps){
+    // 完成 - 显示成品
+    stage.innerHTML=renderSoupAnimScene('done',icon,soup);
+    stepEl.innerHTML='🎉 完成！美味的'+soup.name+'出锅啦！';
+    barEl.style.width='100%';
+    soupAnimPlaying=false;
+    AudioFX.play('success');
+    return;
+  }
+  
+  // 渲染当前步骤动画
+  stage.innerHTML=renderSoupAnimScene(soupAnimStepIdx,icon,soup);
+  stepEl.innerHTML=`步骤 ${soupAnimStepIdx+1}/${totalSteps}：${steps[soupAnimStepIdx]}`;
+  barEl.style.width=((soupAnimStepIdx/totalSteps)*100)+'%';
+  
+  soupAnimTimer=setTimeout(()=>{
+    soupAnimStepIdx++;
+    runSoupAnimationFrame(icon,soup);
+  },stepDuration);
+}
+
+function renderSoupAnimScene(stepIdx,icon,soup){
+  const scene=stepIdx==='done'?'done':Math.min(stepIdx,3); // 0:备料 1:下锅 2:火候 3:出锅
+  const scenes=[
+    // 备料
+    `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
+      <div style="font-size:40px;animation:bounce 1s ease infinite">🥬</div>
+      <div style="font-size:32px;margin-left:8px;animation:bounce 1.2s ease infinite 0.2s">🍖</div>
+      <div style="font-size:28px;margin-left:8px;animation:bounce 1.4s ease infinite 0.4s">🧂</div>
+      <div style="position:absolute;top:10px;right:10px;font-size:24px;animation:bounce 1s ease infinite">👨‍🍳</div>
+      <div style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;color:var(--orange-dark)">备料中...</div>
+    </div>`,
+    // 下锅
+    `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
+      <div style="font-size:50px;animation:tapPop 0.8s ease infinite">🍲</div>
+      <div style="position:absolute;top:30%;left:30%;font-size:20px;animation:bounce 0.6s ease infinite">💧</div>
+      <div style="position:absolute;top:35%;right:35%;font-size:20px;animation:bounce 0.8s ease infinite 0.2s">🥬</div>
+      <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;color:var(--orange-dark)">下锅啦！咕噜咕噜～</div>
+    </div>`,
+    // 火候
+    `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
+      <div style="font-size:50px">🍲</div>
+      <div style="position:absolute;bottom:20%;left:50%;transform:translateX(-50%);font-size:30px;animation:pulse 0.5s ease infinite">🔥</div>
+      <div style="position:absolute;top:15%;left:45%;font-size:16px;opacity:0.6;animation:bounce 1s ease infinite">💨</div>
+      <div style="position:absolute;top:18%;right:42%;font-size:14px;opacity:0.4;animation:bounce 1.2s ease infinite 0.3s">💨</div>
+      <div style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;color:var(--orange-dark)">小火慢炖中... ⏰</div>
+    </div>`,
+    // 出锅
+    `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
+      <div style="font-size:50px;animation:bounce 0.5s ease infinite">🥣</div>
+      <div style="position:absolute;top:20%;left:30%;font-size:20px;animation:bounce 0.8s ease infinite 0.1s">✨</div>
+      <div style="position:absolute;top:25%;right:30%;font-size:18px;animation:bounce 1s ease infinite 0.3s">⭐</div>
+      <div style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;color:var(--orange-dark)">出锅装盘！</div>
+    </div>`,
+    // done - 成品
+    `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column">
+      <div style="font-size:56px;animation:bounce 0.5s ease infinite">${icon}</div>
+      <div style="font-size:13px;font-weight:800;color:var(--orange-dark);margin-top:6px">${soup.name}</div>
+      <div style="font-size:20px;margin-top:4px;animation:bounce 0.8s ease infinite 0.2s">🎉⭐🎉</div>
+    </div>`
+  ];
+  return scenes[scene]||scenes[0];
+}
+
+function pauseSoupAnimation(){
+  if(soupAnimTimer){clearTimeout(soupAnimTimer);soupAnimTimer=null;}
+  soupAnimPlaying=false;
+  const stepEl=document.getElementById('soupAnimStep');
+  if(stepEl) stepEl.innerHTML='⏸️ 已暂停';
+}
+
+function replaySoupAnimation(icon,soupId){
+  pauseSoupAnimation();
+  setTimeout(()=>playSoupAnimation(icon,soupId),100);
 }
 
 /* ============================================================
