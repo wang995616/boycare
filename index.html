@@ -623,6 +623,72 @@ canvas{max-width:100%;}
 
 /* 列表项轻弹动画 */
 @keyframes tapPop{0%{transform:scale(1);}50%{transform:scale(0.96);}100%{transform:scale(1);}}
+
+/* ========== Phase 3: 页面过渡动画 ========== */
+.page-enter{animation:pageSlideIn .35s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes pageSlideIn{from{opacity:0;transform:translateX(20px) scale(0.97);}to{opacity:1;transform:translateX(0) scale(1);}}
+.page-exit{animation:pageSlideOut .2s ease forwards;}
+@keyframes pageSlideOut{from{opacity:1;transform:translateX(0);}to{opacity:0;transform:translateX(-20px) scale(0.97);}}
+
+/* 按钮波纹效果 */
+.btn-ripple{position:relative;overflow:hidden;}
+.btn-ripple .ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,0.5);transform:scale(0);animation:rippleEffect .6s ease-out forwards;pointer-events:none;}
+@keyframes rippleEffect{to{transform:scale(4);opacity:0;}}
+
+/* 卡片入场动画 */
+.card-entrance{animation:cardSlideUp .5s cubic-bezier(0.34,1.56,0.64,1) both;}
+@keyframes cardSlideUp{from{opacity:0;transform:translateY(24px) scale(0.95);}to{opacity:1;transform:translateY(0) scale(1);}}
+
+/* 底部导航微动画 */
+.nav-item .nav-icon-wrap{transition:transform .3s cubic-bezier(0.34,1.56,0.64,1);}
+.nav-item.active .nav-icon-wrap{transform:translateY(-3px) scale(1.15);}
+.nav-item.active .nav-icon-wrap .icon{animation:navBounce .4s ease;}
+
+/* ========== Phase 3: 语音播放器 ========== */
+.voice-bar{display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,var(--blue-light),#fff);border-radius:16px;padding:10px 14px;margin-top:10px;border:2px solid var(--blue-soft);}
+.voice-btn{width:40px;height:40px;border-radius:50%;border:none;background:linear-gradient(135deg,var(--blue),var(--blue-dark));color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;box-shadow:0 3px 8px rgba(126,200,227,0.4);}
+.voice-btn:active{transform:scale(0.9);}
+.voice-btn.playing{background:linear-gradient(135deg,var(--orange),var(--orange-dark));box-shadow:0 3px 8px rgba(255,183,77,0.4);animation:pulse 1.5s ease infinite;}
+.voice-btn.paused{background:linear-gradient(135deg,#BDC3C7,#95A5A6);}
+.voice-speed{font-size:11px;padding:4px 10px;border-radius:10px;border:1.5px solid var(--border);background:#fff;cursor:pointer;font-weight:600;color:var(--text-light);transition:all .2s;}
+.voice-speed.active{background:var(--blue);color:#fff;border-color:var(--blue);}
+
+/* ========== Phase 3: 健康数据看板 ========== */
+.dashboard-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch;}
+.dashboard-tab{flex-shrink:0;padding:8px 16px;border-radius:16px;font-size:12px;font-weight:700;cursor:pointer;background:#fff;border:2px solid var(--border);transition:all .2s;white-space:nowrap;}
+.dashboard-tab.active{background:linear-gradient(135deg,var(--blue),var(--blue-dark));color:#fff;border-color:var(--blue);box-shadow:0 3px 10px rgba(126,200,227,0.4);}
+.dashboard-stat{background:#fff;border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:var(--shadow-soft);border:2px solid var(--border);}
+.dashboard-stat .stat-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.dashboard-stat .stat-title{font-size:14px;font-weight:800;display:flex;align-items:center;gap:6px;}
+.dashboard-stat .stat-value{font-size:24px;font-weight:900;color:var(--orange-dark);}
+.dashboard-stat .stat-sub{font-size:11px;color:var(--text-light);margin-top:2px;}
+.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.stat-mini{background:var(--cream);border-radius:12px;padding:12px;text-align:center;}
+.stat-mini .num{font-size:20px;font-weight:900;color:var(--blue-dark);}
+.stat-mini .label{font-size:11px;color:var(--text-light);margin-top:2px;font-weight:600;}
+
+/* 骨架屏 */
+.skeleton{background:linear-gradient(90deg,var(--border) 25%,var(--blue-light) 50%,var(--border) 75%);background-size:200% 100%;animation:skeletonWave 1.5s ease infinite;border-radius:8px;}
+@keyframes skeletonWave{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+.skeleton-card{height:80px;margin-bottom:10px;border-radius:16px;}
+.skeleton-line{height:14px;margin-bottom:8px;width:70%;}
+.skeleton-line.short{width:40%;}
+
+/* ========== Phase 3: 内容卡片（户外活动/学习/季节） ========== */
+.content-carousel{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;-webkit-overflow-scrolling:touch;scroll-snap-type:x mandatory;}
+.content-carousel .carousel-card{flex-shrink:0;width:200px;scroll-snap-align:start;background:#fff;border-radius:var(--radius);padding:14px;box-shadow:var(--shadow-soft);border:2px solid var(--border);transition:transform .2s;}
+.content-carousel .carousel-card:active{transform:scale(0.96);}
+.carousel-card .c-icon{font-size:36px;margin-bottom:6px;}
+.carousel-card .c-title{font-size:14px;font-weight:800;margin-bottom:4px;}
+.carousel-card .c-desc{font-size:11px;color:var(--text-light);line-height:1.6;}
+.carousel-card .c-tag{display:inline-block;font-size:10px;padding:2px 8px;border-radius:8px;margin-top:6px;font-weight:600;}
+
+/* 每日推荐横幅 */
+.daily-banner{background:linear-gradient(135deg,#FFF3E0,#FFE0B2,#FFF8E1);border-radius:var(--radius);padding:16px;margin-bottom:14px;border:2px solid var(--orange-light);position:relative;overflow:hidden;}
+.daily-banner::before{content:'🌟';position:absolute;top:-10px;right:10px;font-size:50px;opacity:.15;transform:rotate(15deg);}
+.daily-banner .banner-icon{font-size:40px;}
+.daily-banner .banner-title{font-size:16px;font-weight:900;color:var(--orange-dark);}
+.daily-banner .banner-desc{font-size:12px;color:var(--text-light);line-height:1.6;margin-top:4px;}
 </style>
 </head>
 <body>
@@ -960,23 +1026,41 @@ function ensurePresetData(){
 const Pages = {
   current: 'home',
   go(page){
+    if(this.current===page) return;
     AudioFX.play('switch');
+    
+    // 页面退出动画
+    const oldEl=document.getElementById('page-'+this.current);
+    if(oldEl){
+      oldEl.classList.add('page-exit');
+      setTimeout(()=>oldEl.classList.remove('active','page-exit'),200);
+    }
+    
     this.current=page;
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-    const el=document.getElementById('page-'+page);
-    if(el){ el.classList.add('active'); }
+    
+    // 页面进入动画
+    setTimeout(()=>{
+      const el=document.getElementById('page-'+page);
+      if(el){
+        el.classList.add('active','page-enter');
+        setTimeout(()=>el.classList.remove('page-enter'),350);
+      }
+    },150);
+    
     document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
     const nav=document.querySelector(`.nav-item[data-page="${page}"]`);
     if(nav) nav.classList.add('active');
     window.scrollTo(0,0);
     // 渲染对应页面
-    if(page==='home') renderHome();
-    if(page==='diet') renderDiet();
-    if(page==='exercise') renderExercise();
-    if(page==='growth') renderGrowth();
-    if(page==='mind') renderMind();
-    if(page==='reminder') renderReminder();
-    updateFab(page);
+    setTimeout(()=>{
+      if(page==='home') renderHome();
+      if(page==='diet') renderDiet();
+      if(page==='exercise') renderExercise();
+      if(page==='growth') renderGrowth();
+      if(page==='mind') renderMind();
+      if(page==='reminder') renderReminder();
+      updateFab(page);
+    },100);
   }
 };
 
@@ -1179,6 +1263,9 @@ function renderHome(){
     </div>
   </div>`;
   
+  // 每日推荐横幅
+  html+=renderDailyBanner();
+  
   // 快捷入口
   html+=`<div class="section">
     <div class="section-title"><span class="left">⚡ 魔法快捷入口</span></div>
@@ -1191,8 +1278,16 @@ function renderHome(){
       <div onclick="showRecommendModal()" style="cursor:pointer;padding:8px 0"><div style="font-size:28px;pointer-events:none">🎁</div><div style="font-size:11px;margin-top:3px;font-weight:600;pointer-events:none">好物推荐</div></div>
     </div>
   </div>`;
+
+  // 健康数据看板
+  html+=renderHealthDashboard();
   
   document.getElementById('page-home').innerHTML=html;
+  // 延迟渲染Canvas图表
+  setTimeout(()=>{
+    drawHealthWeekChart();
+    drawHealthRadarChart();
+  },100);
 }
 
 function toggleTodo(i){
@@ -1206,6 +1301,554 @@ function toggleSupplement(name){
   Store.data.supplements[today][name]=!Store.data.supplements[today][name];
   Store.save();
   renderHome();
+}
+
+/* ============================================================
+   Phase 3: 每日推荐横幅
+   ============================================================ */
+function renderDailyBanner(){
+  const rec=getDailyRecommendation();
+  const seasonIcons={spring:'🌸',summer:'☀️',autumn:'🍂',winter:'❄️'};
+  return `<div class="section">
+    <div class="section-title"><span class="left">🌟 今日推荐</span></div>
+    <div class="daily-banner" onclick="showDailyRecommendDetail()">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="banner-icon">${seasonIcons[rec.season]}</div>
+        <div>
+          <div class="banner-title">${rec.seasonTip.title}</div>
+          <div class="banner-desc">${rec.seasonTip.content.slice(0,60)}...</div>
+          <div style="margin-top:6px;display:flex;gap:6px">
+            <span class="tag tag-orange" style="font-size:10px">🏃 ${rec.outdoor.name}</span>
+            <span class="tag tag-blue" style="font-size:10px">📖 ${rec.learning.name}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function showDailyRecommendDetail(){
+  const rec=getDailyRecommendation();
+  let html=`
+    <div style="background:linear-gradient(135deg,var(--orange-light),#fff);border-radius:16px;padding:16px;margin-bottom:12px">
+      <div style="font-weight:800;font-size:16px;margin-bottom:6px">${rec.seasonTip.title}</div>
+      <div style="font-size:13px;line-height:1.8;color:var(--text)">${rec.seasonTip.content}</div>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:12px">
+      <div class="card" style="flex:1;text-align:center">
+        <div style="font-size:40px">${rec.outdoor.icon}</div>
+        <div style="font-weight:800;font-size:14px;margin:6px 0">${rec.outdoor.name}</div>
+        <div style="font-size:11px;color:var(--text-light);line-height:1.6">${rec.outdoor.desc}</div>
+        <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px;justify-content:center">
+          <span class="tag tag-green">⏱️ ${rec.outdoor.duration}</span>
+          <span class="tag tag-blue">🌤️ ${rec.outdoor.weather}</span>
+          <span class="tag tag-orange">${rec.outdoor.benefits}</span>
+        </div>
+        <div style="margin-top:6px;font-size:11px;color:var(--red);background:var(--pink-light);border-radius:8px;padding:4px 8px">⚠️ ${rec.outdoor.safety}</div>
+      </div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div style="font-size:36px">${rec.learning.icon}</div>
+      <div style="font-weight:800;font-size:14px;margin:6px 0">${rec.learning.name}</div>
+      <div style="font-size:12px;color:var(--text-light);line-height:1.6">${rec.learning.desc}</div>
+      <div style="margin-top:8px">
+        <span class="tag tag-purple">${rec.learning.type}</span>
+        <span class="tag tag-blue">${rec.learning.age}</span>
+        <span class="tag tag-orange">${rec.learning.focus}</span>
+      </div>
+      <div style="margin-top:6px;font-size:11px;color:var(--text-light)">🔗 ${rec.learning.link}</div>
+    </div>
+  `;
+  UI.modalWithTitle('🌟 今日推荐详情',html);
+}
+
+/* ============================================================
+   Phase 3: 健康数据看板
+   ============================================================ */
+let healthDashboardTab='overview';
+function renderHealthDashboard(){
+  const today=D.todayStr();
+  
+  // 收集本周数据
+  const weekStats=getWeekStats();
+  
+  // 总积分
+  const totalPoints=getTotalPoints();
+  
+  // 本周运动天数
+  const exerciseDays=weekStats.days.filter(d=>d.hasExercise).length;
+  
+  // 本周心情记录数
+  const moodDays=weekStats.days.filter(d=>d.hasMood).length;
+  
+  // 跳绳最佳
+  const bestJump=Math.max(0,...Store.data.jumpRecords.filter(r=>weekStats.dateRange.includes(r.date)).map(r=>r.count));
+  
+  let html=`<div class="section">
+    <div class="section-title"><span class="left">📊 健康数据看板</span></div>`;
+  
+  // Tab切换
+  html+=`<div class="dashboard-tabs">
+    <div class="dashboard-tab ${healthDashboardTab==='overview'?'active':''}" onclick="healthDashboardTab='overview';renderHome()">📋 概览</div>
+    <div class="dashboard-tab ${healthDashboardTab==='charts'?'active':''}" onclick="healthDashboardTab='charts';renderHome()">📈 图表</div>
+    <div class="dashboard-tab ${healthDashboardTab==='content'?'active':''}" onclick="healthDashboardTab='content';renderHome()">🎯 推荐</div>
+  </div>`;
+  
+  if(healthDashboardTab==='overview'){
+    // 概览统计
+    html+=`<div class="stat-row">
+      <div class="stat-mini">
+        <div class="num">${totalPoints}</div>
+        <div class="label">⭐ 总积分</div>
+      </div>
+      <div class="stat-mini">
+        <div class="num">${exerciseDays}/7</div>
+        <div class="label">🏃 本周运动</div>
+      </div>
+      <div class="stat-mini">
+        <div class="num">${bestJump}</div>
+        <div class="label">🏅 最佳跳绳</div>
+      </div>
+      <div class="stat-mini">
+        <div class="num">${moodDays}/7</div>
+        <div class="label">😊 心情记录</div>
+      </div>
+    </div>`;
+    
+    // 本周明细
+    html+=`<div class="dashboard-stat" style="margin-top:10px">
+      <div class="stat-header"><div class="stat-title">📅 本周打卡日历</div></div>
+      <div style="display:flex;gap:4px;justify-content:space-between">
+        ${weekStats.days.map(d=>{
+          const hasAll=(d.hasExercise&&d.hasMood&&d.hasStudy&&d.hasWater);
+          const hasSome=(d.hasExercise||d.hasMood||d.hasStudy||d.hasWater);
+          return `<div style="flex:1;text-align:center">
+            <div style="font-size:11px;color:var(--text-light);margin-bottom:3px">${d.dayName}</div>
+            <div style="width:32px;height:32px;border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:14px;
+              background:${hasAll?'linear-gradient(135deg,var(--green),#5BAE5B)':hasSome?'var(--orange-light)':'var(--border)'};
+              color:${hasAll?'#fff':hasSome?'var(--orange-dark)':'var(--text-lighter)'};
+              font-weight:800;font-size:12px">${d.date.slice(8)}</div>
+            <div style="font-size:9px;margin-top:2px;color:var(--text-lighter)">${hasAll?'🌟':hasSome?'✓':'-'}</div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div style="margin-top:8px;font-size:10px;color:var(--text-light);text-align:center">
+        🌟全勤 · ✓部分完成 · -休息日
+      </div>
+    </div>`;
+    
+    // 补充剂连续打卡
+    const supStreak=getSupplementStreak();
+    html+=`<div class="dashboard-stat">
+      <div class="stat-header"><div class="stat-title">💊 补充剂连续打卡</div><div class="stat-value">${supStreak}</div></div>
+      <div class="stat-sub">连续天数 · ${supStreak>=7?'🎉 太棒了！继续保持！':supStreak>=3?'💪 不错哦！':'🌱 刚开始，加油！'}</div>
+    </div>`;
+    
+    // 生长数据快照
+    const gr=Store.data.growthRecords;
+    if(gr.length>=2){
+      const latest=gr[gr.length-1];
+      const prev=gr[gr.length-2];
+      const hDiff=(latest.height-prev.height).toFixed(1);
+      const wDiff=(latest.weight-prev.weight).toFixed(1);
+      html+=`<div class="dashboard-stat">
+        <div class="stat-header"><div class="stat-title">📏 最新生长数据</div><div style="font-size:12px;color:var(--text-light)">${latest.date}</div></div>
+        <div class="stat-row">
+          <div class="stat-mini">
+            <div class="num">${latest.height}<span style="font-size:12px">cm</span></div>
+            <div class="label">身高 ${hDiff>0?'+'+hDiff:hDiff}cm</div>
+          </div>
+          <div class="stat-mini">
+            <div class="num">${latest.weight}<span style="font-size:12px">kg</span></div>
+            <div class="label">体重 ${wDiff>0?'+'+wDiff:wDiff}kg</div>
+          </div>
+        </div>
+      </div>`;
+    }
+  }
+  
+  if(healthDashboardTab==='charts'){
+    html+=`<div class="card" style="text-align:center">
+      <div style="font-weight:800;font-size:14px;margin-bottom:10px">📈 本周运动/学习/心情趋势</div>
+      <canvas id="healthWeekChart" width="340" height="200"></canvas>
+    </div>
+    <div class="card" style="text-align:center;margin-top:10px">
+      <div style="font-weight:800;font-size:14px;margin-bottom:10px">🎯 健康五维雷达图</div>
+      <canvas id="healthRadarChart" width="300" height="260"></canvas>
+      <div style="font-size:11px;color:var(--text-light);margin-top:6px">运动 · 心情 · 学习 · 饮食 · 睡眠</div>
+    </div>`;
+  }
+  
+  if(healthDashboardTab==='content'){
+    // 户外活动轮播
+    html+=`<div style="font-weight:800;font-size:14px;margin-bottom:8px;display:flex;align-items:center;gap:6px">🏃 户外活动推荐</div>
+    <div class="content-carousel">
+      ${OUTDOOR_ACTIVITIES.map(a=>`
+        <div class="carousel-card">
+          <div class="c-icon">${a.icon}</div>
+          <div class="c-title">${a.name}</div>
+          <div class="c-desc">${a.desc}</div>
+          <span class="c-tag tag-green">⏱️ ${a.duration}</span>
+          <span class="c-tag tag-blue" style="margin-left:4px">${a.benefits}</span>
+        </div>
+      `).join('')}
+    </div>`;
+    
+    // 学习资源轮播
+    html+=`<div style="font-weight:800;font-size:14px;margin:16px 0 8px;display:flex;align-items:center;gap:6px">📖 学习资源推荐</div>
+    <div class="content-carousel">
+      ${LEARNING_RESOURCES.map(r=>`
+        <div class="carousel-card">
+          <div class="c-icon">${r.icon}</div>
+          <div class="c-title">${r.name}</div>
+          <div class="c-desc">${r.desc}</div>
+          <span class="c-tag tag-purple">${r.type}</span>
+          <span class="c-tag tag-orange" style="margin-left:4px">${r.focus}</span>
+        </div>
+      `).join('')}
+    </div>`;
+    
+    // 季节贴士
+    const rec=getDailyRecommendation();
+    const seasonNames={spring:'🌸 春季',summer:'☀️ 夏季',autumn:'🍂 秋季',winter:'❄️ 冬季'};
+    html+=`<div style="font-weight:800;font-size:14px;margin:16px 0 8px;display:flex;align-items:center;gap:6px">${seasonNames[rec.season]}养育贴士</div>`;
+    SEASONAL_TIPS[rec.season].forEach(tip=>{
+      html+=`<div class="card" style="margin-bottom:8px">
+        <div style="font-weight:800;font-size:13px;margin-bottom:4px">${tip.title}</div>
+        <div style="font-size:12px;line-height:1.7;color:var(--text)">${tip.content}</div>
+      </div>`;
+    });
+  }
+  
+  html+=`</div>`;
+  return html;
+}
+
+/* 获取本周统计数据 */
+function getWeekStats(){
+  const today=new Date();
+  const dayOfWeek=today.getDay(); // 0=Sun
+  const mondayOffset=dayOfWeek===0?6:dayOfWeek-1;
+  const monday=new Date(today); monday.setDate(today.getDate()-mondayOffset);
+  
+  const days=[];
+  const dateRange=[];
+  const weekDayNames=['一','二','三','四','五','六','日'];
+  
+  for(let i=0;i<7;i++){
+    const d=new Date(monday); d.setDate(monday.getDate()+i);
+    const ds=D.toStr(d);
+    dateRange.push(ds);
+    
+    const hasExercise=!!Store.data.jumpRecords.find(r=>r.date===ds);
+    const hasMood=!!Store.data.moodRecords[ds];
+    const hasStudy=!!Store.data.studyRecords[ds];
+    const hasWater=(Store.data.waterRecords[ds]||0)>=6;
+    
+    days.push({
+      date:ds,
+      dayName:weekDayNames[i],
+      isToday:ds===D.todayStr(),
+      hasExercise,hasMood,hasStudy,hasWater
+    });
+  }
+  
+  return {days,dateRange};
+}
+
+/* 补充剂连续打卡天数 */
+function getSupplementStreak(){
+  let streak=0;
+  const today=new Date();
+  for(let i=0;i<365;i++){
+    const d=new Date(today); d.setDate(d.getDate()-i);
+    const ds=D.toStr(d);
+    const sup=Store.data.supplements[ds];
+    if(!sup) break;
+    const allDone=Object.values(sup).every(v=>v===true);
+    if(!allDone) break;
+    streak++;
+  }
+  return streak;
+}
+
+/* 健康周趋势图 */
+function drawHealthWeekChart(){
+  const canvas=document.getElementById('healthWeekChart');
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+  
+  const stats=getWeekStats();
+  const padL=30,padR=15,padT=20,padB=30;
+  const cw=W-padL-padR,ch=H-padT-padB;
+  
+  // 收集数据
+  const scores=stats.days.map(d=>{
+    let s=0;
+    if(d.hasExercise) s+=2;
+    if(d.hasMood) s+=2;
+    if(d.hasStudy) s+=2;
+    if(d.hasWater) s+=2;
+    return s;
+  });
+  
+  const maxScore=8;
+  const x2px=i=>padL+(i/(6))*cw;
+  const y2px=v=>padT+ch-(v/maxScore)*ch;
+  
+  // 网格
+  for(let i=0;i<=maxScore;i+=2){
+    ctx.strokeStyle='rgba(236,240,241,0.6)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(padL,y2px(i));ctx.lineTo(W-padR,y2px(i));ctx.stroke();
+    ctx.fillStyle='#BDC3C7';ctx.font='9px sans-serif';ctx.textAlign='right';
+    ctx.fillText(i,padL-4,y2px(i)+3);
+  }
+  
+  // 填充区域
+  ctx.fillStyle='rgba(126,200,227,0.15)';
+  ctx.beginPath();
+  scores.forEach((s,i)=>{
+    const px=x2px(i),py=y2px(s);
+    if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+  });
+  ctx.lineTo(x2px(6),y2px(0));ctx.lineTo(x2px(0),y2px(0));ctx.closePath();ctx.fill();
+  
+  // 折线
+  ctx.strokeStyle='var(--blue)';ctx.lineWidth=2.5;ctx.lineJoin='round';
+  ctx.beginPath();
+  scores.forEach((s,i)=>{
+    const px=x2px(i),py=y2px(s);
+    if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+  });
+  ctx.stroke();
+  
+  // 点
+  scores.forEach((s,i)=>{
+    const px=x2px(i),py=y2px(s);
+    const grad=ctx.createRadialGradient(px,py,0,px,py,6);
+    grad.addColorStop(0,'#fff');grad.addColorStop(1,'var(--blue)');
+    ctx.fillStyle=grad;ctx.beginPath();ctx.arc(px,py,5,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='var(--blue-dark)';ctx.lineWidth=2;ctx.stroke();
+  });
+  
+  // X轴标签
+  ctx.fillStyle='#BDC3C7';ctx.font='10px sans-serif';ctx.textAlign='center';
+  stats.days.forEach((d,i)=>ctx.fillText(d.dayName,x2px(i),H-padB+14));
+  
+  // 图例
+  ctx.fillStyle='var(--text-light)';ctx.font='9px sans-serif';ctx.textAlign='left';
+  ctx.fillText('💪运动·😊心情·📚学习·💧喝水',padL,H-6);
+}
+
+/* 健康五维雷达图 */
+function drawHealthRadarChart(){
+  const canvas=document.getElementById('healthRadarChart');
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+  
+  const cx=W/2,cy=H/2-10,r=Math.min(W,H)/2-30;
+  const labels=['运动','心情','学习','饮食','睡眠'];
+  const colors=['#7EC8E3','#B39DDB','#FFB74D','#7DD87D','#FF7B7B'];
+  
+  // 计算各维度分数 (0-100)
+  const weekStats=getWeekStats();
+  const exerciseScore=Math.min(100,Math.round((weekStats.days.filter(d=>d.hasExercise).length/7)*100));
+  const moodScore=Math.min(100,Math.round((weekStats.days.filter(d=>d.hasMood).length/7)*100));
+  const studyScore=Math.min(100,Math.round((weekStats.days.filter(d=>d.hasStudy).length/7)*100));
+  const waterScore=Math.min(100,Math.round((weekStats.days.filter(d=>d.hasWater).length/7)*100));
+  
+  // 睡眠：检查sleepRecords
+  const sleepDays=Object.values(Store.data.sleepRecords||{}).filter(s=>s.bedTime&&s.wakeTime).length;
+  const sleepScore=Math.min(100,Math.round((sleepDays/7)*100));
+  
+  const scores=[exerciseScore,moodScore,studyScore,waterScore,sleepScore];
+  
+  // 画网格
+  for(let level=1;level<=5;level++){
+    const ratio=level/5;
+    ctx.strokeStyle=level===5?'rgba(126,200,227,0.5)':'rgba(236,240,241,0.5)';
+    ctx.lineWidth=level===5?1.5:1;
+    ctx.beginPath();
+    for(let i=0;i<5;i++){
+      const angle=Math.PI/2+(i*2*Math.PI/5);
+      const x=cx+r*ratio*Math.cos(angle);
+      const y=cy-r*ratio*Math.sin(angle);
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.closePath();ctx.stroke();
+  }
+  
+  // 画轴线
+  for(let i=0;i<5;i++){
+    const angle=Math.PI/2+(i*2*Math.PI/5);
+    ctx.strokeStyle='rgba(236,240,241,0.4)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+r*Math.cos(angle),cy-r*Math.sin(angle));ctx.stroke();
+    
+    // 标签
+    const lx=cx+(r+16)*Math.cos(angle);
+    const ly=cy-(r+16)*Math.sin(angle);
+    ctx.fillStyle=colors[i];ctx.font='bold 11px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(labels[i],lx,ly);
+  }
+  
+  // 画数据区域
+  ctx.fillStyle='rgba(126,200,227,0.2)';
+  ctx.strokeStyle='var(--blue)';ctx.lineWidth=2;
+  ctx.beginPath();
+  for(let i=0;i<5;i++){
+    const angle=Math.PI/2+(i*2*Math.PI/5);
+    const ratio=scores[i]/100;
+    const x=cx+r*ratio*Math.cos(angle);
+    const y=cy-r*ratio*Math.sin(angle);
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.closePath();ctx.fill();ctx.stroke();
+  
+  // 画数据点
+  scores.forEach((s,i)=>{
+    const angle=Math.PI/2+(i*2*Math.PI/5);
+    const ratio=s/100;
+    const x=cx+r*ratio*Math.cos(angle);
+    const y=cy-r*ratio*Math.sin(angle);
+    ctx.fillStyle=colors[i];ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#fff';ctx.font='bold 9px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(s,x,y);
+  });
+}
+
+/* ============================================================
+   Phase 3: 语音旁白朗读 (Web Speech API)
+   ============================================================ */
+let speechSynth=null;
+let speechUtterance=null;
+let speechPlaying=false;
+let speechPaused=false;
+let speechRate=1.0;
+
+function initSpeech(){
+  if(!speechSynth) speechSynth=window.speechSynthesis;
+  return !!speechSynth;
+}
+
+function getSceneNarration(scene){
+  // 生成自然的中文旁白文本
+  const typeIntro={'言语':'言语霸凌是用不好听的话伤害别人','肢体':'肢体霸凌是用身体动作欺负别人','关系':'关系霸凌是故意让别人被孤立','网络':'网络霸凌是在网上说别人坏话'};
+  let text=`欢迎来到防霸凌小剧场！今天我们要学习的是：${scene.title}。`;
+  text+=`${typeIntro[scene.type]||''}。`;
+  text+=`${scene.definition}。`;
+  text+=`让我给你讲一个故事：${scene.story}。`;
+  text+=`那么，${scene.question}`;
+  if(scene.tips) text+=`记住这个口诀：${scene.tips}`;
+  return text;
+}
+
+function speakSceneText(){
+  if(!initSpeech()){
+    UI.toast('您的浏览器不支持语音朗读');
+    return;
+  }
+  
+  // 如果正在朗读，不重复触发
+  if(speechPlaying) return;
+  
+  const scene=SOCIAL_SCENES[socialSceneIdx];
+  if(!scene){ UI.toast('未找到场景信息'); return; }
+  const text=getSceneNarration(scene);
+  
+  // 取消当前朗读
+  speechSynth.cancel();
+  // 小延迟确保cancel生效
+  setTimeout(()=>{
+    speechUtterance=new SpeechSynthesisUtterance(text);
+    speechUtterance.lang='zh-CN';
+    speechUtterance.rate=speechRate;
+    speechUtterance.pitch=1.0;
+    speechUtterance.volume=1.0;
+    
+    // 尝试选择中文语音
+    const voices=speechSynth.getVoices();
+    if(voices&&voices.length>0){
+      const zhVoice=voices.find(v=>v.lang==='zh-CN')||voices.find(v=>v.lang.startsWith('zh'));
+      if(zhVoice) speechUtterance.voice=zhVoice;
+    }
+    
+    speechUtterance.onstart=()=>{speechPlaying=true;speechPaused=false;updateVoiceBarUI();};
+    speechUtterance.onend=()=>{speechPlaying=false;speechPaused=false;updateVoiceBarUI();};
+    speechUtterance.onerror=(e)=>{speechPlaying=false;speechPaused=false;updateVoiceBarUI();console.log('语音错误:',e.error);};
+    
+    try{
+      speechSynth.speak(speechUtterance);
+    }catch(e){
+      UI.toast('语音播放失败，请重试');
+    }
+  },50);
+}
+
+function pauseSceneSpeech(){
+  if(speechSynth&&speechPlaying){
+    speechSynth.pause();
+  }
+}
+
+function resumeSceneSpeech(){
+  if(speechSynth&&speechPaused){
+    speechSynth.resume();
+  }
+}
+
+function stopSceneSpeech(){
+  if(speechSynth){
+    speechSynth.cancel();
+    speechPlaying=false;
+    speechPaused=false;
+    updateVoiceBarUI();
+  }
+}
+
+function setSpeechRate(rate){
+  speechRate=rate;
+  // 重新开始朗读
+  if(speechPlaying||speechPaused){
+    speechSynth.cancel();
+    speakSceneText();
+  }
+}
+
+function updateVoiceBarUI(){
+  // 查找当前页面中的语音条并更新按钮状态
+  const voiceBar=document.querySelector('.voice-bar');
+  if(!voiceBar) return;
+  // 用新的HTML替换语音条内容
+  const newBar=document.createElement('div');
+  newBar.innerHTML=renderVoiceBar();
+  const newVoiceBar=newBar.firstElementChild;
+  if(newVoiceBar&&voiceBar.parentNode){
+    voiceBar.parentNode.replaceChild(newVoiceBar,voiceBar);
+  }
+}
+
+/* 渲染语音控制条 */
+function renderVoiceBar(){
+  return `<div class="voice-bar">
+    ${!speechPlaying&&!speechPaused?`
+      <button class="voice-btn" onclick="speakSceneText()" title="朗读场景">▶️</button>
+    `:speechPlaying?`
+      <button class="voice-btn playing" onclick="pauseSceneSpeech()" title="暂停">⏸️</button>
+    `:`
+      <button class="voice-btn paused" onclick="resumeSceneSpeech()" title="继续">▶️</button>
+    `}
+    <button class="voice-btn" style="background:var(--red);font-size:14px" onclick="stopSceneSpeech()" title="停止">⏹️</button>
+    <div style="flex:1;font-size:12px;font-weight:600;color:var(--blue-dark);text-align:center">
+      ${speechPlaying?'🔊 正在朗读...':speechPaused?'⏸️ 已暂停':'🗣️ 点击播放朗读场景'}
+    </div>
+    <button class="voice-speed ${speechRate===0.8?'active':''}" onclick="setSpeechRate(0.8)">0.8x</button>
+    <button class="voice-speed ${speechRate===1.0?'active':''}" onclick="setSpeechRate(1.0)">1x</button>
+    <button class="voice-speed ${speechRate===1.3?'active':''}" onclick="setSpeechRate(1.3)">1.3x</button>
+  </div>`;
 }
 
 /* ========== 跳绳记录弹窗 ========== */
@@ -1296,7 +1939,7 @@ function openSettings(){
     <div class="setting-row" onclick="resetAllData()"><span class="label" style="color:var(--red)">🗑️ 清空所有数据</span><span class="value">›</span></div>
   </div>`;
   html+=`<div class="setting-group">
-    <div class="setting-row" onclick="showAbout()"><span class="label">ℹ️ 关于</span><span class="value">v2.0.0 ›</span></div>
+    <div class="setting-row" onclick="showAbout()"><span class="label">ℹ️ 关于</span><span class="value">v3.0.0 ›</span></div>
   </div>`;
   UI.modalWithTitle('⚙️ 设置',html);
 }
@@ -1384,7 +2027,7 @@ function showAbout(){
     <div style="text-align:center;padding:10px 0">
       <div style="font-size:60px">👦</div>
       <div style="font-size:20px;font-weight:700;margin-top:8px">男孩养育管家</div>
-      <div style="font-size:13px;color:var(--text-light);margin-top:4px">版本 1.0.0</div>
+      <div style="font-size:13px;color:var(--text-light);margin-top:4px">版本 3.0.0</div>
     </div>
     <div style="font-size:13px;line-height:1.8;color:var(--text);margin-top:14px">
       <p>专为6岁半男孩设计的养育管理工具，涵盖饮食、生长、运动、心理、疾病、幼小衔接等全方位管理。</p>
@@ -1477,6 +2120,103 @@ const PICKY_TIPS=[
   '🌱 循序渐进：新食物搭配熟悉的喜欢的食物一起出现，多次尝试',
   '🤫 不强迫：拒绝时不勉强，下次换个做法再试，避免产生抵触'
 ];
+
+/* ============================================================
+   Phase 3: 户外活动推荐 (15项)
+   ============================================================ */
+const OUTDOOR_ACTIVITIES=[
+  {name:'公园探险',icon:'🌳',age:'5-8岁',duration:'1-2小时',weather:'晴天',desc:'带放大镜观察昆虫、收集树叶、认识植物，培养观察力和好奇心',benefits:'视力保护、感统训练、自然认知',safety:'防晒帽+防蚊液+饮用水'},
+  {name:'骑行小将',icon:'🚲',age:'5-8岁',duration:'30-60分钟',weather:'晴天/阴天',desc:'在小区或公园安全道路骑行，锻炼平衡能力和腿部力量',benefits:'平衡力、心肺功能、腿部力量',safety:'头盔+护膝+护肘，远离机动车道'},
+  {name:'足球小将',icon:'⚽',age:'5-8岁',duration:'30-45分钟',weather:'晴天/阴天',desc:'练习传球、射门、带球，适合释放男孩能量',benefits:'团队协作、大运动、爆发力',safety:'运动鞋+护腿板，选择平坦场地'},
+  {name:'游泳健将',icon:'🏊',age:'6岁+',duration:'30-45分钟',weather:'不限',desc:'正规游泳馆学习蛙泳/自由泳，全身运动之王',benefits:'肺活量、全身协调、自信',safety:'必须有家长陪同，选择有救生员的场馆'},
+  {name:'爬山登高',icon:'⛰️',age:'5-8岁',duration:'2-4小时',weather:'晴天',desc:'选择低难度山峰，边走边认植物，登顶后的成就感无可替代',benefits:'意志力、耐力、远眺护眼',safety:'防滑鞋+登山杖+足够饮水+巧克力补充能量'},
+  {name:'放风筝',icon:'🪁',age:'4-8岁',duration:'1小时',weather:'有风',desc:'自己动手组装风筝，在开阔场地奔跑放线',benefits:'手眼协调、颈椎放松、亲子互动',safety:'避开高压线和树木，选择公园草坪'},
+  {name:'沙滩/沙坑',icon:'🏖️',age:'3-8岁',duration:'1-2小时',weather:'晴天',desc:'挖沙、堆城堡、玩沙漏，触觉刺激丰富',benefits:'创造力、触觉发展、精细动作',safety:'玩后及时洗手，注意防晒'},
+  {name:'跳绳PK赛',icon:'🏃',age:'6岁+',duration:'15-20分钟',weather:'不限',desc:'和爸爸妈妈比赛跳绳，花样跳法更有趣',benefits:'协调性、节奏感、长高助益',safety:'穿运动鞋，选择平整地面'},
+  {name:'篮球投篮',icon:'🏀',age:'6岁+',duration:'30分钟',weather:'晴天',desc:'在儿童篮球架练习投篮，锻炼上肢和弹跳',benefits:'弹跳力、上肢力量、专注力',safety:'选择儿童高度篮架，注意落地缓冲'},
+  {name:'捡树叶做手工',icon:'🍂',age:'4-8岁',duration:'1小时',weather:'晴天/阴天',desc:'收集不同形状颜色的树叶，回家做树叶画',benefits:'艺术感、分类思维、精细动作',safety:'不摘有毒植物，回家洗手'},
+  {name:'飞盘游戏',icon:'🥏',age:'5-8岁',duration:'30分钟',weather:'晴天/有微风',desc:'练习抛接飞盘，全家一起玩',benefits:'手眼协调、奔跑能力、反应速度',safety:'选择软飞盘，避开人群密集区'},
+  {name:'攀岩体验',icon:'🧗',age:'6岁+',duration:'1小时',weather:'不限',desc:'室内攀岩馆体验儿童岩壁，建立自信和勇气',benefits:'全身力量、空间感、勇气',safety:'选择有安全绳和教练的场馆'},
+  {name:'钓鱼初体验',icon:'🎣',age:'5-8岁',duration:'1-2小时',weather:'晴天',desc:'在安全水域体验钓鱼，培养耐心和专注力',benefits:'耐心、专注力、亲子时光',safety:'远离深水区，大人全程陪同'},
+  {name:'捉迷藏',icon:'🙈',age:'3-8岁',duration:'30分钟',weather:'不限',desc:'室内或小区安全范围内玩，释放精力又开心',benefits:'空间认知、社交互动、奔跑',safety:'划定安全范围，不躲危险区域'},
+  {name:'打水枪',icon:'🔫',age:'4-8岁',duration:'30分钟',weather:'夏天晴天',desc:'夏天专属快乐！备好水枪，在院子里或公园水战区玩',benefits:'降温解暑、释放精力、快乐',safety:'不喷眼睛，穿速干衣，注意防滑'}
+];
+
+/* ============================================================
+   Phase 3: 学习资源推荐 (15项)
+   ============================================================ */
+const LEARNING_RESOURCES=[
+  {name:'洪恩识字',icon:'📱',type:'App',age:'4-7岁',desc:'通过游戏化方式学习1200个常用汉字，动画生动有趣',focus:'识字、阅读',link:'应用商店搜索'},
+  {name:'叫叫阅读',icon:'📖',type:'App',age:'5-8岁',desc:'分级阅读+思维导图，培养阅读习惯和逻辑思维',focus:'阅读理解、表达',link:'应用商店搜索'},
+  {name:'都都数学',icon:'🔢',type:'App',age:'5-8岁',desc:'国际获奖数学启蒙App，视觉化理解数学概念',focus:'数学思维、逻辑',link:'应用商店搜索'},
+  {name:'可汗学院少儿版',icon:'🧠',type:'App',age:'4-8岁',desc:'免费、无广告！涵盖数学、阅读、逻辑等综合启蒙',focus:'综合学科、自主学习',link:'Khan Academy Kids'},
+  {name:'小灯塔学堂',icon:'🎬',type:'视频',age:'5-10岁',desc:'百科知识动画短片，恐龙、太空、人体等主题',focus:'科普知识、好奇心',link:'腾讯视频/爱奇艺'},
+  {name:'拼音小达人',icon:'🔤',type:'App',age:'5-7岁',desc:'拼音启蒙必备，从单韵母到整体认读音节循序渐进',focus:'拼音、发音',link:'应用商店搜索'},
+  {name:'悟空识字',icon:'🐵',age:'4-7岁',type:'App',desc:'以西游记故事为背景的识字App，男孩最爱',focus:'识字、故事',link:'应用商店搜索'},
+  {name:'恐龙百科',icon:'🦕',type:'绘本',age:'4-8岁',desc:'DK恐龙大百科等科普绘本，满足男孩对恐龙的痴迷',focus:'科普、阅读兴趣',link:'京东/当当搜索'},
+  {name:'乐高/积木',icon:'🧱',type:'玩具',age:'4-10岁',desc:'锻炼空间想象力、创造力和手部精细动作',focus:'空间思维、创造力',link:'乐高城市/机械组系列'},
+  {name:'ScratchJr',icon:'💻',type:'App',age:'5-7岁',desc:'MIT开发的编程启蒙App，拖拽积木块编程',focus:'编程思维、逻辑',link:'应用商店搜索'},
+  {name:'迷宫书',icon:'🌀',type:'书',age:'5-8岁',desc:'走迷宫锻炼专注力、空间能力和耐心',focus:'专注力、空间感知',link:'京东搜索"儿童迷宫书"'},
+  {name:'地图拼图',icon:'🗺️',type:'玩具',age:'5-10岁',desc:'中国地图/世界地图拼图，建立地理概念',focus:'地理认知、记忆力',link:'淘宝搜索"儿童地图拼图"'},
+  {name:'科学小实验',icon:'🧪',type:'套装',age:'6-10岁',desc:'儿童科学实验套装，火山喷发、结晶实验等',focus:'科学兴趣、动手能力',link:'淘宝搜索"儿童科学实验套装"'},
+  {name:'口算练习',icon:'🧮',type:'App',age:'6-8岁',desc:'每日10分钟口算练习，为小学数学打基础',focus:'计算能力、速度',link:'应用商店搜索"口算"'},
+  {name:'儿童新闻',icon:'📰',type:'音频',age:'6-10岁',desc:'如"少年得到""凯叔讲故事"等儿童新闻节目',focus:'时事认知、语言表达',link:'喜马拉雅搜索"儿童新闻"'}
+];
+
+/* ============================================================
+   Phase 3: 季节养育贴士 (12条)
+   ============================================================ */
+const SEASONAL_TIPS={
+  spring:[
+    {title:'🌸 春季过敏季防护',content:'春季花粉高峰期（3-5月），过敏体质儿童注意：出门戴口罩、回家洗鼻子、减少开窗时间、花粉浓度高时避免户外活动。咳嗽变异性哮喘春季易复发，规律用孟鲁司特钠预防。'},
+    {title:'🌱 春季长高黄金期',content:'世界卫生组织研究显示3-5月是儿童身高增长最快季节，速度是秋冬的2-2.5倍！保证充足睡眠（21:00前入睡）、每日跳绳/摸高、补充钙+VD、多吃高蛋白食物。'},
+    {title:'🦟 春季防蚊防虫',content:'使用物理防蚊（蚊帐）优先于化学防蚊。如需使用驱蚊液，选择避蚊胺含量<10%的儿童款。穿长袖长裤去草丛区域。被蚊虫叮咬后冷敷止痒，避免抓破。'}
+  ],
+  summer:[
+    {title:'☀️ 夏季防暑降温',content:'上午10点-下午4点避免户外活动。出门戴宽檐帽、涂儿童防晒霜（SPF30+）。多喝水、少吃冷饮。空调温度26-28℃，避免直吹。西瓜、绿豆汤天然消暑。'},
+    {title:'🏊 夏季游泳安全',content:'选择正规游泳馆，必须有成人全程看护（一臂距离内）。下水前热身、饭后1小时再游。游后立即冲澡、滴眼药水防感染。6岁正是学游泳的黄金年龄！'},
+    {title:'🍉 夏季饮食注意',content:'夏季细菌繁殖快，食物需冷藏保存。少吃冰镇食物刺激肠胃。西瓜虽好但性寒，一次别超过两片。多吃苦瓜、冬瓜、黄瓜等清热食物。保证饮水充足，观察小便颜色。'}
+  ],
+  autumn:[
+    {title:'🍂 秋季润肺防燥',content:'秋季干燥易引发咳嗽，多喝梨水、银耳汤、百合粥润肺。保持室内湿度40-60%。过敏性鼻炎秋季高发（蒿草花粉），坚持盐水洗鼻早晚各一次。'},
+    {title:'🎒 秋季开学适应',content:'开学前2周调整作息：逐步提前起床和入睡时间。一起准备书包文具，建立仪式感。聊聊小学有趣的事，缓解分离焦虑。开学后每天问"今天有什么开心的事？"'},
+    {title:'🌡️ 秋季穿衣法则',content:'"春捂秋冻"但要适度——比成人多一件薄外套即可。推荐洋葱式穿衣法：内层透气+中层保暖+外层防风。注意腹部和后背保暖，避免受凉引发哮喘。'}
+  ],
+  winter:[
+    {title:'❄️ 冬季防病保健',content:'冬季是呼吸道疾病高发期。勤洗手+戴口罩是最有效预防。室内每天通风3次、每次15分钟。补充VC（猕猴桃、橙子）、保证睡眠、适度运动增强免疫力。'},
+    {title:'🏠 冬季室内运动',content:'寒冷天气无法户外时，室内运动同样重要：跳绳（无绳跳也行）、摸高跳、瑜伽垫俯卧撑、原地高抬腿。每天至少30分钟中高强度运动。'},
+    {title:'🧤 冬季护肤保湿',content:'冬季皮肤干燥易瘙痒，洗澡水温不超过40℃、时间不超过10分钟。浴后3分钟内涂抹润肤霜。选择无香精的儿童专用润肤产品。嘴唇干裂用儿童润唇膏。'}
+  ]
+};
+
+/* ============================================================
+   Phase 3: 每日推荐生成器
+   ============================================================ */
+function getDailyRecommendation(){
+  const today=new Date();
+  const dayOfYear=Math.floor((today-new Date(today.getFullYear(),0,0))/(1000*60*60*24));
+  
+  // 根据日期轮换推荐
+  const actIdx=dayOfYear%OUTDOOR_ACTIVITIES.length;
+  const learnIdx=dayOfYear%LEARNING_RESOURCES.length;
+  
+  // 季节判断
+  const m=today.getMonth()+1;
+  let season='spring';
+  if(m>=6&&m<=8) season='summer';
+  else if(m>=9&&m<=11) season='autumn';
+  else season='winter';
+  
+  const seasonTips=SEASONAL_TIPS[season];
+  const tipIdx=dayOfYear%seasonTips.length;
+  
+  return {
+    outdoor:OUTDOOR_ACTIVITIES[actIdx],
+    learning:LEARNING_RESOURCES[learnIdx],
+    seasonTip:seasonTips[tipIdx],
+    season
+  };
+}
 
 let dietWeekOffset=0;
 function renderDiet(){
@@ -2743,6 +3483,8 @@ function renderSocialSafety(){
       <div style="background:rgba(255,255,255,0.85);border-radius:14px;padding:14px;font-size:14px;line-height:1.8;font-weight:600;text-align:center;margin-bottom:12px;border-left:4px solid var(--orange)">
         📺 ${scene.story}
       </div>
+      <!-- 语音朗读控制条 -->
+      ${renderVoiceBar()}
       <!-- 问题+选项 -->
       <div style="font-weight:800;font-size:14px;text-align:center;margin-bottom:10px;color:var(--text)">${scene.question}</div>
       ${scene.options.map((opt,i)=>`
@@ -3153,13 +3895,33 @@ function toggleMed(i){
 function drinkWater(){
   const today=D.todayStr();
   Store.data.waterRecords[today]=(Store.data.waterRecords[today]||0)+1;
-  if(Store.data.waterRecords[today]>=8) addPoint('喝了8杯水',1,'💧');
-  Store.save();renderReminder();
+  const count=Store.data.waterRecords[today];
+  if(count>=8) addPoint('喝了8杯水',1,'💧');
+  Store.save();
+  // 如果当前在提醒页面，直接刷新
+  if(Pages.current==='reminder'){
+    renderReminder();
+  }else{
+    // 在其他页面，显示Toast反馈并更新首页
+    if(count>=8){
+      UI.celebrate('💧','喝水目标达成！',`太棒了！今天已经喝了${count}杯水！`);
+    }else{
+      UI.toast(`💧 +1杯！今天已喝${count}杯`);
+    }
+    // 如果在首页，刷新首页显示
+    if(Pages.current==='home') renderHome();
+  }
 }
 function undrinkWater(){
   const today=D.todayStr();
   Store.data.waterRecords[today]=Math.max(0,(Store.data.waterRecords[today]||0)-1);
-  Store.save();renderReminder();
+  Store.save();
+  if(Pages.current==='reminder'){
+    renderReminder();
+  }else{
+    UI.toast(`💧 已减1杯，今天${Store.data.waterRecords[today]}杯`);
+    if(Pages.current==='home') renderHome();
+  }
 }
 function editWaterTimes(){
   const wr=Store.data.reminders.water;
@@ -4207,6 +4969,47 @@ function initApp(){
   if('serviceWorker' in navigator){
     navigator.serviceWorker.register('service-worker.js').catch(e=>console.log('SW注册失败',e));
   }
+  // 全局按钮波纹效果
+  initRippleEffect();
+  // 预加载语音
+  if('speechSynthesis' in window){
+    speechSynthesis.getVoices();
+    // 语音列表可能异步加载
+    speechSynthesis.onvoiceschanged=()=>{speechSynthesis.getVoices();};
+  }
+  // iOS Safari 需要首次用户交互来"解锁" speechSynthesis
+  let speechUnlocked=false;
+  function unlockSpeech(){
+    if(speechUnlocked||!('speechSynthesis' in window)) return;
+    speechUnlocked=true;
+    // 用一个空utterance来解锁
+    try{
+      const u=new SpeechSynthesisUtterance('');
+      u.volume=0;
+      speechSynthesis.speak(u);
+    }catch(e){}
+  }
+  document.addEventListener('touchstart',unlockSpeech,{once:true});
+  document.addEventListener('click',unlockSpeech,{once:true});
+}
+
+/* 全局按钮波纹效果 */
+function initRippleEffect(){
+  document.addEventListener('click',function(e){
+    const btn=e.target.closest('.btn');
+    if(!btn||btn.classList.contains('no-ripple')) return;
+    if(btn.querySelector('.ripple')) return; // 已有波纹
+    const ripple=document.createElement('span');
+    ripple.className='ripple';
+    const rect=btn.getBoundingClientRect();
+    const size=Math.max(rect.width,rect.height);
+    ripple.style.width=ripple.style.height=size+'px';
+    ripple.style.left=(e.clientX-rect.left-size/2)+'px';
+    ripple.style.top=(e.clientY-rect.top-size/2)+'px';
+    btn.appendChild(ripple);
+    btn.classList.add('btn-ripple');
+    ripple.addEventListener('animationend',()=>ripple.remove());
+  });
 }
 
 // 启动
